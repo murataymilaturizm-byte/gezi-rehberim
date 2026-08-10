@@ -1442,13 +1442,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }).join("\n");
 
     const _b1Msgs: Record<string, string> = {
-      tr: `${_summary.tr} bütçenize uygun turlarımız:\n${_listLinesB1}\n\nHangisi ilginizi çeker? 😊`,
-      en: `Tours within your ${_summary.en} budget:\n${_listLinesB1}\n\nWhich interests you? 😊`,
-      de: `Touren in Ihrem Budget (${_summary.de}):\n${_listLinesB1}\n\nWelche interessiert Sie? 😊`,
-      fr: `Circuits dans votre budget (${_summary.fr}) :\n${_listLinesB1}\n\nLequel vous intéresse ? 😊`,
-      es: `Tours dentro de tu presupuesto (${_summary.es}):\n${_listLinesB1}\n\n¿Cuál te interesa? 😊`,
-      ru: `Туры в вашем бюджете (${_summary.ru}):\n${_listLinesB1}\n\nКакой вас интересует? 😊`,
-      ar: `جولات ضمن ميزانيتك (${_summary.ar}):\n${_listLinesB1}\n\nأيها يثير اهتمامك؟ 😊`,
+      tr: `${_summary.tr} bütçenize uygun turlarımız:\n${_listLinesB1}\n\nHangisine bakalım? 😊`,
+      en: `Tours within your ${_summary.en} budget:\n${_listLinesB1}\n\nWhich one shall we look at? 😊`,
+      de: `Touren in Ihrem Budget (${_summary.de}):\n${_listLinesB1}\n\nWelche sehen wir uns an? 😊`,
+      fr: `Circuits dans votre budget (${_summary.fr}) :\n${_listLinesB1}\n\nLaquelle regardons-nous ? 😊`,
+      es: `Tours dentro de tu presupuesto (${_summary.es}):\n${_listLinesB1}\n\n¿Cuál vemos? 😊`,
+      ru: `Туры в вашем бюджете (${_summary.ru}):\n${_listLinesB1}\n\nКакой посмотрим? 😊`,
+      ar: `جولات ضمن ميزانيتك (${_summary.ar}):\n${_listLinesB1}\n\nأيها نلقي نظرة عليه؟ 😊`,
     };
     const _b1Reply = _b1Msgs[_langB1] || _b1Msgs.tr;
     console.log(`[process-message] B1 fiyat aralığı: lower=${_priceLower} upper=${_priceUpper} matches=${_filtered.length}`);
@@ -1522,13 +1522,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       }).join("\n");
 
       const _noneMsgs: Record<string, string> = {
-        tr: `${_label} turumuz şu anda yok. Mevcut turlarımız:\n${_allTours}\n\nHangisi ilginizi çeker? 😊`,
-        en: `We don't have ${_label} tours right now. Our available tours:\n${_allTours}\n\nWhich interests you? 😊`,
-        de: `Wir haben derzeit keine ${_label}-Touren. Verfügbare Touren:\n${_allTours}\n\nWelche interessiert Sie? 😊`,
-        fr: `Pas de circuit ${_label} pour le moment. Circuits disponibles :\n${_allTours}\n\nLequel vous intéresse ? 😊`,
+        tr: `${_label} turumuz şu anda yok. Mevcut turlarımız:\n${_allTours}\n\nHangisi size göre? 😊`,
+        en: `We don't have ${_label} tours right now. Our available tours:\n${_allTours}\n\nWhich one suits you best? 😊`,
+        de: `Wir haben derzeit keine ${_label}-Touren. Verfügbare Touren:\n${_allTours}\n\nWelche sagt Ihnen zu? 😊`,
+        fr: `Pas de circuit ${_label} pour le moment. Circuits disponibles :\n${_allTours}\n\nLaquelle vous correspond ? 😊`,
         es: `No tenemos tours ${_label} ahora. Tours disponibles:\n${_allTours}\n\n¿Cuál te interesa? 😊`,
-        ru: `Сейчас нет ${_label} туров. Доступные туры:\n${_allTours}\n\nКакой вас интересует? 😊`,
-        ar: `لا توجد جولات ${_label} حالياً. الجولات المتاحة:\n${_allTours}\n\nأيها يثير اهتمامك؟ 😊`,
+        ru: `Сейчас нет ${_label} туров. Доступные туры:\n${_allTours}\n\nКакой вам по душе? 😊`,
+        ar: `لا توجد جولات ${_label} حالياً. الجولات المتاحة:\n${_allTours}\n\nأيها يناسبك أكثر؟ 😊`,
       };
       const _reply = _noneMsgs[_langDur] || _noneMsgs.tr;
       await _save(_reply, context);
@@ -1546,13 +1546,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     }).join("\n");
 
     const _msgs: Record<string, string> = {
-      tr: `${_label} turlarımız:\n${_filteredList}\n\nHangisi ilginizi çeker? 😊`,
-      en: `Our ${_label} tours:\n${_filteredList}\n\nWhich interests you? 😊`,
-      de: `Unsere ${_label}-Touren:\n${_filteredList}\n\nWelche interessiert Sie? 😊`,
-      fr: `Nos circuits ${_label} :\n${_filteredList}\n\nLequel vous intéresse ? 😊`,
+      tr: `${_label} turlarımız:\n${_filteredList}\n\nHangisi size göre? 😊`,
+      en: `Our ${_label} tours:\n${_filteredList}\n\nWhich one suits you best? 😊`,
+      de: `Unsere ${_label}-Touren:\n${_filteredList}\n\nWelche sagt Ihnen zu? 😊`,
+      fr: `Nos circuits ${_label} :\n${_filteredList}\n\nLaquelle vous correspond ? 😊`,
       es: `Nuestros tours ${_label}:\n${_filteredList}\n\n¿Cuál te interesa? 😊`,
-      ru: `Наши ${_label} туры:\n${_filteredList}\n\nКакой вас интересует? 😊`,
-      ar: `جولاتنا ${_label}:\n${_filteredList}\n\nأيها يثير اهتمامك؟ 😊`,
+      ru: `Наши ${_label} туры:\n${_filteredList}\n\nКакой вам по душе? 😊`,
+      ar: `جولاتنا ${_label}:\n${_filteredList}\n\nأيها يناسبك أكثر؟ 😊`,
     };
     const _reply = _msgs[_langDur] || _msgs.tr;
     await _save(_reply, context);
@@ -1763,12 +1763,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       return `${i + 1}) ${getLocalizedTourTitle(t.title, _langBT)}${_priceText}`;
     }).join("\n");
     const _themeMsgs: Record<string, string> = {
-      tr: `Tema bazlı özel filtremiz henüz yok, ama tüm turlarımız şunlar:\n${_tourListBT}\n\nHangisi ilginizi çeker? 😊`,
-      en: `We don't have theme-based filtering yet, but here are all our tours:\n${_tourListBT}\n\nWhich interests you? 😊`,
-      de: `Wir haben noch keine themenbasierte Filterung, hier sind alle unsere Touren:\n${_tourListBT}\n\nWelche interessiert Sie? 😊`,
-      fr: `Nous n'avons pas encore de filtrage par thème, voici tous nos circuits :\n${_tourListBT}\n\nLequel vous intéresse ? 😊`,
-      es: `Aún no tenemos filtrado por tema, pero estos son todos nuestros tours:\n${_tourListBT}\n\n¿Cuál te interesa? 😊`,
-      ru: `У нас пока нет фильтрации по тематике, но вот все наши туры:\n${_tourListBT}\n\nКакой вас интересует? 😊`,
+      tr: `Tema bazlı özel filtremiz henüz yok, ama tüm turlarımız şunlar:\n${_tourListBT}\n\nSize hangisini anlatayım? 😊`,
+      en: `We don't have theme-based filtering yet, but here are all our tours:\n${_tourListBT}\n\nWhich one shall I tell you about? 😊`,
+      de: `Wir haben noch keine themenbasierte Filterung, hier sind alle unsere Touren:\n${_tourListBT}\n\nVon welcher soll ich erzählen? 😊`,
+      fr: `Nous n'avons pas encore de filtrage par thème, voici tous nos circuits :\n${_tourListBT}\n\nLaquelle voulez-vous découvrir ? 😊`,
+      es: `Aún no tenemos filtrado por tema, pero estos son todos nuestros tours:\n${_tourListBT}\n\n¿Cuál le cuento? 😊`,
+      ru: `У нас пока нет фильтрации по тематике, но вот все наши туры:\n${_tourListBT}\n\nО каком рассказать? 😊`,
       ar: `لا تتوفر لدينا تصفية حسب الموضوع بعد، ولكن إليك جميع جولاتنا:\n${_tourListBT}\n\nما الذي يثير اهتمامك؟ 😊`,
     };
     const _btReply = _themeMsgs[_langBT] || _themeMsgs.tr;
@@ -3586,13 +3586,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // ("kayak turu turu sistemimizde yok"). Suffix kaldırıldı — "kayak turu sistemimizde
     // bulunmuyor" + "kayak sistemimizde bulunmuyor" her ikisi de doğal okunur.
     const _unknownMsgs: Record<string, string> = {
-      tr: `"${unknownTourQuery}" sistemimizde bulunmuyor. 😔\n\nMüsait turlarımız:\n${_tourListLinesU}\n\nHangisi ilginizi çeker?`,
-      en: `"${unknownTourQuery}" is not in our system. 😔\n\nAvailable tours:\n${_tourListLinesU}\n\nWhich interests you?`,
-      de: `"${unknownTourQuery}" ist nicht in unserem System. 😔\n\nVerfügbare Touren:\n${_tourListLinesU}\n\nWelche interessiert Sie?`,
-      ru: `"${unknownTourQuery}" нет в нашей системе. 😔\n\nДоступные туры:\n${_tourListLinesU}\n\nКакой вас интересует?`,
+      tr: `"${unknownTourQuery}" sistemimizde bulunmuyor. 😔\n\nMüsait turlarımız:\n${_tourListLinesU}\n\nHangisine bakmak istersiniz?`,
+      en: `"${unknownTourQuery}" is not in our system. 😔\n\nAvailable tours:\n${_tourListLinesU}\n\nWhich would you like to see?`,
+      de: `"${unknownTourQuery}" ist nicht in unserem System. 😔\n\nVerfügbare Touren:\n${_tourListLinesU}\n\nWelche möchten Sie sehen?`,
+      ru: `"${unknownTourQuery}" нет в нашей системе. 😔\n\nДоступные туры:\n${_tourListLinesU}\n\nКакой хотите посмотреть?`,
       ar: `"${unknownTourQuery}" غير موجود في نظامنا. 😔\n\nالجولات المتاحة:\n${_tourListLinesU}\n\nما الذي يثير اهتمامك؟`,
-      fr: `"${unknownTourQuery}" n'est pas dans notre système. 😔\n\nCircuits disponibles :\n${_tourListLinesU}\n\nLequel vous intéresse ?`,
-      es: `"${unknownTourQuery}" no está en nuestro sistema. 😔\n\nTours disponibles:\n${_tourListLinesU}\n\n¿Cuál le interesa?`,
+      fr: `"${unknownTourQuery}" n'est pas dans notre système. 😔\n\nCircuits disponibles :\n${_tourListLinesU}\n\nLaquelle souhaitez-vous voir ?`,
+      es: `"${unknownTourQuery}" no está en nuestro sistema. 😔\n\nTours disponibles:\n${_tourListLinesU}\n\n¿Cuál le gustaría ver?`,
     };
     const _unknownReply = _unknownMsgs[context.language] || _unknownMsgs.tr;
     await _save(_unknownReply, context);
