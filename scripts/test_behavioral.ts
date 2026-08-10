@@ -5814,4 +5814,22 @@ for (const w of ["kapadokya", "pamukkale", "balon", "rafting", "efes", "antalya"
     !_words("Balon turunu bunu istiyorum").includes("bunu"));
 }
 
+// ═══ E3-1+E4-2 — KADEMELİ-RED (2026-08-10) — KALICI ═══
+console.log("\n── E3-1 kademeli-red ──");
+import { bumpGuardStreak as _bgs, PHONE_RETRY_MSG as _prm, PHONE_BRIDGE_MSG as _pbm2, AI_FALLBACK_REPEAT_MSG as _afr } from "../supabase/functions/shared/constants/graded-reject.ts";
+{
+  const ctx: Record<string, unknown> = {};
+  assert("E3.SAYAÇ 1. tetikleme = 1", _bgs(ctx, "phone_step") === 1);
+  assert("E3.SAYAÇ 2. ardışık = 2", _bgs(ctx, "phone_step") === 2);
+  assert("E3.SAYAÇ farklı anahtar → 1'e döner", _bgs(ctx, "ai_fallback") === 1);
+  assert("E3.SAYAÇ eski anahtara dönüş → yine 1", _bgs(ctx, "phone_step") === 1);
+}
+for (const m of [_prm, _pbm2, _afr])
+  for (const l of ["tr", "en", "de", "fr", "es", "ru", "ar"])
+    assert(`E3.MSG ${l} mevcut`, typeof m[l] === "string" && m[l].length > 20);
+// Üç kademe BİRBİRİNDEN FARKLI (robotlaşma kilidi)
+import { PHONE_BROKEN_MSG as _pb1 } from "../supabase/functions/shared/constants/phone-rules.ts";
+assert("E3.FARK 1≠2", _pb1.tr !== _prm.tr);
+assert("E3.FARK 2≠3", _prm.tr !== _pbm2.tr);
+
 Deno.exit(fail === 0 ? 0 : 1);

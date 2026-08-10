@@ -35,6 +35,8 @@ import { detectSoftwareInquiry, SW_ACK, SW_ASK_DETAIL, SW_SAVED } from "../const
 import { detectSoftwareBridge, SW_BRIDGE, SW_BRIDGE_YES_RE, SW_BRIDGE_NO_RE } from "../constants/lead-detection.ts";
 // W7-FIX (2026-08-02) — telefon-adımı katı-doğrulama + kibar-red
 import { isBrokenPhoneAttempt, PHONE_BROKEN_MSG } from "../constants/phone-rules.ts";
+// E3-1+E4-2 (2026-08-10) — kademeli-red sayacı + alternatif metinler
+import { bumpGuardStreak, PHONE_RETRY_MSG, PHONE_BRIDGE_MSG, AI_FALLBACK_REPEAT_MSG } from "../constants/graded-reject.ts";
 import { detectOutOfScopeLead, isTourContextMessage, LEAD_ACK, LEAD_RESUME, LEAD_ASK_DETAIL, LEAD_ASK_DETAIL_PHONE, LEAD_SAVED, LEAD_FAILED } from "../constants/lead-detection.ts";
 // B-ATTR (W4 kökü, 2026-07-31) — tur-bağlamsız öznitelik sorusu tespiti + 7-dil metinler
 import { detectAttributeQuery, ATTR_HEADERS, ATTR_FOOTER, ATTR_MORE, ATTR_CHILD_LABELS, ATTR_NO_DATA } from "../constants/attribute-query.ts";
@@ -3402,6 +3404,39 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         return { success: true, response: _paxAckReply, newContext };
       }
     }
+    // ── E3-1 KADEMELİ-RED (2026-08-10): aynı red-döngüsüne giren müşteri
+    // artık üç kez aynı cümleyi GÖRMEZ. Anahtar "phone_step" hem W7-broken
+    // hem R6-jenerik redleri kapsar (müşteri için aynı döngü). Pax-ack yukarıda
+    // sayaçtan MUAF — o bir başarı-yolu, red değil.
+    {
+      const _grLang = newContext.language || "tr";
+      const _grCount = bumpGuardStreak(newContext as any, "phone_step");
+      if (_grCount >= 3) {
+        // 3. tetikleme: OTOMATİK KÖPRÜ — talep kanal-içi kayda geçer (W3-b checked).
+        const _ri3 = (newContext.reservationInfo || {}) as any;
+        const _grSummary =
+          `TELEFON-ADIMI KÖPRÜSÜ (müşteri 3 kez geçersiz numara yazdı) — Tur: ${_ri3.tourTitle || newContext.currentTour?.title || "?"} | ` +
+          `Tarih: ${_ri3.selectedDate || "?"} | Kişi: ${_ri3.paxAdult ?? "?"} | İsim: ${_ri3.fullName || "?"} | Son girdi: "${message.slice(0, 60)}"`;
+        const _grOk = await _insertComplaintChecked(supabase, {
+          agency_id: agency.id, phone: adapter.identifier, message: _grSummary, type: "contact_request",
+        });
+        const _grReply = _grOk
+          ? (PHONE_BRIDGE_MSG[_grLang] || PHONE_BRIDGE_MSG.tr)
+          : buildEscalationFailed(_grLang, _phonePublicSafe);
+        console.log(`[E3-1] phone_step 3. tetikleme → köprü (kayıt=${_grOk ? "ok" : "FAIL"})`);
+        await _save(_grReply, newContext);
+        await adapter.sendResponse(_grReply);
+        return { success: true, response: _grReply, newContext };
+      }
+      if (_grCount === 2) {
+        const _grReply = PHONE_RETRY_MSG[_grLang] || PHONE_RETRY_MSG.tr;
+        console.log("[E3-1] phone_step 2. tetikleme → yardım-içerikli alternatif");
+        await _save(_grReply, newContext);
+        await adapter.sendResponse(_grReply);
+        return { success: true, response: _grReply, newContext };
+      }
+      // count === 1 → mevcut metinler (aşağıda) aynen.
+    }
     // W7-FIX: eksik/hatalı NUMARA denemesi → format-örnekli kibar-red (7-dil,
     // tek kaynak phone-rules.ts) + adımda kalış. Eski jenerik "geçerli değil"
     // mesajı format örneği vermiyordu; müşteri neyi düzelteceğini bilemiyordu.
@@ -5536,7 +5571,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     console.log("[process-message] AI reply:", reply.substring(0, 80));
   } catch (_aiErr) {
     console.error("[process-message] AI call failed:", _aiErr);
-    reply = buildAIFallbackResponse(newContext, _phonePublicSafe); // W8: aynı-numara kuralı
+    // E4-2 (2026-08-10): 2.+ ARDIŞIK fallback'te "birkaç dakika sonra deneyin"
+    // vaadi YALAN oluyordu (Anthropic-kesintisi günü saatlerce aynı mesaj).
+    // Artık kayıt-gerçeğiyle uyumlu metin: mesaj whatsapp_conversations'a
+    // gerçekten düşüyor, "mesajınız bize ulaştı" doğru.
+    const _afCount = bumpGuardStreak(newContext as any, "ai_fallback");
+    reply = _afCount >= 2
+      ? (AI_FALLBACK_REPEAT_MSG[newContext.language || "tr"] || AI_FALLBACK_REPEAT_MSG.tr)
+      : buildAIFallbackResponse(newContext, _phonePublicSafe); // W8: aynı-numara kuralı
     await _save(reply, newContext);
     await adapter.sendResponse(reply);
     return { success: true, response: reply, newContext };
