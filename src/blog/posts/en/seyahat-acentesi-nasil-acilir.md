@@ -82,11 +82,7 @@ With a complete file, a realistic timeline looks like this: title approval takes
 
 ## The Most Common Mistakes of New Agencies
 
-We've collected the full list in a separate guide
-
-<!-- İÇ-LİNK M-10-hata: "Acente Açarken Yapılan 10 Hata" yazılınca buraya bağlanacak -->
-
-— but three deserve a mention here:
+We've collected the full list in [The 10 Mistakes New Travel Agencies Make](/en/blog/acente-acarken-yapilan-10-hata) — but three deserve a mention here:
 
 - **Treating the licence as the finish line.** The operating licence is a kick-off; finding customers, pricing and operations are the real marathon.
 - **Depending on a single channel.** Agencies that start with only their personal network or a single social media account struggle at the first slowdown.

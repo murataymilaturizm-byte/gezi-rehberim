@@ -82,9 +82,7 @@ Dosyanız eksiksizse gerçekçi takvim şöyledir: unvan onayı birkaç gün ile
 
 ## Yeni Acentelerin En Sık Yaptığı Hatalar
 
-Detaylı listeyi ayrı bir rehberde topladık
-
-<!-- İÇ-LİNK M-10-hata: "Acente Açarken Yapılan 10 Hata" yazılınca buraya bağlanacak -->, ama üçünü burada anmadan geçmeyelim:
+Detaylı listeyi [Acente Açarken Yapılan 10 Hata](/blog/acente-acarken-yapilan-10-hata) rehberinde topladık, ama üçünü burada anmadan geçmeyelim:
 
 - **Belgeyi bitiş çizgisi sanmak.** İşletme belgesi bir başlama vuruşudur; müşteri bulma, fiyatlama ve operasyon asıl maratondur.
 - **Tek kanala bağımlılık.** Yalnızca tanıdık çevresi veya yalnızca bir sosyal medya hesabıyla başlayan acenteler ilk durgunlukta zorlanır.

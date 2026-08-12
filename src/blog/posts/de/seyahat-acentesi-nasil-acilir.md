@@ -82,11 +82,7 @@ Mit vollständiger Akte sieht ein realistischer Zeitplan so aus: Titelfreigabe w
 
 ## Die häufigsten Fehler neuer Agenturen
 
-Die vollständige Liste haben wir in einem eigenen Leitfaden gesammelt
-
-<!-- İÇ-LİNK M-10-hata: "Acente Açarken Yapılan 10 Hata" yazılınca buraya bağlanacak -->
-
-— drei Fehler seien hier dennoch genannt:
+Die vollständige Liste steht in [Die 10 Fehler bei der Agenturgründung](/de/blog/acente-acarken-yapilan-10-hata) — drei Fehler seien hier dennoch genannt:
 
 - **Die Lizenz für die Ziellinie halten.** Die Betriebslizenz ist der Anstoß; Kundengewinnung, Preisgestaltung und Betrieb sind der eigentliche Marathon.
 - **Abhängigkeit von einem einzigen Kanal.** Agenturen, die nur mit dem Bekanntenkreis oder einem einzigen Social-Media-Konto starten, geraten bei der ersten Flaute in Schwierigkeiten.
