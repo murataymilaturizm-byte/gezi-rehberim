@@ -186,3 +186,61 @@ export const BLOG_CTA: Record<L, CtaTexts> = {
 export function ctaTexts(lang: string): CtaTexts {
   return BLOG_CTA[(lang as L)] ?? BLOG_CTA.en;
 }
+
+// ─── SEO-M1 (2026-08-12): FAQ-SCHEMA — GENEL YETENEK ───────────────────────
+// "## SSS / FAQ / Häufig gestellte Fragen…" bölümünden otomatik parse edilir
+// (frontmatter'da duplikasyon YOK — içerik tek kaynak). Desen: bölüm içindeki
+// **kalın** satır = soru, takip eden metin (bir sonraki kalın satıra ya da
+// bölüm sonuna dek) = cevap. FAQPage JSON-LD, Article'ın YANINA @graph ile
+// eklenir — GEO/AI-görünürlük: AI-crawler'ların alıntıladığı format.
+const FAQ_HEADING_RE =
+  /^(sık sorulan sorular|sss|frequently asked questions|faq|häufig gestellte fragen|questions fréquentes|preguntas frecuentes|часто задаваемые вопросы|الأسئلة الشائعة)/i;
+
+export interface FaqItem { question: string; answer: string; }
+
+export function extractFaq(markdown: string): FaqItem[] {
+  const lines = markdown.split("\n");
+  let inFaq = false;
+  const items: FaqItem[] = [];
+  let q: string | null = null;
+  let a: string[] = [];
+  const push = () => {
+    // HTML-yorumları (iç-link işaretleri) ve markdown-kalıntıları cevaptan temizlenir —
+    // ilk prerender'da <!-- İÇ-LİNK --> işareti FAQ-schema cevabına sızmıştı.
+    const answer = a.join(" ")
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .replace(/\*\*/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (q && answer) items.push({ question: q, answer });
+    q = null; a = [];
+  };
+  for (const line of lines) {
+    const h = line.match(/^(#{2,3})\s+(.+?)\s*$/);
+    if (h) {
+      if (inFaq) { push(); break; }               // FAQ bölümü bitti
+      const clean = h[2].replace(/\*\*/g, "").replace(/\(.*\)\s*$/, "").trim();
+      if (FAQ_HEADING_RE.test(clean)) inFaq = true;
+      continue;
+    }
+    if (!inFaq) continue;
+    if (/^---\s*$/.test(line.trim())) { push(); break; }   // dipnot ayracı
+    const bold = line.match(/^\*\*(.+?)\*\*\s*$/);
+    if (bold) { push(); q = bold[1].replace(/^\d+\.\s*/, "").trim(); continue; }
+    if (q && line.trim()) a.push(line.trim());
+  }
+  push();
+  return items;
+}
+
+export function buildFaqSchema(items: FaqItem[]): object | null {
+  if (items.length === 0) return null;
+  return {
+    "@type": "FAQPage",
+    "mainEntity": items.map((f) => ({
+      "@type": "Question",
+      "name": f.question,
+      "acceptedAnswer": { "@type": "Answer", "text": f.answer },
+    })),
+  };
+}

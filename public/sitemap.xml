@@ -138,7 +138,37 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Blog yazıları (18 yazı, 90 URL girişi) -->
+  <!-- Blog yazıları (19 yazı, 93 URL girişi) -->
+  <url>
+    <loc>https://turzzai.com/blog/seyahat-acentesi-nasil-acilir</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/seyahat-acentesi-nasil-acilir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/seyahat-acentesi-nasil-acilir"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/seyahat-acentesi-nasil-acilir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/seyahat-acentesi-nasil-acilir"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/en/blog/seyahat-acentesi-nasil-acilir</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/seyahat-acentesi-nasil-acilir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/seyahat-acentesi-nasil-acilir"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/seyahat-acentesi-nasil-acilir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/seyahat-acentesi-nasil-acilir"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/de/blog/seyahat-acentesi-nasil-acilir</loc>
+    <lastmod>2026-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/seyahat-acentesi-nasil-acilir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/seyahat-acentesi-nasil-acilir"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/seyahat-acentesi-nasil-acilir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/seyahat-acentesi-nasil-acilir"/>
+  </url>
   <url>
     <loc>https://turzzai.com/blog/ai-chatbot-ile-tur-satisini-nasil-arttirirsiniz</loc>
     <lastmod>2026-05-07</lastmod>

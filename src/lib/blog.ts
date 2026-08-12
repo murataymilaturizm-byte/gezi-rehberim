@@ -110,6 +110,10 @@ const LANG_MODULES: Record<string, Record<string, string>> = {
 
 function parsePost(raw: string, slug: string, lang: string, isFallback = false, originalLang?: string): BlogPost {
   const { data, content } = parseFrontmatter(raw);
+  // SEO-M1: HTML-yorumları (iç-link işaretleri vb.) render'a GİTMEZ —
+  // react-markdown yorumu escape'li GÖRÜNÜR metin basıyordu. Kaynak .md'de
+  // işaret durur (M2/M4/M5 bağlanırken görülür), içerikten burada temizlenir.
+  const cleanContent = content.replace(/<!--[\s\S]*?-->/g, "");
   const wordCount = content.split(/\s+/).length;
 
   return {
@@ -124,7 +128,7 @@ function parsePost(raw: string, slug: string, lang: string, isFallback = false, 
     readingTime: (data.readingTime as number) ?? Math.ceil(wordCount / 200),
     updated:     data.updated ? String(data.updated) : undefined,
     wordCount,
-    content,
+    content: cleanContent,
     lang,
     isFallback,
     originalLang,

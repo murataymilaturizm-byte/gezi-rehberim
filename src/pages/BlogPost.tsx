@@ -13,7 +13,7 @@ import { BlogCoverImage } from "@/components/BlogCoverImage";
 // SEO-1 (2026-08-12): anatomi tek-kaynak — TOC/CTA/paylaşım/okuma-süresi.
 // Şablon TEK olduğu için 84+ posta otomatik uygulanır; prerender statik kalır
 // (TOC <details> vanilla, CTA'lar akış-içi statik kutular → CLS üretmez).
-import { extractToc, splitForMidCta, slugifyHeading, ctaTexts, DEMO_WA_URL, SIGNUP_URL } from "@/lib/blog-anatomy";
+import { extractToc, splitForMidCta, slugifyHeading, ctaTexts, DEMO_WA_URL, SIGNUP_URL, extractFaq, buildFaqSchema } from "@/lib/blog-anatomy";
 
 const SUPPORTED_LANGS = ["tr", "en", "de", "ru", "ar", "fr", "es"];
 
@@ -214,9 +214,12 @@ export default function BlogPost() {
   const dateLocale = DATE_LOCALES[lang] || "en-GB";
   const availableLangs = getAvailableLangsForSlug(slug);
 
+  // SEO-M1: "## SSS/FAQ" bölümü varsa FAQPage JSON-LD, Article'ın YANINA
+  // @graph ile eklenir (GEO/AI-görünürlük). Genel yetenek — her post kullanır.
+  const faqSchema = buildFaqSchema(extractFaq(post.content));
+
   // SEO-1: dateModified/timeRequired/wordCount ile zenginleştirildi.
-  const schema = {
-    "@context": "https://schema.org",
+  const articleSchema = {
     "@type": "Article",
     "headline": post.title,
     "description": post.description,
@@ -225,10 +228,15 @@ export default function BlogPost() {
     "publisher": { "@type": "Organization", "name": "Turzz AI", "url": "https://turzzai.com" },
     "datePublished": post.date,
     "dateModified": post.updated || post.date,
-    "timeRequired": `PT${post.readingTime}M`,
+    // frontmatter readingTime "13 dk" gibi STRING olabiliyor → sayıyı ayıkla
+    "timeRequired": `PT${parseInt(String(post.readingTime), 10) || 5}M`,
     "wordCount": post.wordCount,
     "keywords": post.tags.join(", "),
     "inLanguage": post.lang,
+  };
+  const schema = {
+    "@context": "https://schema.org",
+    "@graph": faqSchema ? [articleSchema, faqSchema] : [articleSchema],
   };
 
   // SEO-1: anatomi hesapları (build-time; prerender'da statik HTML'e gömülür).
