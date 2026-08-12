@@ -89,7 +89,7 @@ function getBlogPosts() {
 
     posts.push({
       slug:           fm.slug,
-      lastmod:        fm.date || TODAY,
+      lastmod:        fm.updated || fm.date || TODAY, // SEO-1: updated öncelikli
       availableLangs,
     });
   }

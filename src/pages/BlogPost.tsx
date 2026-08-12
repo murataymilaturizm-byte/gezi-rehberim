@@ -7,9 +7,13 @@ import { Layout } from "@/components/Layout";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, ArrowLeft, Share2, Tag, AlertCircle } from "lucide-react";
+import { Calendar, Clock, ArrowLeft, Share2, Tag, AlertCircle, List, MessageCircle, Linkedin } from "lucide-react";
 import { getPostBySlug, getAllPosts, getAvailableLangsForSlug, type BlogPost } from "@/lib/blog";
 import { BlogCoverImage } from "@/components/BlogCoverImage";
+// SEO-1 (2026-08-12): anatomi tek-kaynak — TOC/CTA/paylaşım/okuma-süresi.
+// Şablon TEK olduğu için 84+ posta otomatik uygulanır; prerender statik kalır
+// (TOC <details> vanilla, CTA'lar akış-içi statik kutular → CLS üretmez).
+import { extractToc, splitForMidCta, slugifyHeading, ctaTexts, DEMO_WA_URL, SIGNUP_URL } from "@/lib/blog-anatomy";
 
 const SUPPORTED_LANGS = ["tr", "en", "de", "ru", "ar", "fr", "es"];
 
@@ -48,32 +52,144 @@ function getLangDisplayName(uiLang: string, targetLang: string): string {
   return LANG_DISPLAY_NAMES[uiLang]?.[targetLang] ?? targetLang.toUpperCase();
 }
 
-function RelatedPosts({ current, lang }: { current: BlogPost; lang: string }) {
+// SEO-1: ilgili-yazılar artık makale SONUNDA 3 KART. Eşleştirme bilinçli basit:
+// aynı kategori; yetmezse EN YENİ postlarla doldurulur (benzerlik algoritması YOK).
+function RelatedPostCards({ current, lang }: { current: BlogPost; lang: string }) {
   const { t } = useTranslation();
-  const related = getAllPosts(lang)
-    .filter((p) => p.slug !== current.slug && p.category === current.category)
-    .slice(0, 3);
+  const all = getAllPosts(lang).filter((p) => p.slug !== current.slug);
+  const sameCat = all.filter((p) => p.category === current.category);
+  const fill = all.filter((p) => p.category !== current.category);
+  const related = [...sameCat, ...fill].slice(0, 3);
   if (related.length === 0) return null;
   return (
-    <aside>
-      <h3 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wider">
-        {t("blog.post.relatedPosts")}
-      </h3>
-      <ul className="space-y-3">
+    <section className="mt-10 pt-8 border-t border-border">
+      <h2 className="font-bold text-foreground mb-4 text-lg">{ctaTexts(lang).relatedTitle}</h2>
+      <div className="grid sm:grid-cols-3 gap-4">
         {related.map((p) => (
-          <li key={p.slug}>
-            <Link to={buildBlogUrl(lang, p.slug)} className="block group">
-              <p className="text-sm font-medium text-foreground group-hover:text-orange-500 transition-colors line-clamp-2">{p.title}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {t("blog.minutesRead", { count: p.readingTime })}
-              </p>
-            </Link>
-          </li>
+          <Link key={p.slug} to={buildBlogUrl(lang, p.slug)}
+            className="block group rounded-xl border border-border bg-card p-4 hover:border-orange-300 hover:shadow-sm transition-all">
+            <Badge variant="outline" className="text-[10px] mb-2">{p.category}</Badge>
+            <p className="text-sm font-semibold text-foreground group-hover:text-orange-500 transition-colors line-clamp-2 min-h-[2.5rem]">{p.title}</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              {t("blog.minutesRead", { count: p.readingTime })}
+            </p>
+          </Link>
         ))}
-      </ul>
-    </aside>
+      </div>
+    </section>
   );
 }
+
+// SEO-1: TOC — mobil <details> (varsayılan KAPALI, vanilla, JS'siz), desktop
+// hep-açık ayrı <nav>. Tek <details>'i CSS ile desktop'ta zorla açmak modern
+// Chrome'da çalışmıyor (content-visibility:hidden) → iki küçük render bilinçli.
+function TocBlock({ items, lang }: { items: ReturnType<typeof extractToc>; lang: string }) {
+  if (items.length < 2) return null;
+  const T = ctaTexts(lang);
+  const List_ = (
+    <ol className="space-y-1.5 text-sm">
+      {items.map((h) => (
+        <li key={h.id} className={h.level === 3 ? "ml-4" : ""}>
+          <a href={`#${h.id}`} className="text-muted-foreground hover:text-orange-500 transition-colors">
+            {h.text}
+          </a>
+        </li>
+      ))}
+    </ol>
+  );
+  return (
+    <>
+      <details className="lg:hidden mb-6 rounded-xl border border-border bg-muted/40 px-4 py-3">
+        <summary className="flex items-center gap-2 text-sm font-semibold text-foreground cursor-pointer select-none">
+          <List className="w-4 h-4" /> {T.tocTitle}
+        </summary>
+        <div className="mt-3">{List_}</div>
+      </details>
+      <nav aria-label={T.tocTitle} className="hidden lg:block mb-8 rounded-xl border border-border bg-muted/40 px-5 py-4">
+        <p className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
+          <List className="w-4 h-4" /> {T.tocTitle}
+        </p>
+        {List_}
+      </nav>
+    </>
+  );
+}
+
+// SEO-1: paylaşım — WhatsApp + LinkedIn (hafif, statik <a>).
+function ShareRow({ url, title, lang, compact }: { url: string; title: string; lang: string; compact?: boolean }) {
+  const T = ctaTexts(lang);
+  const wa = `https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`;
+  const li = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+  return (
+    <div className={`flex gap-2 ${compact ? "" : "mt-4"}`}>
+      <Button asChild variant="outline" size="sm">
+        <a href={wa} target="_blank" rel="noopener noreferrer" aria-label={T.shareWhatsApp}>
+          <MessageCircle className="w-4 h-4 mr-1 text-green-600" /> WhatsApp
+        </a>
+      </Button>
+      <Button asChild variant="outline" size="sm">
+        <a href={li} target="_blank" rel="noopener noreferrer" aria-label={T.shareLinkedIn}>
+          <Linkedin className="w-4 h-4 mr-1 text-sky-600" /> LinkedIn
+        </a>
+      </Button>
+    </div>
+  );
+}
+
+// SEO-1: makale-ORTASI kompakt CTA — sabit yapı (rezerve alan, CLS üretmez).
+function MidCta({ lang }: { lang: string }) {
+  const T = ctaTexts(lang);
+  return (
+    <div className="my-8 rounded-xl border-2 border-orange-200 dark:border-orange-900 bg-orange-50 dark:bg-orange-950 px-5 py-4 not-prose">
+      <p className="text-sm font-semibold text-foreground mb-3">{T.midTitle}</p>
+      <div className="flex flex-wrap gap-2">
+        <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+          <a href={DEMO_WA_URL} target="_blank" rel="noopener noreferrer">
+            <MessageCircle className="w-4 h-4 mr-1" /> {T.midBtn}
+          </a>
+        </Button>
+        <Button asChild size="sm" variant="outline">
+          <Link to={SIGNUP_URL}>{T.midSecondary}</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// SEO-1: makale-SONU tam-genişlik dönüşüm kutusu.
+function EndCta({ lang }: { lang: string }) {
+  const T = ctaTexts(lang);
+  return (
+    <div className="mt-10 rounded-2xl border-2 border-orange-300 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950 dark:to-amber-950 px-6 py-6 text-center">
+      <h2 className="text-xl font-bold text-foreground mb-2">{T.endTitle}</h2>
+      <p className="text-sm text-muted-foreground max-w-xl mx-auto mb-4">{T.endDesc}</p>
+      <div className="flex flex-wrap justify-center gap-3">
+        <Button asChild className="bg-green-600 hover:bg-green-700 text-white">
+          <a href={DEMO_WA_URL} target="_blank" rel="noopener noreferrer">
+            <MessageCircle className="w-4 h-4 mr-2" /> {T.endBtn}
+          </a>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to={SIGNUP_URL}>{T.endSecondary}</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// SEO-1: H2/H3'e otomatik id — TOC anchor'ları. Hiyerarşi DEĞİŞMEZ (yalnız id).
+function headingText(children: unknown): string {
+  if (typeof children === "string") return children;
+  if (Array.isArray(children)) return children.map(headingText).join("");
+  if (children && typeof children === "object" && "props" in (children as any)) {
+    return headingText((children as any).props?.children);
+  }
+  return "";
+}
+const MD_COMPONENTS = {
+  h2: ({ children }: any) => <h2 id={slugifyHeading(headingText(children))}>{children}</h2>,
+  h3: ({ children }: any) => <h3 id={slugifyHeading(headingText(children))}>{children}</h3>,
+};
 
 export default function BlogPost() {
   const { t, i18n } = useTranslation();
@@ -98,6 +214,7 @@ export default function BlogPost() {
   const dateLocale = DATE_LOCALES[lang] || "en-GB";
   const availableLangs = getAvailableLangsForSlug(slug);
 
+  // SEO-1: dateModified/timeRequired/wordCount ile zenginleştirildi.
   const schema = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -107,9 +224,17 @@ export default function BlogPost() {
     "author": { "@type": "Organization", "name": post.author },
     "publisher": { "@type": "Organization", "name": "Turzz AI", "url": "https://turzzai.com" },
     "datePublished": post.date,
+    "dateModified": post.updated || post.date,
+    "timeRequired": `PT${post.readingTime}M`,
+    "wordCount": post.wordCount,
     "keywords": post.tags.join(", "),
     "inLanguage": post.lang,
   };
+
+  // SEO-1: anatomi hesapları (build-time; prerender'da statik HTML'e gömülür).
+  const toc = extractToc(post.content);
+  const [contentA, contentB] = splitForMidCta(post.content);
+  const T = ctaTexts(lang);
 
   // Hreflang: her dil kendi URL'ine işaret eder (artık tümü aynı URL değil)
   const hreflangLinks = [
@@ -181,6 +306,11 @@ export default function BlogPost() {
                   <Clock className="w-4 h-4" />
                   {t("blog.minutesRead", { count: post.readingTime })}
                 </span>
+                {post.updated && (
+                  <span className="flex items-center gap-1">
+                    {T.updatedLabel}: {new Date(post.updated).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                )}
                 <span>{post.author}</span>
                 {post.isFallback && (
                   <Badge variant="outline" className="text-xs border-amber-400 text-amber-600">
@@ -190,13 +320,17 @@ export default function BlogPost() {
               </div>
             </header>
 
+            <ShareRow url={shareUrl} title={post.title} lang={lang} compact />
+
             <BlogCoverImage
               title={post.title}
               category={post.category}
               image={post.image}
               size="hero"
-              className="mb-8"
+              className="mb-8 mt-4"
             />
+
+            <TocBlock items={toc} lang={lang} />
 
             <div className="prose prose-lg prose-slate dark:prose-invert max-w-none
               prose-h1:text-3xl prose-h1:font-bold prose-h1:text-foreground
@@ -212,10 +346,20 @@ export default function BlogPost() {
               prose-li:text-foreground/80
               prose-img:rounded-lg prose-img:w-full
               prose-hr:border-border">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {post.content}
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD_COMPONENTS}>
+                {contentA}
               </ReactMarkdown>
+              {contentB && (
+                <>
+                  <MidCta lang={lang} />
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={MD_COMPONENTS}>
+                    {contentB}
+                  </ReactMarkdown>
+                </>
+              )}
             </div>
+
+            <EndCta lang={lang} />
 
             <div className="flex flex-wrap gap-2 mt-8 pt-6 border-t border-border">
               {post.tags.map((tag) => (
@@ -225,7 +369,7 @@ export default function BlogPost() {
               ))}
             </div>
 
-            <div className="flex gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-4 items-center">
               <Button
                 variant="outline"
                 size="sm"
@@ -233,11 +377,13 @@ export default function BlogPost() {
               >
                 <Share2 className="w-4 h-4 mr-1" /> {t("blog.post.share")}
               </Button>
+              <ShareRow url={shareUrl} title={post.title} lang={lang} compact />
             </div>
+
+            <RelatedPostCards current={post} lang={lang} />
           </article>
 
           <aside className="lg:w-72 space-y-8">
-            <RelatedPosts current={post} lang={lang} />
 
             <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-900 rounded-xl p-5">
               <h3 className="font-semibold text-foreground mb-2 text-sm">{t("blog.post.ctaTitle")}</h3>

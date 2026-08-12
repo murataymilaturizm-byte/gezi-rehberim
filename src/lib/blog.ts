@@ -10,6 +10,9 @@ export interface BlogPost {
   image: string;
   author: string;
   readingTime: number;
+  /** SEO-1: opsiyonel güncelleme tarihi (frontmatter `updated`) — schema dateModified */
+  updated?: string;
+  wordCount: number;
   content: string;
   lang: string;
   isFallback?: boolean;
@@ -119,6 +122,8 @@ function parsePost(raw: string, slug: string, lang: string, isFallback = false, 
     image:       (data.image as string)       ?? "/blog/default.jpg",
     author:      (data.author as string)      ?? "Turzz AI",
     readingTime: (data.readingTime as number) ?? Math.ceil(wordCount / 200),
+    updated:     data.updated ? String(data.updated) : undefined,
+    wordCount,
     content,
     lang,
     isFallback,
