@@ -49,7 +49,7 @@ In this article you'll find the 10 traps new agencies fall into most, with a pra
 
 **The reality:** One channel is one point of failure. The Instagram account gets restricted, word-of-mouth dries up with the season, the partner changes terms — and sales go to zero overnight.
 
-**The fix:** A three-legged channel plan from day one: ① social media + targeted ads, ② Google (business profile + a findable website), ③ a WhatsApp line as the direct contact channel. The legs don't have to be equal; they have to exist. For the channel roadmap, <!-- İÇ-LİNK M5: "İnternetten Tur Satışı Rehberi" yazılınca buraya bağlanacak --> our online-sales guide will show the way.
+**The fix:** A three-legged channel plan from day one: ① social media + targeted ads, ② Google (business profile + a findable website), ③ a WhatsApp line as the direct contact channel. The legs don't have to be equal; they have to exist. For the channel roadmap, [our online-sales guide](/en/blog/internetten-tur-satisi-nasil-yapilir) will show the way.
 
 ## 5. Replying Late to Incoming Messages — the Most Expensive Mistake
 

@@ -87,7 +87,7 @@ These five questions show the difference between a shiny landing page and a matu
 | You can't keep up; night/foreign customers slip away | WhatsApp assistant — today |
 | Low volume so far, you need order first | The WhatsApp Business app first — [setup guide](/en/blog/acenteler-icin-whatsapp-business-kurulumu) — then the assistant at the ceiling |
 | Very high site traffic, information-heavy questions | Web chatbot + a WhatsApp bridge on the site |
-| You're just building online sales | A channel roadmap first <!-- İÇ-LİNK M5: "İnternetten Tur Satışı Rehberi" yazılınca buraya bağlanacak --> |
+| You're just building online sales | A channel roadmap first — [How to Sell Tours Online](/en/blog/internetten-tur-satisi-nasil-yapilir) |
 
 ## Frequently Asked Questions (FAQ)
 

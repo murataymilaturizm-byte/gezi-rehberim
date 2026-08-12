@@ -49,7 +49,7 @@ Bu yazıda, yeni acentelerin en sık düştüğü 10 tuzağı ve her biri için 
 
 **Gerçek:** Tek kanal, tek arıza noktasıdır. Instagram hesabı kısıtlanır, çevre-referansı sezonla kurur, ortak acente koşul değiştirir — ve satış bir gecede sıfırlanır.
 
-**Çözüm:** İlk günden en az üç bacaklı kanal planı: ① sosyal medya + hedefli reklam, ② Google (işletme profili + aranabilir bir site), ③ doğrudan iletişim kanalı olarak WhatsApp hattı. Üç bacağın ölçüsü eşit olmak zorunda değil; var olması yeter. Kanal kurulumunun yol haritası için <!-- İÇ-LİNK M5: "İnternetten Tur Satışı Rehberi" yazılınca buraya bağlanacak --> rehberimiz yol gösterecek.
+**Çözüm:** İlk günden en az üç bacaklı kanal planı: ① sosyal medya + hedefli reklam, ② Google (işletme profili + aranabilir bir site), ③ doğrudan iletişim kanalı olarak WhatsApp hattı. Üç bacağın ölçüsü eşit olmak zorunda değil; var olması yeter. Kanal kurulumunun yol haritası için [İnternetten Tur Satışı rehberimiz](/blog/internetten-tur-satisi-nasil-yapilir) yol gösterecek.
 
 ## 5. Gelen Mesajlara Geç Dönmek — En Pahalı Hata
 

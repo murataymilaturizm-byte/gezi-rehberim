@@ -128,7 +128,7 @@ In der Praxis werden Limited- oder Aktiengesellschaften bevorzugt, und die Satzu
 Auch bestehende Agenturen zahlen je Filiale eine Aufnahmegebühr (2026 in gleicher Höhe wie die Zentrale). Als Verkaufsagentur einer Gruppe-A-Agentur zu arbeiten kann ein Einstieg ohne Lizenzkosten sein — dann dürfen Sie aber keine eigenen Touren veranstalten.
 
 **10. Braucht der Online-Verkauf eine Extra-Genehmigung?**
-Eine separate „E-Commerce-Lizenz" gibt es nicht; die Betriebslizenz deckt die Kanäle ab. Es gelten jedoch E-Commerce-Pflichten wie Fernabsatzvertrag, Vorabinformation und Widerrufsbedingungen. <!-- İÇ-LİNK M5: "İnternetten Tur Satışı Rehberi" yazılınca buraya bağlanacak -->
+Eine separate „E-Commerce-Lizenz" gibt es nicht; die Betriebslizenz deckt die Kanäle ab. Es gelten jedoch E-Commerce-Pflichten wie Fernabsatzvertrag, Vorabinformation und Widerrufsbedingungen. Details in [unserem Leitfaden zum Online-Tourenverkauf](/de/blog/internetten-tur-satisi-nasil-yapilir).
 
 **11. Kann ein Ausländer in der Türkei eine Agentur gründen?**
 Ja, über eine in der Türkei gegründete Gesellschaft; für Beteiligungs- und Arbeitserlaubnisfragen empfiehlt sich rechtliche Beratung.

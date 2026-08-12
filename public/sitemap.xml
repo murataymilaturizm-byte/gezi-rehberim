@@ -138,7 +138,37 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Blog yazıları (22 yazı, 102 URL girişi) -->
+  <!-- Blog yazıları (23 yazı, 105 URL girişi) -->
+  <url>
+    <loc>https://turzzai.com/blog/internetten-tur-satisi-nasil-yapilir</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/internetten-tur-satisi-nasil-yapilir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/internetten-tur-satisi-nasil-yapilir"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/internetten-tur-satisi-nasil-yapilir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/internetten-tur-satisi-nasil-yapilir"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/en/blog/internetten-tur-satisi-nasil-yapilir</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/internetten-tur-satisi-nasil-yapilir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/internetten-tur-satisi-nasil-yapilir"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/internetten-tur-satisi-nasil-yapilir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/internetten-tur-satisi-nasil-yapilir"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/de/blog/internetten-tur-satisi-nasil-yapilir</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/internetten-tur-satisi-nasil-yapilir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/internetten-tur-satisi-nasil-yapilir"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/internetten-tur-satisi-nasil-yapilir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/internetten-tur-satisi-nasil-yapilir"/>
+  </url>
   <url>
     <loc>https://turzzai.com/blog/acente-acarken-yapilan-10-hata</loc>
     <lastmod>2026-08-19</lastmod>

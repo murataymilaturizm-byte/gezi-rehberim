@@ -127,7 +127,7 @@ Uygulamada acentelik için limited veya anonim şirket tercih edilir ve ana söz
 Şube açan mevcut acenteler için de şube başına üye kayıt ücreti ödenir (2026'da merkez ile aynı tutardır). Bir A grubu acentenin satış acentesi olarak çalışmak ise belge maliyetine girmeden sektöre giriş yolu olabilir — ancak bu durumda kendi adınıza tur düzenleyemezsiniz.
 
 **10. İnternetten tur satmak için ekstra izin gerekir mi?**
-Ayrı bir "e-ticaret belgesi" yoktur; işletme belgeniz kanalları kapsar. Ancak mesafeli satış sözleşmesi, ön bilgilendirme formu ve iade koşulları gibi e-ticaret mevzuatı yükümlülükleri geçerlidir <!-- İÇ-LİNK M5: "İnternetten Tur Satışı Rehberi" yazılınca buraya bağlanacak -->.
+Ayrı bir "e-ticaret belgesi" yoktur; işletme belgeniz kanalları kapsar. Ancak mesafeli satış sözleşmesi, ön bilgilendirme formu ve iade koşulları gibi e-ticaret mevzuatı yükümlülükleri geçerlidir Ayrıntılar için [İnternetten Tur Satışı rehberimize](/blog/internetten-tur-satisi-nasil-yapilir) bakın..
 
 **11. Yabancı uyruklu biri Türkiye'de acente açabilir mi?**
 Evet, Türkiye'de kurulu bir şirket üzerinden mümkündür; ortaklık ve çalışma izni boyutları için mevzuat danışmanlığı almanız önerilir.

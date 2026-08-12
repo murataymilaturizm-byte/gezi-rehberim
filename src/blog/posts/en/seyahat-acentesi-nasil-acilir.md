@@ -128,7 +128,7 @@ In practice, limited or joint-stock companies are preferred, and the "travel age
 Existing agencies opening a branch also pay a registration fee per branch (in 2026, the same amount as the head office). Working as a sales agent of a Group A agency can be a way into the sector without licence costs — but then you cannot organise tours in your own name.
 
 **10. Do I need an extra permit to sell tours online?**
-There is no separate "e-commerce licence"; your operating licence covers the channels. However, e-commerce law obligations such as distance sales contracts, pre-information forms and refund terms apply. <!-- İÇ-LİNK M5: "İnternetten Tur Satışı Rehberi" yazılınca buraya bağlanacak -->
+There is no separate "e-commerce licence"; your operating licence covers the channels. However, e-commerce law obligations such as distance sales contracts, pre-information forms and refund terms apply. For details, see [our guide to selling tours online](/en/blog/internetten-tur-satisi-nasil-yapilir).
 
 **11. Can a foreign national open an agency in Türkiye?**
 Yes, through a company established in Türkiye; regulatory advice is recommended for the partnership and work-permit aspects.

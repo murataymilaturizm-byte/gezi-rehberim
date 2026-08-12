@@ -87,7 +87,7 @@ Bu beş soru, parlak tanıtım sayfası ile olgun ürün arasındaki farkı beş
 | Mesajlara yetişemiyorsunuz, gece/yabancı müşteri kaçıyor | WhatsApp asistanı — bugün |
 | Henüz düşük hacim, düzen arıyorsunuz | Önce WhatsApp Business uygulaması — [kurulum rehberi](/blog/acenteler-icin-whatsapp-business-kurulumu), tavana gelince asistan |
 | Site trafiği çok yüksek, bilgi-yoğun sorular | Web chatbot'u + sitede WhatsApp köprüsü |
-| İnternetten satışı yeni kuruyorsunuz | Kanal planı için yol haritası <!-- İÇ-LİNK M5: "İnternetten Tur Satışı Rehberi" yazılınca buraya bağlanacak --> |
+| İnternetten satışı yeni kuruyorsunuz | Kanal planı için [İnternetten Tur Satışı yol haritası](/blog/internetten-tur-satisi-nasil-yapilir) |
 
 ## Sık Sorulan Sorular (SSS)
 

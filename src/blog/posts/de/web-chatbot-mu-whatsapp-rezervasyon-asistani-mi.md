@@ -87,7 +87,7 @@ Diese fünf Fragen zeigen in fünf Minuten den Unterschied zwischen glänzender 
 | Sie kommen nicht hinterher; Nacht-/Auslandskunden gehen verloren | WhatsApp-Assistent — heute |
 | Noch geringes Volumen, erst Ordnung nötig | Zuerst die WhatsApp-Business-App — [Einrichtungsleitfaden](/de/blog/acenteler-icin-whatsapp-business-kurulumu) — am Limit dann der Assistent |
 | Sehr hoher Seitentraffic, informationslastige Fragen | Web-Chatbot + WhatsApp-Brücke auf der Seite |
-| Sie bauen den Online-Verkauf gerade erst auf | Erst ein Kanalfahrplan <!-- İÇ-LİNK M5: "İnternetten Tur Satışı Rehberi" yazılınca buraya bağlanacak --> |
+| Sie bauen den Online-Verkauf gerade erst auf | Erst ein Kanalfahrplan — [Touren online verkaufen](/de/blog/internetten-tur-satisi-nasil-yapilir) |
 
 ## Häufig gestellte Fragen (FAQ)
 

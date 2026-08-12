@@ -49,7 +49,7 @@ In diesem Beitrag finden Sie die 10 häufigsten Fallen neuer Agenturen — mit e
 
 **Die Realität:** Ein Kanal ist ein einziger Ausfallpunkt. Das Instagram-Konto wird eingeschränkt, die Mundpropaganda versiegt mit der Saison, der Partner ändert die Konditionen — und der Verkauf fällt über Nacht auf null.
 
-**Die Lösung:** Vom ersten Tag an ein dreibeiniger Kanalplan: ① Social Media + gezielte Werbung, ② Google (Unternehmensprofil + auffindbare Website), ③ eine WhatsApp-Linie als direkter Kontaktkanal. Die Beine müssen nicht gleich groß sein; sie müssen existieren. Für den Kanalfahrplan <!-- İÇ-LİNK M5: "İnternetten Tur Satışı Rehberi" yazılınca buraya bağlanacak --> weist unser Online-Verkaufsleitfaden den Weg.
+**Die Lösung:** Vom ersten Tag an ein dreibeiniger Kanalplan: ① Social Media + gezielte Werbung, ② Google (Unternehmensprofil + auffindbare Website), ③ eine WhatsApp-Linie als direkter Kontaktkanal. Die Beine müssen nicht gleich groß sein; sie müssen existieren. Für den Kanalfahrplan weist [unser Online-Verkaufsleitfaden](/de/blog/internetten-tur-satisi-nasil-yapilir) den Weg.
 
 ## 5. Späte Antworten auf eingehende Nachrichten — der teuerste Fehler
 
