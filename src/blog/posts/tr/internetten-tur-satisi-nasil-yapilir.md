@@ -61,7 +61,7 @@ Hangi basamakta olursanız olun iki kural değişmez: **kaporasız kesin rezerva
 
 **2. Hafta — İçerik ve vitrin:** Her tur için satış sayfası/katalog kartı (kapak görseli + program + fiyat + SSS), sosyal medya profillerinin doldurulması, ilk 9-12 içerik (tur kareleri, destinasyon bilgisi, "bize sorulan sorular"), tüm profillere tek tık WhatsApp linki.
 
-**3. Hafta — İlk trafik:** Küçük bütçeli hedefli reklam (tek tur, tek hedef kitle — dağılmayın), tıklamanın **doğrudan WhatsApp sohbetine** düşmesi (araya form koymayın), çevre-referans duyurusu ("acentemiz açıldı" değil, "X turumuz için erken rezervasyon açıldı" — ürün duyurusu, kuruluş duyurusundan iyi satar).
+**3. Hafta — İlk trafik:** Küçük bütçeli hedefli reklam (tek tur, tek hedef kitle — dağılmayın; kampanya-kurgusu için [Meta Reklam Rehberimize](/blog/acenteler-icin-meta-reklam-rehberi) bakın), tıklamanın **doğrudan WhatsApp sohbetine** düşmesi (araya form koymayın), çevre-referans duyurusu ("acentemiz açıldı" değil, "X turumuz için erken rezervasyon açıldı" — ürün duyurusu, kuruluş duyurusundan iyi satar).
 
 **4. Hafta — Ölçüm ve düzeltme:** Kaç kişi yazdı, kaçı fiyat sordu, kaçı rezervasyona döndü, kopanlar hangi adımda koptu? İlk ayın verisi küçüktür ama yönü gösterir: mesaj çoksa-satış azsa sorun cevap kalitesinde/hızında; tıklama çoksa-mesaj azsa sorun reklam-vaat uyumunda. Düzeltip ikinci ayı büyütün.
 

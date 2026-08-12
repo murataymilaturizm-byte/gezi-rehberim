@@ -61,7 +61,7 @@ Whichever rung you are on, two rules never change: **don't give firm bookings wi
 
 **Week 2 — Content and shop window:** A sales page/catalogue card per tour (cover image + programme + price + FAQ), social profiles completed, the first 9-12 posts (tour shots, destination facts, "questions we get asked"), a one-click WhatsApp link on every profile.
 
-**Week 3 — First traffic:** A small-budget targeted ad (one tour, one audience — don't scatter), the click landing **directly in a WhatsApp chat** (don't put a form in between), and the network announcement ("early booking is open for our X tour" — a product announcement sells better than a founding announcement).
+**Week 3 — First traffic:** A small-budget targeted ad (one tour, one audience — don't scatter; for the campaign setup see [our Meta Ads guide](/en/blog/acenteler-icin-meta-reklam-rehberi)), the click landing **directly in a WhatsApp chat** (don't put a form in between), and the network announcement ("early booking is open for our X tour" — a product announcement sells better than a founding announcement).
 
 **Week 4 — Measure and correct:** How many wrote, how many asked the price, how many became bookings, and at which step did the drop-offs happen? The first month's data is small but directional: many messages and few sales points to answer quality/speed; many clicks and few messages points to ad-promise mismatch. Fix it and grow month two.
 

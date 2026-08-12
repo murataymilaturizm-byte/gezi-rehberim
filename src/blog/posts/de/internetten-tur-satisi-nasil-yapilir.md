@@ -61,7 +61,7 @@ Auf welcher Sprosse auch immer, zwei Regeln bleiben: **keine festen Buchungen oh
 
 **Woche 2 — Inhalt und Schaufenster:** Pro Tour eine Verkaufsseite/Katalogkarte (Titelbild + Programm + Preis + FAQ), vollständige Social-Profile, die ersten 9-12 Beiträge (Tourbilder, Destinationswissen, „Fragen, die man uns stellt"), auf jedem Profil ein Ein-Klick-WhatsApp-Link.
 
-**Woche 3 — Erster Traffic:** Eine gezielte Anzeige mit kleinem Budget (eine Tour, eine Zielgruppe — nicht streuen), der Klick landet **direkt im WhatsApp-Chat** (kein Formular dazwischen), die Netzwerk-Ankündigung („Frühbuchung für unsere X-Tour eröffnet" — eine Produktankündigung verkauft besser als eine Gründungsankündigung).
+**Woche 3 — Erster Traffic:** Eine gezielte Anzeige mit kleinem Budget (eine Tour, eine Zielgruppe — nicht streuen; zum Kampagnen-Setup siehe [unseren Meta-Werbeleitfaden](/de/blog/acenteler-icin-meta-reklam-rehberi)), der Klick landet **direkt im WhatsApp-Chat** (kein Formular dazwischen), die Netzwerk-Ankündigung („Frühbuchung für unsere X-Tour eröffnet" — eine Produktankündigung verkauft besser als eine Gründungsankündigung).
 
 **Woche 4 — Messen und korrigieren:** Wie viele schrieben, wie viele fragten den Preis, wie viele wurden Buchungen, an welchem Schritt rissen die Abbrecher ab? Die Daten des ersten Monats sind klein, aber richtungsweisend: viele Nachrichten, wenig Verkauf → Antwortqualität/-tempo; viele Klicks, wenige Nachrichten → Anzeige-Versprechen-Diskrepanz. Korrigieren und Monat zwei vergrößern.
 
