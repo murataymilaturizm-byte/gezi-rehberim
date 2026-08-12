@@ -138,7 +138,37 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Blog yazıları (19 yazı, 93 URL girişi) -->
+  <!-- Blog yazıları (20 yazı, 96 URL girişi) -->
+  <url>
+    <loc>https://turzzai.com/blog/acenteler-icin-whatsapp-business-kurulumu</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/en/blog/acenteler-icin-whatsapp-business-kurulumu</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/de/blog/acenteler-icin-whatsapp-business-kurulumu</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/acenteler-icin-whatsapp-business-kurulumu"/>
+  </url>
   <url>
     <loc>https://turzzai.com/blog/seyahat-acentesi-nasil-acilir</loc>
     <lastmod>2026-08-12</lastmod>

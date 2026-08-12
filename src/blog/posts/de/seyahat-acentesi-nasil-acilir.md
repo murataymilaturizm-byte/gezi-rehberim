@@ -97,9 +97,7 @@ Die vollständige Liste haben wir in einem eigenen Leitfaden gesammelt
 Die meisten Gründungsleitfäden enden bei der Lizenz — der eigentliche Unterschied entsteht jedoch in den ersten 30 Tagen:
 
 1. **Digitale Identität aufbauen:** Google-Business-Profil, eine einfache Website, Social-Media-Konten. Für neue Agenturen kommt die *Auffindbarkeit* vor allem anderen.
-2. **WhatsApp-Linie auf Geschäftsstandard bringen:** In der Türkei ist WhatsApp der faktische Hauptkanal des Tourenverkaufs. Starten Sie mit WhatsApp Business statt einer Privatnummer; richten Sie Katalog, Schnellantworten und Labels ein. Siehe unseren separaten Schritt-für-Schritt-Leitfaden.
-
-<!-- İÇ-LİNK M4: "WhatsApp Business Kurulumu" yazılınca buraya bağlanacak -->
+2. **WhatsApp-Linie auf Geschäftsstandard bringen:** In der Türkei ist WhatsApp der faktische Hauptkanal des Tourenverkaufs. Starten Sie mit WhatsApp Business statt einer Privatnummer; richten Sie Katalog, Schnellantworten und Labels ein. Siehe unsere [Schritt-für-Schritt-Anleitung zur WhatsApp-Business-Einrichtung](/de/blog/acenteler-icin-whatsapp-business-kurulumu).
 
 3. **Auf Nachrichtenverkehr vorbereitet sein:** Mit der ersten Kampagne kommen Nachrichten rund um die Uhr. Wenn Sie nicht jede Nachricht binnen Minuten beantworten können — in einer Ein-Personen-Agentur praktisch unmöglich — übernimmt hier ein WhatsApp-KI-Assistent, der die Buchung von Anfang bis Ende selbst abschließt: Er antwortet 24/7 in 7 Sprachen, erklärt die Tour, erfasst Datum, Personenzahl und Kontaktdaten und legt die Reservierung an; Sie bestätigen nur noch im Panel. Die Einrichtung dauert deutlich kürzer als Ihr Lizenzverfahren.
 4. **Die ersten 10 Kunden von Hand gewinnen:** Netzwerk, lokale Kooperationen, eine erste Kampagne. Das Feedback der ersten Kunden reift Produkt und Botschaft.

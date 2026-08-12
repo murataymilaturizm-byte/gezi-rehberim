@@ -97,9 +97,7 @@ We've collected the full list in a separate guide
 Most setup guides end at the licence — yet the real difference is made in the first 30 days:
 
 1. **Build your digital identity:** Google Business profile, a basic website, social media accounts. For a new agency, being *findable* comes before everything.
-2. **Open your WhatsApp line to business standard:** In Türkiye, WhatsApp is the de facto main channel of tour sales. Start with WhatsApp Business instead of a personal number; set up the catalogue, quick replies and labels. See our separate step-by-step guide.
-
-<!-- İÇ-LİNK M4: "WhatsApp Business Kurulumu" yazılınca buraya bağlanacak -->
+2. **Open your WhatsApp line to business standard:** In Türkiye, WhatsApp is the de facto main channel of tour sales. Start with WhatsApp Business instead of a personal number; set up the catalogue, quick replies and labels. See our [step-by-step WhatsApp Business setup guide](/en/blog/acenteler-icin-whatsapp-business-kurulumu).
 
 3. **Be ready for message traffic:** With your first campaign, messages start arriving day and night. If you can't reply within minutes to every message — practically impossible for a one-person agency — a WhatsApp AI assistant that completes the booking end-to-end steps in here: it answers 24/7 in 7 languages, explains the tour, collects date-party-contact details and records the reservation; you only confirm from the panel. Setting it up takes far less time than your licence process did.
 4. **Win your first 10 customers by hand:** Your network, local business partnerships, a first campaign. Early customers' feedback matures both your product and your message.

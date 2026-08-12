@@ -95,9 +95,7 @@ Detaylı listeyi ayrı bir rehberde topladık
 Kuruluş rehberlerinin çoğu belgede biter — oysa asıl fark ilk 30 günde yaratılır:
 
 1. **Dijital kimliğinizi kurun:** Google Business profili, temel bir web sitesi, sosyal medya hesapları. Yeni acenteler için müşterinin sizi *bulabilmesi*, her şeyden önce gelir.
-2. **WhatsApp hattınızı işletme standardında açın:** Türkiye'de tur satışının fiili ana kanalı WhatsApp'tır. Kişisel numara yerine WhatsApp Business ile başlayın; katalog, hızlı yanıtlar ve etiketleri kurun. Adım adım kurulum için ayrı rehberimize bakın
-
-<!-- İÇ-LİNK M4: "WhatsApp Business Kurulumu" yazılınca buraya bağlanacak -->.
+2. **WhatsApp hattınızı işletme standardında açın:** Türkiye'de tur satışının fiili ana kanalı WhatsApp'tır. Kişisel numara yerine WhatsApp Business ile başlayın; katalog, hızlı yanıtlar ve etiketleri kurun. Adım adım kurulum için [WhatsApp Business kurulum rehberimize](/blog/acenteler-icin-whatsapp-business-kurulumu) bakın..
 3. **Mesaj trafiğine hazır olun:** İlk kampanyanızla birlikte gece-gündüz mesaj gelmeye başlar. Her mesaja dakikalar içinde dönemiyorsanız — ki tek kişilik bir acentede bu fiilen imkânsızdır — rezervasyonu uçtan uca kendisi tamamlayan bir WhatsApp yapay zekâ asistanı bu noktada devreye girer: müşteriye 7/24 ve 7 dilde cevap verir, tur bilgisini anlatır, tarih-kişi-iletişim bilgilerini toplayıp rezervasyonu kaydeder; siz yalnızca panelden onaylarsınız. Kurulumu belge sürecinizden çok daha kısa sürer.
 4. **İlk 10 müşterinizi elle kazanın:** Çevre, yerel işletme iş birlikleri, ilk kampanya. İlk müşterilerin geri bildirimi, hem ürününüzü hem mesajınızı olgunlaştırır.
 
