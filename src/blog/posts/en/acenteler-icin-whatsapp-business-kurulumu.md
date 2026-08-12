@@ -82,7 +82,7 @@ At this point the solution is an AI booking assistant built on the WhatsApp Busi
 
 The switch is easier than assumed: your existing number moves to the API (chat history stays in the app; the number and the customers' perception don't change), your tours are entered into the panel, and the assistant starts answering the same day. On the cost side there are Meta's message/template fees and the solution provider's subscription — weigh them against the price of a single missed group booking.
 
-<!-- İÇ-LİNK M-karsilastirma: "Web Sitesi Chatbotu mu, WhatsApp Rezervasyon Asistanı mı" yazılınca buraya bağlanacak -->
+For a detailed comparison, see [Website Chatbot or WhatsApp Booking Assistant?](/en/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi).
 
 ## Frequently Asked Questions (FAQ)
 

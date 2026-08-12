@@ -84,7 +84,7 @@ With a complete file, a realistic timeline looks like this: title approval takes
 
 We've collected the full list in a separate guide
 
-<!-- İÇ-LİNK M2: "Acente Açarken Yapılan 10 Hata" yazılınca buraya bağlanacak -->
+<!-- İÇ-LİNK M-10-hata: "Acente Açarken Yapılan 10 Hata" yazılınca buraya bağlanacak -->
 
 — but three deserve a mention here:
 

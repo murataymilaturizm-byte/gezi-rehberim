@@ -82,7 +82,7 @@ Die Lösung ist dann ein KI-Buchungsassistent auf der WhatsApp Business **API**.
 
 Der Umstieg ist leichter als gedacht: Ihre bestehende Nummer zieht zur API um (die Chathistorie bleibt in der App; Nummer und Kundenwahrnehmung ändern sich nicht), Ihre Touren werden ins Panel eingetragen, und der Assistent antwortet noch am selben Tag. Auf der Kostenseite stehen Metas Nachrichten-/Vorlagengebühren und das Abo des Lösungsanbieters — bewerten Sie sie am Preis einer einzigen entgangenen Gruppenbuchung.
 
-<!-- İÇ-LİNK M-karsilastirma: "Web Sitesi Chatbotu mu, WhatsApp Rezervasyon Asistanı mı" yazılınca buraya bağlanacak -->
+Einen ausführlichen Vergleich bietet [Website-Chatbot oder WhatsApp-Buchungsassistent?](/de/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi).
 
 ## Häufig gestellte Fragen (FAQ)
 

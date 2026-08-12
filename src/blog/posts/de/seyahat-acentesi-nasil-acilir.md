@@ -84,7 +84,7 @@ Mit vollständiger Akte sieht ein realistischer Zeitplan so aus: Titelfreigabe w
 
 Die vollständige Liste haben wir in einem eigenen Leitfaden gesammelt
 
-<!-- İÇ-LİNK M2: "Acente Açarken Yapılan 10 Hata" yazılınca buraya bağlanacak -->
+<!-- İÇ-LİNK M-10-hata: "Acente Açarken Yapılan 10 Hata" yazılınca buraya bağlanacak -->
 
 — drei Fehler seien hier dennoch genannt:
 

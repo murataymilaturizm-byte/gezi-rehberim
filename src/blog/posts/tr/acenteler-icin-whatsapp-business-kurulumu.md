@@ -80,9 +80,7 @@ WhatsApp Business uygulaması, güne 10-20 sohbet sığdıran acente için yeter
 
 Bu noktada çözüm, WhatsApp Business **API**'si üzerine kurulan bir yapay zekâ rezervasyon asistanıdır. Aradaki fark şudur: uygulamadaki otomatik mesajlar yalnızca karşılama yapar; API üzerindeki bir asistan ise **işin kendisini** yapar — turu anlatır, müsait tarihleri gösterir, kişi sayısını-ismi-telefonu toplar, rezervasyonu kaydeder, kapora bilgisini iletir, tur öncesi hatırlatmayı ve tur sonrası memnuniyet anketini kendisi gönderir. Türkçe yazan müşteriye Türkçe, Rusça yazana Rusça cevap verir. Siz panelden akan rezervasyonları görürsünüz; araya girmek isterseniz botu tek tuşla duraklatıp sohbeti devralırsınız.
 
-Geçiş sanıldığından kolaydır: mevcut numaranız API'ye taşınır (sohbet geçmişi uygulamada kalır, numara ve müşteri algısı değişmez), turlarınız panele girilir ve asistan aynı gün cevap vermeye başlar. Maliyet tarafında Meta'nın mesaj/şablon ücretleri ile çözüm sağlayıcının abonelik bedeli vardır — kaçan tek bir grup rezervasyonunun bedeliyle kıyaslayarak değerlendirin.
-
-<!-- İÇ-LİNK M-karsilastirma: "Web Sitesi Chatbotu mu, WhatsApp Rezervasyon Asistanı mı" yazılınca buraya bağlanacak -->
+Geçiş sanıldığından kolaydır: mevcut numaranız API'ye taşınır (sohbet geçmişi uygulamada kalır, numara ve müşteri algısı değişmez), turlarınız panele girilir ve asistan aynı gün cevap vermeye başlar. Maliyet tarafında Meta'nın mesaj/şablon ücretleri ile çözüm sağlayıcının abonelik bedeli vardır — kaçan tek bir grup rezervasyonunun bedeliyle kıyaslayarak değerlendirin. Detaylı kıyas için [Web Sitesi Chatbotu mu, WhatsApp Rezervasyon Asistanı mı?](/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi) rehberimize bakın.
 
 ## Sık Sorulan Sorular (SSS)
 
