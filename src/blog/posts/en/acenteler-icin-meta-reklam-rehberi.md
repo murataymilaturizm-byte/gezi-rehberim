@@ -66,7 +66,7 @@ The healthy routine: open a single campaign on a small but fixed daily budget, *
 - **Vanity metrics:** Impressions, likes, reach. They look nice and never reach the till.
 - **Intermediate metrics:** Cost per click, conversations started, cost per message — they show the setup's health.
 - **The real metric:** Cost per booking, and the revenue of those bookings. Measuring it requires the chain from chat to booking to be recorded — "which customer came from which ad" must be an answerable question.
-- **The funnel X-ray:** Many clicks, few messages → an ad-promise mismatch; many messages, few bookings → an answer speed/quality problem. <!-- İÇ-LİNK M7: "mesaj-dönüşüm rehberi" yazılınca buraya bağlanacak --> Find the broken link before blaming the ad.
+- **The funnel X-ray:** Many clicks, few messages → an ad-promise mismatch; many messages, few bookings → an answer speed/quality problem — that side's guide: [Why Do Customers Go Silent on WhatsApp?](/en/blog/whatsappta-musteri-neden-cevapsiz-birakir). Find the broken link before blaming the ad.
 
 ## The Pre-Launch Checklist
 

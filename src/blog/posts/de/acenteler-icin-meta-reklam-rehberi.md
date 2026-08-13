@@ -66,7 +66,7 @@ Die gesunde Routine: eine einzige Kampagne mit kleinem, festem Tagesbudget öffn
 - **Eitelkeitsmetriken:** Impressionen, Likes, Reichweite. Sieht hübsch aus, erreicht die Kasse nie.
 - **Zwischenmetriken:** Klickkosten, gestartete Chats, Kosten pro Nachricht — sie zeigen die Gesundheit des Setups.
 - **Die echte Metrik:** Kosten pro Buchung und der Umsatz dieser Buchungen. Um sie zu messen, muss die Kette vom Chat zur Buchung aufgezeichnet sein — „welcher Kunde kam aus welcher Anzeige" muss beantwortbar sein.
-- **Das Trichter-Röntgen:** Viele Klicks, wenige Nachrichten → Anzeige-Versprechen-Diskrepanz; viele Nachrichten, wenige Buchungen → Antworttempo/-qualität. <!-- İÇ-LİNK M7: "mesaj-dönüşüm rehberi" yazılınca buraya bağlanacak --> Finden Sie das gerissene Glied, bevor Sie die Anzeige beschuldigen.
+- **Das Trichter-Röntgen:** Viele Klicks, wenige Nachrichten → Anzeige-Versprechen-Diskrepanz; viele Nachrichten, wenige Buchungen → Antworttempo/-qualität — der Leitfaden dieser Seite: [Warum verstummen Kunden auf WhatsApp?](/de/blog/whatsappta-musteri-neden-cevapsiz-birakir). Finden Sie das gerissene Glied, bevor Sie die Anzeige beschuldigen.
 
 ## Die Checkliste vor dem Start
 

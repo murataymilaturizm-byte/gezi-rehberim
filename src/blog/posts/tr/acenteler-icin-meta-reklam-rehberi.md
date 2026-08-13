@@ -66,7 +66,7 @@ Sağlıklı düzen: küçük ama sabit günlük bütçeyle tek kampanya açın, 
 - **Aldatıcı metrikler:** Gösterim, beğeni, erişim. Hoş görünür, kasaya girmez.
 - **Ara metrikler:** Tıklama maliyeti, başlatılan sohbet sayısı, mesaj başına maliyet — kurgunun sağlığını gösterir.
 - **Gerçek metrik:** Rezervasyon başına maliyet ve o rezervasyonların cirosu. Bunu ölçebilmek için sohbetten rezervasyona giden zincirin kayıtlı olması gerekir — hangi müşteri hangi reklamdan geldi, sorusu sorulabilir olmalı.
-- **Huninin röntgeni:** Tıklama çok–mesaj az ise sorun reklam-vaat uyumunda; mesaj çok–rezervasyon az ise sorun cevap hızında/kalitesinde <!-- İÇ-LİNK M7: "mesaj-dönüşüm rehberi" yazılınca buraya bağlanacak -->. Reklamı suçlamadan önce hangi halkanın koptuğuna bakın.
+- **Huninin röntgeni:** Tıklama çok–mesaj az ise sorun reklam-vaat uyumunda; mesaj çok–rezervasyon az ise sorun cevap hızında/kalitesinde — o tarafın rehberi: [WhatsApp'ta Müşteri Neden Cevapsız Bırakır?](/blog/whatsappta-musteri-neden-cevapsiz-birakir). Reklamı suçlamadan önce hangi halkanın koptuğuna bakın.
 
 ## Reklam Açılış Kontrol Listesi
 
