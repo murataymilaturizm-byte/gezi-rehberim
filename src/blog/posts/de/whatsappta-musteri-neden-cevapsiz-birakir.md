@@ -72,7 +72,7 @@ Drei Vorlagen — an Ihren eigenen Ton anpassen:
 
 > „Hallo, Sie hatten letzte Woche wegen des Flitterwochen-Pakets geschrieben. Die September-Termine sind offen; bei Interesse schicke ich die Optionen, andernfalls störe ich nicht weiter 🙏"
 
-Was die drei teilen: echte Information, eine einzige Frage, eine offene Tür. Und alle drei brauchen eines, um überhaupt schreibbar zu sein: **die Aufzeichnung, wer wann für welche Tour schrieb.** Die Chatliste kann nicht Ihr Gedächtnis sein; ohne Labels oder Aufzeichnungen bleibt Nachfassen ein gut gemeinter Traum. <!-- İÇ-LİNK M10: "CRM rehberi" yazılınca buraya bağlanacak -->
+Was die drei teilen: echte Information, eine einzige Frage, eine offene Tür. Und alle drei brauchen eines, um überhaupt schreibbar zu sein: **die Aufzeichnung, wer wann für welche Tour schrieb.** Die Chatliste kann nicht Ihr Gedächtnis sein; ohne Labels oder Aufzeichnungen bleibt Nachfassen ein gut gemeinter Traum. Wie dieses Registersystem entsteht — und die Liste zu Wiederverkäufen wird —, zeigen wir Schritt für Schritt in [unserem CRM- und Wiederverkaufs-Leitfaden](/de/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 ## Die Nacht- und Wochenend-Realität
 

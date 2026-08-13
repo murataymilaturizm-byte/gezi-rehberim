@@ -82,7 +82,7 @@ Schritte, die Sie heute gehen können, ohne ein voll mehrsprachiges Team einzust
 2. **Mehrsprachige Schnellantworten:** Ihre 8-10 häufigsten Antworten (Preis, Programm, Treffpunkt, Anzahlung, Storno) als Schnellantworten auf Englisch speichern — bei entsprechendem Volumen auch Russisch/Arabisch/Deutsch. Statt Live-Übersetzungsstress senden Sie geprüften Text mit einem Tipp.
 3. **Mehrsprachige Sichtbarkeit auf Google-Profil und Social Media:** Eine englische Beschreibung ins Unternehmensprofil aufnehmen und Bewertungen ausländischer Kunden kurz in deren Sprache beantworten. Ausländische Touristen finden Sie meist über Karte und Bewertungen; schon eine Zeile Englisch dort signalisiert „hier können wir uns verständigen".
 4. **Eine Vorlage für die schriftliche Bestätigung:** Eine zweisprachige (Türkisch + Kundensprache) Bestätigungsvorlage mit Datum-Uhrzeit-Treffpunkt-Personen-Preis-Bedingungen bauen; bei jeder fixen Buchung senden. Fast alle oben beschriebenen Betriebsunfälle verhindert diese eine Vorlage.
-5. **Ein Auslandskunden-Register:** Ein einfaches Register — welches Land, welche Sprache, welche Tour — lässt Sie die Nachfassnachricht in der richtigen Sprache senden und zeigt, welcher Markt wächst. <!-- İÇ-LİNK M10: "CRM rehberi" yazılınca buraya bağlanacak -->
+5. **Ein Auslandskunden-Register:** Ein einfaches Register — welches Land, welche Sprache, welche Tour — lässt Sie die Nachfassnachricht in der richtigen Sprache senden und zeigt, welcher Markt wächst — das vollständige Label- und Re-Kontakt-System steht in [unserem Agentur-CRM-Leitfaden](/de/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 ## Antworten in der Sprache, in der geschrieben wird: die natürliche Schwelle der Automatisierung
 

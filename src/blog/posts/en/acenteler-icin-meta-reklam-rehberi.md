@@ -43,7 +43,7 @@ The classic mistake of new ad accounts is "show it to everyone" breadth. What wo
 
 - **Geography:** Your tour's realistic customer basin. For a city-departure tour, the departure city plus surroundings; for a destination-stay tour (like Cappadocia), the basin can open country-wide.
 - **Age/interest:** Mirror the tour's real profile — showing a honeymoon tour to 45+ wastes budget just as squeezing a culture tour into 18-24 does. Use interests (travel, related destinations) as a narrow starting filter; Meta's learning does the real work over time.
-- **The most valuable audience is already yours:** Build **retargeting** audiences from people who wrote to you, visited your site or engaged with your Instagram — and the **lookalike** of your actual buyers is the most efficient audience of maturing accounts. Which points to a side truth: the agency that keeps customer records in order also wins at advertising. <!-- İÇ-LİNK M10: "CRM rehberi" yazılınca buraya bağlanacak -->
+- **The most valuable audience is already yours:** Build **retargeting** audiences from people who wrote to you, visited your site or engaged with your Instagram — and the **lookalike** of your actual buyers is the most efficient audience of maturing accounts. Which points to a side truth: the agency that keeps customer records in order also wins at advertising — we cover how to build that record in [our agency CRM guide](/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 ## Creative: How Does a Tour Frame Sell?
 

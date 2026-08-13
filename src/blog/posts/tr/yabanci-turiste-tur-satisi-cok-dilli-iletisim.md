@@ -82,7 +82,7 @@ Tam çok-dilli bir ekip kurmadan, bugünden atılabilecek adımlar şunlardır:
 2. **Çok dilli hazır yanıtlar:** En sık 8-10 cevabınızın (fiyat, program, buluşma, kapora, iptal) İngilizce — hacminiz varsa Rusça/Arapça/Almanca — sürümlerini hazır-yanıt olarak kaydedin. Anlık çeviri derdi yerine tek tuşla doğrulanmış metin gönderirsiniz.
 3. **Google profili ve sosyal medyada çok dilli görünürlük:** İşletme profilinize İngilizce açıklama ekleyin, yabancı müşterilerin bıraktığı yorumlara kendi dillerinde kısa cevaplar yazın. Yabancı turist sizi çoğu zaman haritadan ve yorumlardan bulur; oradaki tek satır İngilizce bile "burada anlaşabilirim" sinyalidir.
 4. **Yazılı teyit şablonu:** Tarih-saat-buluşma-kişi-fiyat-koşul özetini içeren iki dilli (TR + müşterinin dili) bir teyit şablonu kurun; her kesinleşen rezervasyonda gönderin. Yukarıdaki operasyon kazalarının neredeyse tamamı bu tek şablonla önlenir.
-5. **Yabancı müşteri kaydı:** Hangi ülkeden, hangi dilde, hangi turu sorduğunu not eden basit bir kayıt düzeni, hem takip mesajını doğru dilde atmanızı hem hangi pazarın büyüdüğünü görmenizi sağlar. <!-- İÇ-LİNK M10: "CRM rehberi" yazılınca buraya bağlanacak -->
+5. **Yabancı müşteri kaydı:** Hangi ülkeden, hangi dilde, hangi turu sorduğunu not eden basit bir kayıt düzeni, hem takip mesajını doğru dilde atmanızı hem hangi pazarın büyüdüğünü görmenizi sağlar — etiket ve yeniden-temas düzeninin tamamı için [acente CRM rehberimize](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) bakın.
 
 ## Yazdığı Dilde Cevap: Otomasyonun Doğal Eşiği
 

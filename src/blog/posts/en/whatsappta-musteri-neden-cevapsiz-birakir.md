@@ -72,7 +72,7 @@ Three templates — adapt them to your own voice:
 
 > "Hello, you wrote last week about the honeymoon package. September dates have opened; if you're interested I'll send the options, and if not, I won't disturb you 🙏"
 
-What the three share: real information, a single question, an open door. And all three depend on one thing to be writable at all: **a record of who wrote, when, and for which tour.** Your chat list cannot be your memory; in an agency without labels or records, follow-up is a well-intentioned dream. <!-- İÇ-LİNK M10: "CRM rehberi" yazılınca buraya bağlanacak -->
+What the three share: real information, a single question, an open door. And all three depend on one thing to be writable at all: **a record of who wrote, when, and for which tour.** Your chat list cannot be your memory; in an agency without labels or records, follow-up is a well-intentioned dream. How to build that record system — and turn the list into repeat sales — is covered step by step in [our CRM and repeat-sales guide](/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 ## The Night and Weekend Reality
 

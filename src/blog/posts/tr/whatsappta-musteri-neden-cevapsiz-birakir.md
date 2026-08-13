@@ -72,7 +72,7 @@ Takip mesajı konusunda acenteler iki uca savrulur: ya hiç yazmamak ("ısrarcı
 
 > "Merhaba, geçen hafta balayı paketi için yazmıştınız. Eylül tarihleri açıldı; ilgilenirseniz seçenekleri atayım, ilgilenmiyorsanız rahatsız etmeyeyim 🙏"
 
-Üçünün ortak yanı: gerçek bilgi, tek soru, açık kapı. Ve üçü de yazılabilmek için bir şeye muhtaç: **kimin, ne zaman, hangi tur için yazdığının kaydına.** Sohbet listesi hafızanız olamaz; etiket ya da kayıt düzeni olmayan acentede takip, iyi niyetli bir hayaldir. <!-- İÇ-LİNK M10: "CRM rehberi" yazılınca buraya bağlanacak -->
+Üçünün ortak yanı: gerçek bilgi, tek soru, açık kapı. Ve üçü de yazılabilmek için bir şeye muhtaç: **kimin, ne zaman, hangi tur için yazdığının kaydına.** Sohbet listesi hafızanız olamaz; etiket ya da kayıt düzeni olmayan acentede takip, iyi niyetli bir hayaldir. O kayıt düzeninin nasıl kurulacağını ve listenin yeniden-satışa nasıl dönüşeceğini [CRM ve yeniden-satış rehberimizde](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) adım adım anlattık.
 
 ## Gece ve Hafta Sonu Gerçeği
 

@@ -43,7 +43,7 @@ Yeni reklam hesaplarının klasik hatası "herkese gösterelim" genişliğidir. 
 
 - **Coğrafya:** Turunuzun gerçekçi müşteri havzası. Şehirden çıkışlı turda kalkış şehri + yakın çevre; konaklamalı bölge turunda (Kapadokya gibi) havza ülke geneline açılabilir.
 - **Yaş/ilgi:** Turunuzun gerçek profilini yansıtın — balayı turuna 45+ göstermek de, kültür turunu 18-24'e sıkıştırmak da bütçe eritir. İlgi alanlarını (seyahat, ilgili destinasyonlar) dar bir başlangıç filtresi olarak kullanın; Meta'nın öğrenmesi asıl işi zamanla yapar.
-- **En değerli kitle sizde:** Size daha önce yazan, sitenizi ziyaret eden, Instagram profilinizle etkileşen insanlardan **yeniden-pazarlama** kitlesi kurun — ve satın alan müşterilerinizin **benzer kitlesi (lookalike)**, olgunlaşan hesapların en verimli kitlesidir. Bu da bir yan gerçeği hatırlatır: müşteri verisini düzenli tutan acente, reklamda da avantajlıdır <!-- İÇ-LİNK M10: "CRM rehberi" yazılınca buraya bağlanacak -->.
+- **En değerli kitle sizde:** Size daha önce yazan, sitenizi ziyaret eden, Instagram profilinizle etkileşen insanlardan **yeniden-pazarlama** kitlesi kurun — ve satın alan müşterilerinizin **benzer kitlesi (lookalike)**, olgunlaşan hesapların en verimli kitlesidir. Bu da bir yan gerçeği hatırlatır: müşteri verisini düzenli tutan acente, reklamda da avantajlıdır — o kaydın nasıl kurulacağını [Acente İçin CRM rehberimizde](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) anlattık..
 
 ## Kreatif: Tur Karesi Nasıl Satar?
 

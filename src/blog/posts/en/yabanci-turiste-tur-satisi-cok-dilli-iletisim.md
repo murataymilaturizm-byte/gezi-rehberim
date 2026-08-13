@@ -82,7 +82,7 @@ Steps you can take today, without hiring a fully multilingual team:
 2. **Multilingual quick replies:** Save your 8-10 most frequent answers (price, programme, meeting point, deposit, cancellation) as quick replies in English — and in Russian/Arabic/German if you have the volume. Instead of live translation stress, you send verified text with one tap.
 3. **Multilingual visibility on your Google profile and social media:** Add an English description to your business profile and reply briefly, in their language, to reviews left by foreign customers. Foreign tourists mostly find you through the map and the reviews; even a single line of English there signals "we can communicate here".
 4. **A written confirmation template:** Build a bilingual (Turkish + the customer's language) confirmation template carrying the date-time-meeting-headcount-price-terms summary; send it for every confirmed booking. Nearly all of the operational accidents above are prevented by this one template.
-5. **A foreign-customer record:** A simple record of which country, which language and which tour each enquiry came from lets you send the follow-up in the right language and shows you which market is growing. <!-- İÇ-LİNK M10: "CRM rehberi" yazılınca buraya bağlanacak -->
+5. **A foreign-customer record:** A simple record of which country, which language and which tour each enquiry came from lets you send the follow-up in the right language and shows you which market is growing — for the full label and re-contact setup, see [our agency CRM guide](/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 ## Answering in the Language They Write: Automation's Natural Threshold
 

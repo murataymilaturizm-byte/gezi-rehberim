@@ -138,7 +138,37 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Blog yazıları (27 yazı, 117 URL girişi) -->
+  <!-- Blog yazıları (28 yazı, 120 URL girişi) -->
+  <url>
+    <loc>https://turzzai.com/blog/acente-icin-crm-musteri-listesi-yeniden-satis</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/de/blog/acente-icin-crm-musteri-listesi-yeniden-satis</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis"/>
+  </url>
   <url>
     <loc>https://turzzai.com/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim</loc>
     <lastmod>2026-08-31</lastmod>

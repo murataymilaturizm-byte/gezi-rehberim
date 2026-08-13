@@ -43,7 +43,7 @@ Der Klassiker neuer Werbekonten ist die „zeigen wir es allen"-Breite. Was funk
 
 - **Geografie:** Das realistische Kundeneinzugsgebiet Ihrer Tour. Bei Stadtabfahrt-Touren die Abfahrtsstadt plus Umgebung; bei Destinationstouren mit Übernachtung (wie Kappadokien) kann das Gebiet landesweit geöffnet werden.
 - **Alter/Interessen:** Spiegeln Sie das reale Profil der Tour — eine Flitterwochen-Tour an 45+ auszuspielen verbrennt Budget genauso wie eine Kulturtour auf 18-24 zu verengen. Interessen (Reisen, passende Destinationen) als engen Startfilter nutzen; Metas Lernen erledigt die eigentliche Arbeit mit der Zeit.
-- **Die wertvollste Zielgruppe haben Sie schon:** Bauen Sie **Retargeting**-Zielgruppen aus Menschen, die Ihnen schrieben, Ihre Website besuchten oder mit Ihrem Instagram interagierten — und die **Lookalike**-Zielgruppe Ihrer echten Käufer ist die effizienteste Zielgruppe reifender Konten. Das erinnert an eine Nebenwahrheit: Die Agentur mit ordentlicher Kundendatenpflege ist auch in der Werbung im Vorteil. <!-- İÇ-LİNK M10: "CRM rehberi" yazılınca buraya bağlanacak -->
+- **Die wertvollste Zielgruppe haben Sie schon:** Bauen Sie **Retargeting**-Zielgruppen aus Menschen, die Ihnen schrieben, Ihre Website besuchten oder mit Ihrem Instagram interagierten — und die **Lookalike**-Zielgruppe Ihrer echten Käufer ist die effizienteste Zielgruppe reifender Konten. Das erinnert an eine Nebenwahrheit: Die Agentur mit ordentlicher Kundendatenpflege ist auch in der Werbung im Vorteil — wie dieses Register entsteht, zeigt [unser CRM-Leitfaden für Agenturen](/de/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 ## Kreativ: Wie verkauft ein Tour-Motiv?
 
