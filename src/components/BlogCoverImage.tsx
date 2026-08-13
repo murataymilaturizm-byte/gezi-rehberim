@@ -1,4 +1,16 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import coverManifest from "@/generated/blog-image-manifest.json";
+
+// SEO-GÖRSEL FIX: frontmatter image her postta dolu ama dosya public/blog'da
+// olmayabilir → prerender kırık <img> basıyordu; 404 error-olayı hydration'dan
+// ÖNCE ateşlenip kaçıyordu (onError sonradan bağlanır) → ilk yüklemede boş kart,
+// geri-dönüşte (client-render) SVG. Çözüm iki katman:
+//  1) BUILD-TIME: manifest'te olmayan dosya için <img> hiç basılmaz → SVG-kapak
+//     prerender HTML'de hazır (404 yok, yarış yok, LCP kötüleşmez).
+//  2) RUNTIME emniyet ağı: mount'ta img.complete && naturalWidth===0 ise error
+//     kaçmış demektir → SVG'ye düş (build'den sonra silinen dosya vakası).
+const _coverExists = (image?: string): boolean =>
+  !!image && (coverManifest as string[]).includes(image);
 
 interface BlogCoverImageProps {
   title: string;
@@ -183,8 +195,16 @@ function CoverSVG({ title, category, isHero }: { title: string; category: string
 
 export function BlogCoverImage({ title, category, image, size = "card", className = "" }: BlogCoverImageProps) {
   const [imgError, setImgError] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const isHero = size === "hero";
-  const showSVG = !image || imgError;
+  // Build-time karar: dosya manifest'te yoksa <img> dalına hiç girilmez → SVG prerender'da.
+  const showSVG = !_coverExists(image) || imgError;
+
+  // Runtime emniyet ağı: hydration'dan önce ateşlenip kaçan error-olayını yakala.
+  useEffect(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth === 0) setImgError(true);
+  }, [image]);
 
   const wrapperClass = isHero
     ? `aspect-[1200/630] w-full overflow-hidden rounded-xl ${className}`
@@ -196,6 +216,7 @@ export function BlogCoverImage({ title, category, image, size = "card", classNam
         <CoverSVG title={title} category={category} isHero={isHero} />
       ) : (
         <img
+          ref={imgRef}
           src={image}
           alt={title}
           className="w-full h-full object-cover"

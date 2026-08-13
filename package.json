@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-sitemap.mjs",
+    "prebuild": "node scripts/generate-sitemap.mjs && node scripts/generate-blog-image-manifest.mjs",
     "build": "vite-react-ssg build",
     "postbuild": "node scripts/spa-fallback.mjs",
     "build:spa": "vite build",
