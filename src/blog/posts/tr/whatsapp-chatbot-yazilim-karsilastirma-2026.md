@@ -44,7 +44,7 @@ WhatsApp'ın standart ya da Business uygulamasını açık tutup gelen mesajlara
 
 ### Ne yapar?
 
-WhatsApp Business'ın yerleşik özellikleri: Hoşgeldiniz mesajı, çalışma dışı otomatik yanıt, hızlı yanıt şablonları, katalog.
+WhatsApp Business'ın yerleşik özellikleri: Hoşgeldiniz mesajı, çalışma dışı otomatik yanıt, hızlı yanıt şablonları, katalog — bu katmanı uçtan uca [kurulum rehberimizde](/blog/acenteler-icin-whatsapp-business-kurulumu) anlattık.
 
 ### Artıları
 
@@ -143,7 +143,7 @@ Seyahat ve tur operatörü sektörüne özel geliştirilen yapay zeka destekli W
 ### Artıları
 
 - Kurulum süresi: 24-48 saat (enterprise değil, pratik)
-- Çoklu dil: 7 dil (Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca) aynı anda
+- Çoklu dil: 7 dil (Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca) aynı anda — dil bariyerinin satışa etkisi için [çok dilli iletişim rehberimiz](/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim)
 - Sektöre özel: Tur tarihleri, kontenjan kontrolü, rezervasyon akışı yerleşik
 - Yapay zeka konuşma: Sabit şablon değil, doğal dil anlama
 - 7/24 aktif: Gece 02:00'deki Almanca rezervasyon sorusu da yanıtlanır
@@ -178,7 +178,7 @@ Seyahat ve tur operatörü sektörüne özel geliştirilen yapay zeka destekli W
 
 ## Hangi Çözüm Sizin için Doğru? Karar Ağacı
 
-**Aylık kaç WhatsApp sorgusuna yanıt veriyorsunuz?**
+**Aylık kaç WhatsApp sorgusuna yanıt veriyorsunuz?** (Kategori seçiminin test sorularını [asistan kıyas rehberimizde](/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi) ayrıca derinleştirdik.)
 
 - **20'nin altında → Manuel WhatsApp yeterli.** Şimdilik yatırım gerekmez.
 - **20-80 arası → WhatsApp Business + No-Code deneyin.** Ücretsiz başlayın, büyüdükçe geçiş yapın.

@@ -25,7 +25,7 @@ Bu rehber, Türkiye pazarında aktif olan tur operatörü yazılımlarını kar�
 
 **Tur kataloğu yönetimi.** Tur paketlerini, tarihlerini, fiyatlarını, fotoğraflarını, dahil olan/olmayan hizmetleri tek bir veritabanında tutma. Personelin "Bu turun fiyatı kaç?" sorusuna bakmadığı bir sistem.
 
-**Müşteri ilişkileri (CRM).** Müşteri bilgilerini, geçmiş satışlarını, tercihlerini, iletişim notlarını saklama. Personel ayrıldığında müşteri bilgisinin kaybolmaması.
+**Müşteri ilişkileri (CRM).** Müşteri bilgilerini, geçmiş satışlarını, tercihlerini, iletişim notlarını saklama. Personel ayrıldığında müşteri bilgisinin kaybolmaması — bu kaydın satışa nasıl dönüştüğünü [acente CRM rehberimizde](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) anlattık.
 
 **Ödeme ve tahsilat.** POS entegrasyonu, kredi kartı tahsilatı, taksit yönetimi, geç ödeme takibi. Türkiye için Iyzico, PayTR, Sipay gibi sağlayıcılarla entegrasyon önemli.
 
@@ -37,7 +37,7 @@ Bu rehber, Türkiye pazarında aktif olan tur operatörü yazılımlarını kar�
 
 **Pazarlama otomasyonu.** Kampanya yönetimi, otomatik e-posta/SMS, müşteri segmentasyonu, doğum günü hatırlatmaları. Gelir artırmak için kritik ama çoğu acente atlıyor.
 
-**Mesajlaşma altyapısı.** WhatsApp Business API entegrasyonu, AI chatbot, çok dilli iletişim. Bu kategori son 2-3 yılda hızla önem kazandı.
+**Mesajlaşma altyapısı.** WhatsApp Business API entegrasyonu, AI chatbot, [çok dilli iletişim](/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim). Bu kategori son 2-3 yılda hızla önem kazandı.
 
 **Raporlama ve analitik.** Hangi tur ne kadar sattı, hangi personel ne kadar performans gösterdi, hangi sezon karlı geçti — yöneticinin karar vermesi için gerekli veriler.
 
@@ -90,7 +90,7 @@ Bazı acenteler birden fazla kategoriden yazılım kullanıyor. Örneğin klasik
 
 ## Karar Vermeden Önce Sorulması Gereken 12 Soru
 
-Yazılım demosuna gitmeden önce kendinize bu 12 soruyu cevaplamanızı öneririm:
+Yazılım demosuna gitmeden önce kendinize bu 12 soruyu cevaplamanızı öneririm ([asistan-kıyas rehberimizdeki](/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi) kategori-testleriyle birlikte kullanın):
 
 **Birinci olarak, kaç personel kullanacak?** 1-3 kişi mi, 5-10 mu, 20+ mı? Yazılım fiyatlandırması genelde "user başına" yapılıyor.
 

@@ -25,7 +25,7 @@ Bu rehber WhatsApp Business API'yi sıfırdan, jargonsuz bir dille açıklıyor.
 
 **Birincisi standart WhatsApp.** Telefonunuza indirdiğiniz, bireysel kullanım için tasarlanmış uygulama. Bir telefon numarası, bir cihaz, kişisel kullanım. Bir acente sahibinin kendi numarasıyla müşteri mesajlaşması yaptığı senaryo bu kategoride.
 
-**İkincisi WhatsApp Business uygulaması.** Yine ücretsiz, yine telefonda, ama küçük işletmeler için bazı eklemeler var. İşletme profili, otomatik selamlama, hızlı yanıtlar, ürün katalogu gibi özellikler. Tek personel için, günde 30-40 mesaj alıyorsanız yeterli olabilir.
+**İkincisi WhatsApp Business uygulaması.** Yine ücretsiz, yine telefonda, ama küçük işletmeler için bazı eklemeler var. İşletme profili, otomatik selamlama, hızlı yanıtlar, ürün katalogu gibi özellikler. Tek personel için, günde 30-40 mesaj alıyorsanız yeterli olabilir — bu katmanın adım adım kurulumu için [WhatsApp Business kurulum rehberimize](/blog/acenteler-icin-whatsapp-business-kurulumu) bakın.
 
 **Üçüncüsü WhatsApp Business API.** Burası artık başka bir kategori. Telefon uygulaması değil, programlanabilir bir altyapı. İşletmenin kendi yazılımına entegre ediliyor. Birden fazla personel aynı numara üzerinden çalışabiliyor, otomasyon yapılabiliyor, raporlama alınabiliyor, AI sistemleri bağlanabiliyor.
 
@@ -97,7 +97,7 @@ Türkiye'de aktif olarak hizmet veren onlarca BSP var. Yanlış sağlayıcı se�
 
 **AI/chatbot entegrasyonu.** Ana avantajınız otomasyon olacaksa, sağlayıcının AI chatbot kapasitesi kritik. Sadece "kural tabanlı" otomasyon sunan sağlayıcılar 2026 itibariyle artık yeterli değil. Modern büyük dil modelleri (Claude, GPT) ile entegre çalışan platformlar tercih edilmeli.
 
-**Çoklu dil desteği.** İncoming acenteler için bu hayati. Sağlayıcının kaç dilde profesyonel hizmet verdiğini sorun. Sadece İngilizce-Türkçe ile yetinen platformlar Almanca, Rusça, Arapça yabancı turist segmentini ıskalar.
+**Çoklu dil desteği.** İncoming acenteler için bu hayati. Sağlayıcının kaç dilde profesyonel hizmet verdiğini sorun. Sadece İngilizce-Türkçe ile yetinen platformlar Almanca, Rusça, Arapça yabancı turist segmentini ıskalar — bu segmentin satış tarafı için [çok dilli iletişim rehberimize](/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim) bakın.
 
 **Raporlama derinliği.** Gerçek bir yöneticinin neye ihtiyacı var? Konuşma süresi, dönüşüm oranı, personel performansı, dil bazlı analiz, saatlik yoğunluk grafikleri. Sağlayıcının demo panelinde bu raporlar var mı kontrol edin.
 

@@ -44,7 +44,7 @@ You open WhatsApp on your phone or desktop and reply to every customer message m
 
 ### What it does
 
-WhatsApp's dedicated business application adds basic automation: a greeting message for new contacts, an away message outside business hours, quick-reply templates, and a product catalog feature.
+WhatsApp's dedicated business application adds basic automation: a greeting message for new contacts, an away message outside business hours, quick-reply templates, and a product catalog feature — we cover this tier end to end in [our setup guide](/en/blog/acenteler-icin-whatsapp-business-kurulumu).
 
 ### Pros
 
@@ -143,7 +143,7 @@ WhatsApp AI systems purpose-built for tour operators and travel agencies. Conver
 ### Pros
 
 - Setup time: 24–48 hours (not months)
-- Multilingual: 7 languages simultaneously (English, Turkish, German, Russian, Arabic, French, Spanish)
+- Multilingual: 7 languages simultaneously (English, Turkish, German, Russian, Arabic, French, Spanish) — for the sales impact of the language barrier, see [our multilingual communication guide](/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim)
 - Sector-specific: Tour dates, availability checking, reservation flow — all built in
 - True AI conversation: Natural language understanding, not rigid template scripts
 - 24/7 active: A German-language booking inquiry at 2am gets answered and recorded
@@ -178,7 +178,7 @@ WhatsApp AI systems purpose-built for tour operators and travel agencies. Conver
 
 ## Decision Guide: Which Solution Is Right for You?
 
-**How many WhatsApp customer queries do you receive monthly?**
+**How many WhatsApp customer queries do you receive monthly?** (We also go deeper into category-choice test questions in [our assistant comparison guide](/en/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi).)
 
 - **Under 20 → Manual WhatsApp is sufficient.** No investment needed at this stage.
 - **20–80 → Try WhatsApp Business + light automation.** Start free, upgrade as you grow.

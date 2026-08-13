@@ -25,7 +25,7 @@ First, to eliminate confusion: WhatsApp actually has **three different versions*
 
 **First: Standard WhatsApp.** The app you download to your phone, designed for individual use. One phone number, one device, personal use. The scenario where an agency owner personally messages customers on their own number is in this category.
 
-**Second: WhatsApp Business app.** Also free, also on your phone, but with some additions for small businesses. Business profile, automatic greeting, quick replies, product catalog. Sufficient for a single person handling 30-40 messages per day.
+**Second: WhatsApp Business app.** Also free, also on your phone, but with some additions for small businesses. Business profile, automatic greeting, quick replies, product catalog. Sufficient for a single person handling 30-40 messages per day — for the step-by-step setup of this tier, see [our WhatsApp Business setup guide](/en/blog/acenteler-icin-whatsapp-business-kurulumu).
 
 **Third: WhatsApp Business API.** This is now a completely different category. Not a phone app — a programmable infrastructure. It integrates with the business's own software. Multiple staff can work from the same number, automation is possible, reporting is available, AI systems can be connected.
 
@@ -98,7 +98,7 @@ Dozens of BSPs are actively serving in various markets. The wrong provider selec
 
 **AI/chatbot integration.** If automation is your main advantage, the provider's AI chatbot capacity is critical. Providers offering only "rule-based" automation are insufficient in 2026. Platforms integrated with modern large language models (Claude, GPT) should be preferred.
 
-**Multilingual support.** Vital for incoming agencies. Ask how many languages the provider professionally serves. Platforms settling for only English-Turkish miss the German, Russian, and Arabic foreign tourist segments.
+**Multilingual support.** Vital for incoming agencies. Ask how many languages the provider professionally serves. Platforms settling for only English-Turkish miss the German, Russian, and Arabic foreign tourist segments — for the sales side of that segment, see [our multilingual communication guide](/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim).
 
 **Reporting depth.** What does a real manager need? Conversation duration, conversion rate, staff performance, language-based analysis, hourly volume graphs. Check whether these reports exist in the provider's demo panel.
 

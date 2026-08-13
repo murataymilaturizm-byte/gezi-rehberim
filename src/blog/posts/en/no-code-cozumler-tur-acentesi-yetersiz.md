@@ -29,7 +29,7 @@ Make and Zapier deliver on their core promise: connecting two services without w
 
 ### Low Entry Cost
 
-Free tiers exist. Low-volume usage runs $20–50 per month. Compared to enterprise CRM software or bespoke development ($10,000+), no-code looks like an obvious choice for a bootstrapped agency.
+Free tiers exist. Low-volume usage runs $20–50 per month. Compared to enterprise CRM software or bespoke development ($10,000+), no-code looks like an obvious choice for a bootstrapped agency (what CRM actually means at agency scale is covered in [our CRM guide](/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis)).
 
 ### Community and Templates
 
@@ -117,7 +117,7 @@ Even for agencies with the budget and patience, custom development pulls focus a
 
 ## What Actually Works
 
-The answer is **purpose-built SaaS software** designed specifically for the travel and tour operator sector. These solutions:
+The answer is **purpose-built SaaS software** designed specifically for the travel and tour operator sector — for the category comparison and pre-purchase test questions, see [our assistant comparison guide](/en/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi). These solutions:
 
 - Deploy in days, not months, without technical staff
 - Include the full booking conversation flow, multilingual capability, and availability management out of the box

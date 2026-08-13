@@ -44,7 +44,7 @@ Sie öffnen WhatsApp auf Ihrem Telefon oder Desktop und beantworten jede Kundenn
 
 ### Was es tut
 
-Die dedizierte Business-Anwendung von WhatsApp fügt grundlegende Automatisierung hinzu: eine Begrüßungsnachricht für neue Kontakte, eine Abwesenheitsnachricht außerhalb der Geschäftszeiten, Schnellantwort-Vorlagen und eine Produktkatalog-Funktion.
+Die dedizierte Business-Anwendung von WhatsApp fügt grundlegende Automatisierung hinzu: eine Begrüßungsnachricht für neue Kontakte, eine Abwesenheitsnachricht außerhalb der Geschäftszeiten, Schnellantwort-Vorlagen und eine Produktkatalog-Funktion — diese Stufe behandeln wir Ende-zu-Ende in [unserem Einrichtungsleitfaden](/de/blog/acenteler-icin-whatsapp-business-kurulumu).
 
 ### Vorteile
 
@@ -143,7 +143,7 @@ WhatsApp-KI-Systeme, die speziell für Tour Operators und Reisebüros entwickelt
 ### Vorteile
 
 - Einrichtungszeit: 24–48 Stunden (nicht Monate)
-- Mehrsprachig: 7 Sprachen gleichzeitig (Englisch, Türkisch, Deutsch, Russisch, Arabisch, Französisch, Spanisch)
+- Mehrsprachig: 7 Sprachen gleichzeitig (Englisch, Türkisch, Deutsch, Russisch, Arabisch, Französisch, Spanisch) — zur Verkaufswirkung der Sprachbarriere siehe [unseren Leitfaden für mehrsprachige Kommunikation](/de/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim)
 - Sektorspezifisch: Tourdaten, Verfügbarkeitsprüfung, Reservierungsflow — alles integriert
 - Echte KI-Konversation: Natural-Language-Understanding, keine starren Vorlagenscripte
 - 24/7 aktiv: Eine deutschsprachige Buchungsanfrage um 2 Uhr nachts wird beantwortet und erfasst
@@ -178,7 +178,7 @@ WhatsApp-KI-Systeme, die speziell für Tour Operators und Reisebüros entwickelt
 
 ## Entscheidungsleitfaden: Welche Lösung ist die richtige für Sie?
 
-**Wie viele WhatsApp-Kundenanfragen erhalten Sie monatlich?**
+**Wie viele WhatsApp-Kundenanfragen erhalten Sie monatlich?** (Die Testfragen zur Kategorienwahl vertiefen wir zusätzlich in [unserem Assistenten-Vergleichsleitfaden](/de/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi).)
 
 - **Unter 20 → Manuelles WhatsApp ist ausreichend.** In dieser Phase ist keine Investition erforderlich.
 - **20–80 → WhatsApp Business + leichte Automatisierung testen.** Starten Sie kostenlos, upgraden Sie beim Wachstum.

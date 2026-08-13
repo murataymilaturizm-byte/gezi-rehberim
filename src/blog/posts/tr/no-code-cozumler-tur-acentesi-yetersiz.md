@@ -29,7 +29,7 @@ Make.com ve Zapier, teknik bilgi gerektirmeden iki servisi birbirine bağlama va
 
 ### Düşük Giriş Maliyeti
 
-Ücretsiz katmanlar mevcuttur. Düşük kullanım hacminde aylık 20-50 dolar gibi rakamlar görülür. Karşısında enterprise CRM ya da özel yazılım geliştirme fiyatları ($10.000+) varken, no-code gayet makul durur.
+Ücretsiz katmanlar mevcuttur. Düşük kullanım hacminde aylık 20-50 dolar gibi rakamlar görülür. Karşısında enterprise CRM ya da özel yazılım geliştirme fiyatları ($10.000+) varken, no-code gayet makul durur (CRM'in acente ölçeğinde neye karşılık geldiğini [CRM rehberimizde](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) anlattık).
 
 ### Topluluk ve İçerik
 
@@ -117,7 +117,7 @@ Tüm bütçesi, zamanı ve enerjisi olan acenteler için bile bu yol, asıl işt
 
 ## Peki Ne Yapmalı?
 
-Sorunun cevabı, **tur sektörüne özel** geliştirilen hazır SaaS çözümlerindedir. Bu araçlar:
+Sorunun cevabı, **tur sektörüne özel** geliştirilen hazır SaaS çözümlerindedir — kategorilerin kıyası ve satın-alma öncesi test soruları için [asistan kıyas rehberimize](/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi) bakın. Bu araçlar:
 
 - Teknik bilgi gerektirmeden birkaç günde devreye alınır
 - Tur rezervasyonu akışını, çoklu dili, kontenjan kontrolünü içerir

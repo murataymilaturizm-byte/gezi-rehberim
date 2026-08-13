@@ -12,11 +12,11 @@ slug: "whatsapp-chatbot-tur-satis-rehberi"
 
 # WhatsApp Chatbot ile Tur Satışlarını 3x Artırmanın Yolları
 
-Türkiye'deki seyahat acentelerinin %78'i hâlâ WhatsApp mesajlarını manuel olarak yanıtlıyor. Bu durum hem zaman kaybı hem de kaçan satış fırsatı anlamına geliyor. Gece 2'de gelen "Kapadokya turu var mı?" sorusuna sabah cevap verildiğinde, müşteri çoktan başka bir acenteyi tercih etmiş olabiliyor.
+Türkiye'deki seyahat acentelerinin %78'i hâlâ WhatsApp mesajlarını manuel olarak yanıtlıyor. Bu durum hem zaman kaybı hem de kaçan satış fırsatı anlamına geliyor. Gece 2'de gelen "Kapadokya turu var mı?" sorusuna sabah cevap verildiğinde, müşteri çoktan başka bir acenteyi tercih etmiş olabiliyor — bu sessizliğin sebeplerini ve önlemini [mesaj-dönüşüm rehberimizde](/blog/whatsappta-musteri-neden-cevapsiz-birakir) inceledik.
 
 ## WhatsApp Chatbot Nedir ve Seyahat Sektöründe Neden Önemlidir?
 
-WhatsApp chatbot, müşteri mesajlarını otomatik olarak analiz eden, doğru soruları sorup rezervasyon sürecini başlatan yapay zeka destekli bir asistandir. Seyahat sektörü için özellikle kritik çünkü:
+WhatsApp chatbot, müşteri mesajlarını otomatik olarak analiz eden, doğru soruları sorup rezervasyon sürecini başlatan yapay zeka destekli bir asistandir (web-balonu ile farkını [asistan kıyas rehberimizde](/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi) anlattık). Seyahat sektörü için özellikle kritik çünkü:
 
 - **Müşteriler araştırma yaparken**: Gece geç saatlerde tur araştırması yapan potansiyel müşterilere anında yanıt verebilirsiniz
 - **Çoklu dil ihtiyacı**: Yabancı turistler Türkçe bilmeden sorgu yapabilir

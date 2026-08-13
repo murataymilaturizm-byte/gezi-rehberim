@@ -73,7 +73,7 @@ Manuel sistemde personel rotasyonu, eğitim eksiklikleri, dikkatsizlik tutarlıl
 | Mesai dışı konuşmalardan dönüşüm | %3-5 (geç yanıt) | %15-18 |
 | Hafta sonu dönüşüm | %8-10 | %18-20 |
 
-Dönüşüm oranındaki fark hız ve mesaj kalitesinden geliyor. AI chatbot her müşteriye aynı titizlikle yaklaşırken, insan personelin yorgunluk ve ruh hali yanıt kalitesini değiştiriyor.
+Dönüşüm oranındaki fark hız ve mesaj kalitesinden geliyor. AI chatbot her müşteriye aynı titizlikle yaklaşırken, insan personelin yorgunluk ve ruh hali yanıt kalitesini değiştiriyor. Hız-dönüşüm ilişkisinin insan tarafında nasıl kurulacağı [mesaj-dönüşüm rehberimizin](/blog/whatsappta-musteri-neden-cevapsiz-birakir) konusudur.
 
 **Beşinci metrik: Çok Dilli Hizmet Kalitesi**
 
@@ -169,7 +169,7 @@ Adil bir karşılaştırma için AI'ın zayıf yönlerini de söylemek lazım. A
 
 ## Hangi Acente Hangi Yaklaşımı Seçmeli?
 
-Genel kurallar:
+Genel kurallar ([asistan-kıyas rehberimiz](/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi) kategori seçimini test sorularıyla derinleştirir):
 
 **Tam manuel WhatsApp şu durumda anlamlı:**
 
@@ -220,7 +220,7 @@ Hangi yaklaşımın size uygun olduğuna karar vermek için kendinize sorun:
 
 2. **Mesai dışı kayıp fırsatlar ciddi mi?** Sezon yoğunluğunda gece-hafta sonu mesajlarına yanıt veremiyorsanız AI çözüm.
 
-3. **Yabancı müşteri segmentiniz var mı?** Varsa AI'ın çoklu dil avantajı belirleyici.
+3. **Yabancı müşteri segmentiniz var mı?** Varsa AI'ın çoklu dil avantajı belirleyici — bkz. [yabancı turiste tur satışı rehberimiz](/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim).
 
 4. **Personel sayısını azaltmak mı, hacmi büyütmek mi istiyorsunuz?** AI ikisi için de uygun ama strateji farklı.
 

@@ -25,7 +25,7 @@ This guide explains the criteria to evaluate when comparing tour operator softwa
 
 **Tour catalog management.** Keeping tour packages, dates, prices, photos, and included/excluded services in one database. A system where staff never have to ask "what's the price of this tour?"
 
-**Customer relationships (CRM).** Storing customer information, purchase history, preferences, communication notes. Ensuring customer information doesn't disappear when staff leave.
+**Customer relationships (CRM).** Storing customer information, purchase history, preferences, communication notes. Ensuring customer information doesn't disappear when staff leave — how that record turns into sales is covered in [our agency CRM guide](/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 **Payment and collections.** POS integration, credit card processing, installment management, late payment tracking. Integrations with popular payment gateways in your market matter.
 
@@ -37,7 +37,7 @@ This guide explains the criteria to evaluate when comparing tour operator softwa
 
 **Marketing automation.** Campaign management, automated email/SMS, customer segmentation, birthday reminders. Critical for revenue growth but frequently skipped.
 
-**Messaging infrastructure.** WhatsApp Business API integration, AI chatbot, multilingual communication. This category has gained importance rapidly in the past 2-3 years.
+**Messaging infrastructure.** WhatsApp Business API integration, AI chatbot, [multilingual communication](/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim). This category has gained importance rapidly in the past 2-3 years.
 
 **Reporting and analytics.** The data a manager needs to make decisions: which tour sold what, which staff performed how, which season was profitable.
 
@@ -85,7 +85,7 @@ Some agencies use software from multiple categories. For example, classic ERP fo
 
 ## 12 Questions to Ask Before Deciding
 
-Before going to a software demo, answer these 12 questions in writing:
+Before going to a software demo, answer these 12 questions in writing (use them together with the category tests in [our assistant comparison guide](/en/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi)):
 
 1. **How many staff will use it?** 1-3 people, 5-10, or 20+? Software pricing is generally "per user."
 2. **What type of tours do you sell?** Domestic day trips, domestic packages, international, hotel only, flight only, transfers?

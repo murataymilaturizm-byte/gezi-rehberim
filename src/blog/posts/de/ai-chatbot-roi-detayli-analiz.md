@@ -37,7 +37,7 @@ Branchenschätzungen zufolge verbringen kundenorientierte Mitarbeiter 2–3 Stun
 
 ### Der Kundenverlust außerhalb der Geschäftszeiten
 
-Ein Kunde in den Golfstaaten, der um 23 Uhr Ortszeit nach der Torverfügbarkeit fragt, wird nicht bis zu Ihrem nächsten Morgen warten. Für Agenturen, die internationale Märkte über mehrere Zeitzonen hinweg bedienen, ist das „Fenster außerhalb der Geschäftszeiten" nicht ein paar späte Nachtstunden — es ist der gesamte normale Geschäftstag in einem anderen Teil der Welt.
+Ein Kunde in den Golfstaaten, der um 23 Uhr Ortszeit nach der Torverfügbarkeit fragt, wird nicht bis zu Ihrem nächsten Morgen warten. Für Agenturen, die internationale Märkte über mehrere Zeitzonen hinweg bedienen, ist das „Fenster außerhalb der Geschäftszeiten" nicht ein paar späte Nachtstunden — es ist der gesamte normale Geschäftstag in einem anderen Teil der Welt. Wie aus der Nachtnachricht eine Buchung wird, zeigt der Nacht-und-Wochenende-Abschnitt [unseres Nachrichten-Konversions-Leitfadens](/de/blog/whatsappta-musteri-neden-cevapsiz-birakir).
 
 Dieser Verlust ist quantifizierbar: Wenn 25 % Ihrer monatlichen Anfragen außerhalb der Geschäftszeiten eintreffen und 50 % davon ohne Warten weitergehen, gilt die obige Berechnung für entgangene Einnahmen direkt.
 
@@ -135,7 +135,7 @@ Das ist eine 2–3-fache Kapazitätssteigerung ohne zusätzliche Einstellungen.
 
 **Konservative monatliche Verluste vor dem Chatbot:**
 - Verpasste Anfragen außerhalb der Geschäftszeiten: 12 Anfragen × 40 % Verlustrate × 500 € = 2.400 €/Monat
-- Sprachbarrieren-Verluste: ~3–5 verpasste Buchungen/Jahr × 600 € Durchschnitt: ~250 €/Monat-Äquivalent
+- Sprachbarrieren-Verluste ([unser Leitfaden für mehrsprachigen Verkauf](/de/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim) behandelt diese Barriere ausführlich): ~3–5 verpasste Buchungen/Jahr × 600 € Durchschnitt: ~250 €/Monat-Äquivalent
 
 **KI-Chatbot-Kosten:** ~30 €/Monat
 

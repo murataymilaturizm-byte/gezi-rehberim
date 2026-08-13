@@ -38,7 +38,7 @@ Bu fark performansa doğrudan yansıyor. Kural tabanlı chatbotlarda dönüşüm
 
 ## Satışları Patlatan Birinci Faktör: Yanıt Hızı
 
-Tur sektöründe küçük gibi görünen ama satışları belirleyen bir gerçek var: müşteri yazdığında ilk yanıt aldığı acentea karşı bilinçaltında pozitif önyargı geliştiriyor. Akademik çalışmalar bunu defalarca gösterdi.
+Tur sektöründe küçük gibi görünen ama satışları belirleyen bir gerçek var: müşteri yazdığında ilk yanıt aldığı acentea karşı bilinçaltında pozitif önyargı geliştiriyor. Akademik çalışmalar bunu defalarca gösterdi. Cevap hızının rezervasyona tam olarak nasıl dönüştüğünü [mesaj-dönüşüm rehberimizde](/blog/whatsappta-musteri-neden-cevapsiz-birakir) adım adım inceledik.
 
 5 dakika içinde yanıt alan müşterinin ilgili acentea bağlanma olasılığı %42 daha yüksek. 30 dakika geçtiğinde bu avantaj %15'e iniyor. 1 saati geçince müşterinin başka acentea geçme olasılığı %58.
 
@@ -56,7 +56,7 @@ Bu tutarsızlık müşteri gözünde acentea olan güveni sarsıyor. Müşteri "
 
 AI chatbot her seferinde aynı titizlikle çalışıyor. Tur fiyatları sistemde tanımlı, otomatik olarak doğru fiyat söyleniyor. Tur açıklamaları, dahil olan/olmayan hizmetler, vize gereklilikleri, çocuk indirimleri — hepsi standart ve doğru.
 
-Bu tutarlılık özellikle yabancı müşterilerde fark yaratıyor. Bir Alman müşteri Almanca, bir Suudi müşteri Arapça konuşuyor — ikisi de aynı kalitede, profesyonel hizmet alıyor. İnsan personel ile bu seviyeyi sağlamak için her dilde uzman çalıştırmak gerekiyor — çoğu acente için ekonomik değil.
+Bu tutarlılık özellikle yabancı müşterilerde fark yaratıyor. Bir Alman müşteri Almanca, bir Suudi müşteri Arapça konuşuyor — ikisi de aynı kalitede, profesyonel hizmet alıyor. İnsan personel ile bu seviyeyi sağlamak için her dilde uzman çalıştırmak gerekiyor — çoğu acente için ekonomik değil. Dil bariyerinin satış tarafını [yabancı turiste tur satışı rehberimizde](/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim) ayrıntılı ele aldık.
 
 ## Üçüncü Faktör: Akıllı Upsell ve Cross-Sell
 
@@ -110,7 +110,7 @@ Bu taktiklerin etik sınırları var elbette. AI chatbot gerçekten son 3 yer va
 
 İnsan personel müşteri görüşmesi bittikten sonra not tutmaya zaman bulamıyor. Müşterinin hangi turla ilgilendiği, hangi bütçe aralığında konuştuğu, ne zaman tatil düşündüğü — kafalarda kalıyor. Personel ayrılınca bu bilgi de gidiyor.
 
-AI chatbot her konuşmayı yapılandırılmış veri olarak saklıyor. Sonuç olarak her müşteri hakkında zengin bir profil oluşuyor:
+AI chatbot her konuşmayı yapılandırılmış veri olarak saklıyor. Sonuç olarak her müşteri hakkında zengin bir profil oluşuyor — bu kaydın sezonluk yeniden-satışa nasıl dönüştüğü [acente CRM rehberimizin](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) konusudur:
 
 - Daha önce hangi turlarla ilgilendiği
 - Hangi sezonlarda tatil yapma eğiliminde olduğu

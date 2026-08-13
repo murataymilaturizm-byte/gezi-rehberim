@@ -73,7 +73,7 @@ Staff rotation, training gaps, and inattention reduce consistency in manual syst
 | Conversion from after-hours conversations | 3-5% (late reply) | 15-18% |
 | Weekend conversion | 8-10% | 18-20% |
 
-The gap in conversion rate comes from response speed and message quality. While an AI chatbot approaches every customer with the same precision, a human staff member's fatigue and mood affects response quality.
+The gap in conversion rate comes from response speed and message quality. While an AI chatbot approaches every customer with the same precision, a human staff member's fatigue and mood affects response quality. How to build the speed-conversion link on the human side is the subject of [our message-conversion guide](/en/blog/whatsappta-musteri-neden-cevapsiz-birakir).
 
 **Metric 5: Multilingual Service Quality**
 
@@ -169,7 +169,7 @@ This is exactly why **a hybrid model** — rather than fully manual or fully AI 
 
 ## Which Agency Should Choose Which Approach?
 
-General rules:
+General rules ([our assistant comparison guide](/en/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi) goes deeper into category choice with test questions):
 
 **Fully manual WhatsApp makes sense when:**
 - Fewer than 30 customer conversations per month (small boutique)
@@ -199,7 +199,7 @@ Ask yourself:
 
 1. **How many customer conversations do you have per month?** Over 500 — look toward AI.
 2. **Are lost opportunities outside business hours significant?** If you can't respond to peak-season evening and weekend messages, AI is the solution.
-3. **Do you have a foreign customer segment?** If yes, AI's multilingual advantage is decisive.
+3. **Do you have a foreign customer segment?** If yes, AI's multilingual advantage is decisive — see [our guide to selling tours to foreign tourists](/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim).
 4. **Do you want to reduce staff, or grow volume?** AI works for both but the strategy differs.
 5. **Do you have long-term personal relationships with customers?** If yes: hybrid. If no: full AI.
 6. **What's your 3-year growth plan?** If you want to scale, the AI infrastructure should be built early.

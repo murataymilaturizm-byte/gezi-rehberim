@@ -37,7 +37,7 @@ Industry estimates suggest customer-facing staff spend 2–3 hours daily on thes
 
 ### The After-Hours Customer Loss
 
-A customer in the Gulf states who messages at 11pm their local time about a tour availability isn't going to wait until your morning. For agencies serving international markets across multiple time zones, the "after-hours window" isn't a few late-night hours — it's the entire normal business day in another part of the world.
+A customer in the Gulf states who messages at 11pm their local time about a tour availability isn't going to wait until your morning. For agencies serving international markets across multiple time zones, the "after-hours window" isn't a few late-night hours — it's the entire normal business day in another part of the world. How a night message becomes a booking is covered in the night-and-weekend section of [our message-conversion guide](/en/blog/whatsappta-musteri-neden-cevapsiz-birakir).
 
 This loss is quantifiable: If 25% of your monthly queries arrive outside business hours and 50% of those move on without waiting for a response, the missed-revenue calculation above applies directly.
 
@@ -135,7 +135,7 @@ This is a 2–3x capacity increase without additional hiring.
 
 **Conservative pre-chatbot monthly losses:**
 - Missed after-hours queries: 12 queries × 40% loss × $500 = $2,400/month
-- Language barrier losses: ~3–5 missed bookings/year × $600 avg: ~$250/month equivalent
+- Language barrier losses ([our multilingual sales guide](/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim) covers this barrier in detail): ~3–5 missed bookings/year × $600 avg: ~$250/month equivalent
 
 **AI chatbot cost:** ~$30/month
 

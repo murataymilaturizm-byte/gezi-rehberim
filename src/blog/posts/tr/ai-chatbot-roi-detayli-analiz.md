@@ -37,7 +37,7 @@ Ortalama bir turizm çalışanının bu sorulara harcadığı süre: Günde 2-3 
 
 ### Gece Müşteri Kaybı
 
-Gece 23:00'da "Kapadokya turuna yer var mı?" diye mesaj atan müşteri, sabahı beklemez. Özellikle Körfez ülkelerinden gelen yabancı turistler farklı saat diliminde çalışıyor; onların "iş saati" sizin gece saatinizdir.
+Gece 23:00'da "Kapadokya turuna yer var mı?" diye mesaj atan müşteri, sabahı beklemez. Özellikle Körfez ülkelerinden gelen yabancı turistler farklı saat diliminde çalışıyor; onların "iş saati" sizin gece saatinizdir — gece gelen mesajın rezervasyona nasıl bağlandığını [mesaj-dönüşüm rehberimizin](/blog/whatsappta-musteri-neden-cevapsiz-birakir) gece-ve-hafta-sonu bölümünde anlattık.
 
 Bu kayıp somutlaştırılabilir: Aylık 100 sorgunun %25'i (25 sorgu) mesai dışı saatlerde geliyor. Bunların %50'si (12 sorgu) sabahı beklemeden başka acenteye yöneldiğinde, yukarıdaki hesap tekrar geçerli.
 
@@ -135,7 +135,7 @@ Bu, ekstra işe alım yapmadan %2-3x kapasite artışı anlamına gelir.
 
 **AI chatbot öncesi yıllık kayıp (tahmini):**
 - Kaçırılan gece sorguları (aylık 12 sorgu × %40 kayıp × 5.000 TL): 24.000 TL/ay
-- Yabancı dil kayıpları: Yılda 3-5 kaçırılan rezervasyon × 6.000 TL: 18.000-30.000 TL/yıl
+- Yabancı dil kayıpları ([çok dilli satış rehberimiz](/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim) bu bariyeri ayrıntılı işler): Yılda 3-5 kaçırılan rezervasyon × 6.000 TL: 18.000-30.000 TL/yıl
 
 **AI chatbot maliyeti:** ~300 TL/ay = 3.600 TL/yıl
 
