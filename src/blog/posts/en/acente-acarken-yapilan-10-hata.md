@@ -65,7 +65,7 @@ In this article you'll find the 10 traps new agencies fall into most, with a pra
 
 **The reality:** An unwritten term is interpreted against the agency at the first dispute. Cancellation-refund arguments are the number-one area where new agencies lose both money and reputation — and the regulations already require written pre-information in package-tour sales.
 
-**The fix:** Ready before opening: a clear price list (child/single supplements included), a written deposit-refund-cancellation policy, a standard tour contract and a pre-information form. Prepare them properly once, use the same set in every sale.
+**The fix:** Ready before opening: a clear price list (child/single supplements included), a written deposit-refund-cancellation policy, a standard tour contract and a pre-information form. Prepare them properly once, use the same set in every sale — we cover how to build the cancellation-refund policy step by step, template included: [How to Write a Tour Cancellation & Refund Policy](/en/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir)
 
 ## 7. Hanging the Supplier Chain on a Single Thread
 

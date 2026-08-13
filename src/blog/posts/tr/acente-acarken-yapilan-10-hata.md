@@ -65,7 +65,7 @@ Bu yazıda, yeni acentelerin en sık düştüğü 10 tuzağı ve her biri için 
 
 **Gerçek:** Yazılı olmayan koşul, ilk anlaşmazlıkta acentenin aleyhine yorumlanır. İptal-iade tartışmaları, yeni acentelerin hem para hem itibar kaybettiği bir numaralı alandır — ve mevzuat, paket tur satışında yazılı bilgilendirmeyi zaten zorunlu kılar.
 
-**Çözüm:** Açılıştan önce hazır olsun: net fiyat listesi (çocuk/tek kişi farkları dahil), yazılı kapora-iade-iptal politikası, standart tur sözleşmesi ve ön bilgilendirme formu. Bunları bir kez düzgün hazırlayın, her satışta aynısını kullanın.
+**Çözüm:** Açılıştan önce hazır olsun: net fiyat listesi (çocuk/tek kişi farkları dahil), yazılı kapora-iade-iptal politikası, standart tur sözleşmesi ve ön bilgilendirme formu. Bunları bir kez düzgün hazırlayın, her satışta aynısını kullanın — iptal-iade politikasının nasıl kurgulanacağını şablonlu bir rehberde adım adım anlattık: [Tur İptal ve İade Politikası Nasıl Yazılır?](/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir)
 
 ## 7. Tedarikçi Zincirini Tek Ağıza Bağlamak
 

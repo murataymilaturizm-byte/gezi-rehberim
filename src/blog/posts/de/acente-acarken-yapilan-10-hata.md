@@ -65,7 +65,7 @@ In diesem Beitrag finden Sie die 10 häufigsten Fallen neuer Agenturen — mit e
 
 **Die Realität:** Eine ungeschriebene Bedingung wird beim ersten Streit gegen die Agentur ausgelegt. Storno-Erstattungs-Streitigkeiten sind das Feld Nummer eins, auf dem neue Agenturen Geld und Ruf verlieren — und die Vorschriften verlangen beim Pauschalreiseverkauf ohnehin schriftliche Vorabinformation.
 
-**Die Lösung:** Vor der Eröffnung fertig: klare Preisliste (inkl. Kinder-/Einzelzuschlägen), schriftliche Anzahlungs-Storno-Erstattungs-Richtlinie, Standard-Tourvertrag und Vorabinformationsformular. Einmal ordentlich erstellen, in jedem Verkauf dasselbe Set verwenden.
+**Die Lösung:** Vor der Eröffnung fertig: klare Preisliste (inkl. Kinder-/Einzelzuschlägen), schriftliche Anzahlungs-Storno-Erstattungs-Richtlinie, Standard-Tourvertrag und Vorabinformationsformular. Einmal ordentlich erstellen, in jedem Verkauf dasselbe Set verwenden — wie die Storno-Erstattungs-Richtlinie aufgebaut wird, zeigen wir Schritt für Schritt mit Vorlage: [Wie schreibt man eine Storno- und Erstattungsrichtlinie für Touren?](/de/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir)
 
 ## 7. Die Lieferkette an einen einzigen Faden hängen
 

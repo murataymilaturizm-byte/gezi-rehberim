@@ -138,7 +138,37 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Blog yazıları (25 yazı, 111 URL girişi) -->
+  <!-- Blog yazıları (26 yazı, 114 URL girişi) -->
+  <url>
+    <loc>https://turzzai.com/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/en/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/de/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"/>
+  </url>
   <url>
     <loc>https://turzzai.com/blog/whatsappta-musteri-neden-cevapsiz-birakir</loc>
     <lastmod>2026-08-26</lastmod>
