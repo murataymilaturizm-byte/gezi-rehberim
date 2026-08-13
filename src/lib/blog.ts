@@ -12,6 +12,9 @@ export interface BlogPost {
   readingTime: number;
   /** SEO-1: opsiyonel güncelleme tarihi (frontmatter `updated`) — schema dateModified */
   updated?: string;
+  /** SEO-BLOG-UI: liste-sayfası öne-çıkan alanı için editör-seçimi (frontmatter `featured: true`).
+   *  Hiçbir postta yoksa en yeni post öne çıkar. */
+  featured?: boolean;
   wordCount: number;
   content: string;
   lang: string;
@@ -127,6 +130,8 @@ function parsePost(raw: string, slug: string, lang: string, isFallback = false, 
     author:      (data.author as string)      ?? "Turzz AI",
     readingTime: (data.readingTime as number) ?? Math.ceil(wordCount / 200),
     updated:     data.updated ? String(data.updated) : undefined,
+    // parser boolean üretmez ("true" string kalır) → iki biçim de kabul
+    featured:    data.featured === true || data.featured === "true" || undefined,
     wordCount,
     content: cleanContent,
     lang,
