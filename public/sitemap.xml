@@ -138,7 +138,37 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Blog yazıları (26 yazı, 114 URL girişi) -->
+  <!-- Blog yazıları (27 yazı, 117 URL girişi) -->
+  <url>
+    <loc>https://turzzai.com/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/de/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim</loc>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim"/>
+  </url>
   <url>
     <loc>https://turzzai.com/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir</loc>
     <lastmod>2026-08-28</lastmod>
