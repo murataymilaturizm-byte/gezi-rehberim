@@ -130,6 +130,11 @@ export class WhatsAppAdapter implements ChannelAdapter {
                 && !!(parsed.reservationInfo && parsed.reservationInfo.dateId),
               ageMinutes: _ageMin,
               lastLanguage: parsed.language,
+              // P9-C: hatırlatma-önerisi verisi (yalnız metin + tek-adaylı öneri;
+              // state restore YOK — tarih güncel müsaitlikten yeniden sorulur)
+              lastTourId: parsed.reservationInfo?.tourId || parsed.currentTour?.id,
+              lastTourTitle: parsed.reservationInfo?.tourTitle || parsed.currentTour?.title,
+              lastSelectedDate: parsed.reservationInfo?.selectedDate,
             },
           };
         }

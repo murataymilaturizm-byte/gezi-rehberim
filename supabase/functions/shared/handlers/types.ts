@@ -17,6 +17,13 @@ export interface StaleInfo {
   ageMinutes: number;
   /** Drop edilen state'in dili (mesaj 7 dil seçiminde fallback) */
   lastLanguage?: string;
+  /** P9-C: eski state'te seçili tur vardıysa hatırlatma-önerisi için taşınır.
+   *  YALNIZ metin + tek-adaylı öneri üretir; state restore YOK (bayat kontenjan/
+   *  tarih riski) — tarih waiting_for_date ile güncel müsaitlikten yeniden sorulur. */
+  lastTourId?: string;
+  lastTourTitle?: string;
+  /** Eski seçili tarih — yalnız bugün-veya-gelecekteyse hatırlatma metninde anılır */
+  lastSelectedDate?: string;
 }
 
 /**

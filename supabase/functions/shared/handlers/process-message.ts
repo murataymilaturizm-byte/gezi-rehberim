@@ -456,19 +456,22 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // kanalda yazıyor; sebepsiz 📞 kaldırıldı (şablonlardaki ${_agPhone} boş).
     const _agPhone = "";
 
-    // Yarım rezervasyon vardıysa: "iptal edildi, baştan başlayalım" — kullanıcı tarihi/pax'ı yeniden seçmeli
+    // Yarım rezervasyon vardıysa: DÜRÜST sıfırlama + (mümkünse) tur-hatırlatması
     // Yarım rezervasyon yoksa: yumuşak "tekrar hoş geldiniz" — kullanıcı muhtemelen yeni iş için yazıyor
     const _hadReservation = _stale.hadReservationInProgress;
+    // P9-C METİN: state fiilen sıfırlanıyor → eski "devam-ediyoruz" iması TÜM dillerden
+    // kalktı (söz-davranış uyumu). Dakika sayısı da müşteri-mesajından çıktı (robotik/
+    // suçlayıcı duruyordu; değer console.log'da yaşamaya devam ediyor).
     const _resetMsgs: Record<string, string> = _hadReservation
       ? {
-          // FIX3: "iptal edildi" YOK (DB'de kayıt hiç oluşmadı) → oturum-zaman-aşımı çerçevesi.
-          tr: `Oturumunuz zaman aşımına uğradı (${_stale.ageMinutes} dakikadır yanıt alınmadı). Kaldığınız yerden yeniden başlayalım — hangi tur ilginizi çeker?${_agPhone}`,
-          en: `Your session has timed out (no response for ${_stale.ageMinutes} minutes). Let's pick up again — which tour interests you?${_agPhone}`,
-          de: `Ihre Sitzung ist abgelaufen (keine Antwort seit ${_stale.ageMinutes} Minuten). Machen wir weiter — welche Tour interessiert Sie?${_agPhone}`,
-          ru: `Время сессии истекло (нет ответа ${_stale.ageMinutes} мин.). Продолжим — какой тур вас интересует?${_agPhone}`,
-          ar: `انتهت مهلة جلستك (لا استجابة منذ ${_stale.ageMinutes} دقيقة). لنكمل من جديد — ما الجولة التي تهمك؟${_agPhone}`,
-          fr: `Votre session a expiré (pas de réponse depuis ${_stale.ageMinutes} minutes). Reprenons — quel circuit vous intéresse ?${_agPhone}`,
-          es: `Su sesión ha expirado (sin respuesta durante ${_stale.ageMinutes} minutos). Continuemos — ¿qué tour le interesa?${_agPhone}`,
+          // FIX3: "iptal edildi" YOK (DB'de kayıt hiç oluşmadı) → baştan-başlama çerçevesi.
+          tr: `Aradan zaman geçtiği için rezervasyon işleminize baştan başlıyoruz.${_agPhone}`,
+          en: `Since some time has passed, we're starting your booking over.${_agPhone}`,
+          de: `Da etwas Zeit vergangen ist, beginnen wir Ihre Buchung von vorn.${_agPhone}`,
+          ru: `Прошло некоторое время, поэтому начнём ваше бронирование заново.${_agPhone}`,
+          ar: `نظراً لمرور بعض الوقت، سنبدأ حجزك من جديد.${_agPhone}`,
+          fr: `Comme un certain temps s'est écoulé, nous reprenons votre réservation depuis le début.${_agPhone}`,
+          es: `Como ha pasado un tiempo, empezamos su reserva desde el principio.${_agPhone}`,
         }
       : {
           tr: `Tekrar hoş geldiniz! 👋 Size nasıl yardımcı olabilirim?${_agPhone}`,
@@ -479,11 +482,63 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           fr: `Bon retour ! 👋 Comment puis-je vous aider ?${_agPhone}`,
           es: `¡Bienvenido de nuevo! 👋 ¿Cómo puedo ayudarle?${_agPhone}`,
         };
-    const _resetReply = _resetMsgs[_lang] || _resetMsgs.tr;
+    let _resetReply = _resetMsgs[_lang] || _resetMsgs.tr;
     // Fresh context — yeni stage GREETING/BROWSING'e dönmüş gibi
     const _freshCtx = createInitialContext(_lang, getDefaultToneForLanguage(_lang) as any);
     _freshCtx.collectEmail = agency.collect_email === true;
-    console.log(`[process-message] L1 stale reset: lastStage=${_stale.lastStage} age=${_stale.ageMinutes}min hadReservation=${_hadReservation}`);
+    // === P9-C HATIRLATMA KATMANI ===
+    // Eski state'te tur VARSA ve tur HÂLÂ satıştaysa (findTourById güncel listeden):
+    // mesaja hatırlatma + fresh context'e TEK-ADAYLI pendingTourClarification yazılır.
+    // "evet"/kısmi-ad → 7b-0 tek-atış seçimi → produceTourChangeContext dateId/selectedDate'i
+    // SIFIRLAR + waiting_for_date → tarih GÜNCEL müsaitlikten yeniden sorulur.
+    // Tam state-restore bilinçli YOK: bayat kontenjan/geçmiş-tarih riski.
+    // Bayat-tarih koruması: eski tarih yalnız bugün-veya-gelecekteyse metinde anılır.
+    let _remindKind = "yok";
+    if (_hadReservation) {
+      const _stTour = _stale.lastTourId && _stale.lastTourTitle ? findTourById(_stale.lastTourId, tours) : null;
+      if (_stTour) {
+        const _stTitle = getLocalizedTourTitle(_stTour.title || _stale.lastTourTitle!, _lang) || _stale.lastTourTitle!;
+        const _istToday = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" });
+        const _dateOk = !!_stale.lastSelectedDate && String(_stale.lastSelectedDate).slice(0, 10) >= _istToday;
+        const _dateTxt = _dateOk ? formatDateForLanguage(String(_stale.lastSelectedDate), _lang) : "";
+        const _remindMsgs: Record<string, string> = _dateOk
+          ? {
+              tr: ` Daha önce ${_stTitle} için ${_dateTxt} tarihine bakıyordunuz — dilerseniz oradan devam edelim 😊`,
+              en: ` You were previously looking at ${_stTitle} for ${_dateTxt} — happy to continue from there if you like 😊`,
+              de: ` Sie hatten sich zuvor ${_stTitle} für den ${_dateTxt} angesehen — gern machen wir dort weiter 😊`,
+              ru: ` Ранее вы интересовались туром ${_stTitle} на ${_dateTxt} — можем продолжить с этого места 😊`,
+              ar: ` كنت تطّلع سابقاً على ${_stTitle} بتاريخ ${_dateTxt} — يسعدنا المتابعة من هناك إذا رغبت 😊`,
+              fr: ` Vous consultiez précédemment ${_stTitle} pour le ${_dateTxt} — nous pouvons reprendre là si vous le souhaitez 😊`,
+              es: ` Antes estaba consultando ${_stTitle} para el ${_dateTxt} — con gusto continuamos desde ahí 😊`,
+            }
+          : {
+              tr: ` Daha önce ${_stTitle} ile ilgileniyordunuz — dilerseniz oradan devam edelim 😊`,
+              en: ` You were previously interested in ${_stTitle} — happy to continue from there if you like 😊`,
+              de: ` Sie hatten sich zuvor für ${_stTitle} interessiert — gern machen wir dort weiter 😊`,
+              ru: ` Ранее вы интересовались туром ${_stTitle} — можем продолжить с этого места 😊`,
+              ar: ` كنت مهتماً سابقاً بـ${_stTitle} — يسعدنا المتابعة من هناك إذا رغبت 😊`,
+              fr: ` Vous vous intéressiez précédemment à ${_stTitle} — nous pouvons reprendre là si vous le souhaitez 😊`,
+              es: ` Antes le interesaba ${_stTitle} — con gusto continuamos desde ahí 😊`,
+            };
+        _resetReply += _remindMsgs[_lang] || _remindMsgs.tr;
+        _freshCtx.pendingTourClarification = [{ id: _stTour.id, title: _stTour.title }];
+        _remindKind = _dateOk ? "tur+tarih" : "yalnız-tur(bayat/eksik-tarih)";
+      } else {
+        // Tur yok/satıştan kalkmış → jenerik soru (eski ikinci-cümle davranışı)
+        const _askMsgs: Record<string, string> = {
+          tr: ` Hangi tur ilginizi çeker?`,
+          en: ` Which tour interests you?`,
+          de: ` Welche Tour interessiert Sie?`,
+          ru: ` Какой тур вас интересует?`,
+          ar: ` ما الجولة التي تهمك؟`,
+          fr: ` Quel circuit vous intéresse ?`,
+          es: ` ¿Qué tour le interesa?`,
+        };
+        _resetReply += _askMsgs[_lang] || _askMsgs.tr;
+        _remindKind = _stale.lastTourId ? "tur-satışta-değil" : "eski-tur-yok";
+      }
+    }
+    console.log(`[process-message] L1 stale reset: lastStage=${_stale.lastStage} age=${_stale.ageMinutes}min hadReservation=${_hadReservation} hatırlatma=${_remindKind}`);
     await _save(_resetReply, _freshCtx);
     await adapter.sendResponse(_resetReply);
     return { success: true, response: _resetReply, newContext: _freshCtx };
@@ -1903,6 +1958,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _idx = parseInt(_numSel[1]) - 1;
       if (_idx >= 0 && _idx < _clarCands.length) _clarChosen = _clarCands[_idx];
     }
+    // 1.5) P9-C: TEK-ADAYLI öneri (stale-hatırlatma yazar) → olumlama tek adayı seçer.
+    //      YALNIZ length===1 korunur: 7c belirsiz-listesi her zaman ≥2 aday yazar,
+    //      o akışın davranışı değişmez. "hayır"/alakasız → eşleşmez → tek-atış temizlik.
+    if (!_clarChosen && _clarCands.length === 1 &&
+        /^\s*(evet|tamam|olur|peki|tabii?|olsun|devam|yes|ok(?:ay)?|sure|yeah|yep|ja|gerne|oui|s[íi]|claro|vale|да|давай(?:те)?|конечно|نعم|طيب|تمام|أجل)\b/iu.test(message)) {
+      _clarChosen = _clarCands[0];
+    }
     // 2) Kısmi-ad seçimi: mesajın anlamlı kelimelerinin HEPSİNİ içeren TEK aday
     //    ("kültür turu" → "Kapadokya Kültür Turu" ✓, "Kapadokya Balon Turu" ✗).
     //    Stopword'ler ("turu/tur/tour") ayırt edici sayılmaz ama kapsama katılır.
@@ -1940,7 +2002,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           pendingTourClarification: undefined,
         };
         _tourJustChangedThisTurn = true;
-        console.log(`[process-message] A1 NETLEŞTİRME-SEÇİMİ: "${_prevT}" → "${_clarFull.title}" (${_numSel ? "numara" : "kısmi-ad"})`);
+        console.log(`[process-message] A1 NETLEŞTİRME-SEÇİMİ: "${_prevT}" → "${_clarFull.title}" (${_numSel ? "numara" : _clarCands.length === 1 ? "olumlama/tek-aday" : "kısmi-ad"})`);
       }
     } else {
       console.log(`[process-message] A1 netleştirme-cevabı eşleşmedi → normal akış (tek-atış temizlendi)`);

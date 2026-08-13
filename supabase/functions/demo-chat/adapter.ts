@@ -76,6 +76,11 @@ export class DemoChatAdapter implements ChannelAdapter {
               && !!(c.reservationInfo && c.reservationInfo.dateId),
             ageMinutes: _ageMin,
             lastLanguage: c.language,
+            // P9-C: hatırlatma-önerisi verisi (yalnız metin + tek-adaylı öneri;
+            // state restore YOK — tarih güncel müsaitlikten yeniden sorulur)
+            lastTourId: c.reservationInfo?.tourId || c.currentTour?.id,
+            lastTourTitle: c.reservationInfo?.tourTitle || c.currentTour?.title,
+            lastSelectedDate: c.reservationInfo?.selectedDate,
           },
         };
       }

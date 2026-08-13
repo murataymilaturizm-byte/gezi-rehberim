@@ -5856,4 +5856,52 @@ for (const l of ["tr", "en", "de", "fr", "es", "ru", "ar"])
   assert("E4.KAYNAK lead-detection'da (SW_SAVED hariç) vaat kalmadı", _ldHits.length === 0, _ldHits[0] || "");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// P9-C — STALE-RESET SÖZ-DAVRANIŞ UYUMU + TUR-HATIRLATMA (2026-08-13) — KALICI
+// Canlı vaka: "kaldığınız yerden yeniden başlayalım" derken state SIFIRLANIYORDU.
+// Kilit 1: yalan ifade tüm dillerden kalktı + dakika-sayısı müşteri-mesajından çıktı.
+// Kilit 2: hatırlatma tek-adaylı pendingTourClarification üzerinden (state-restore YOK);
+//          tarih yalnız bugün-veya-gelecekteyse metne girer; 7b-0 olumlama tek-adayda çalışır.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── P9-C stale-reset dürüstlük + hatırlatma ──");
+{
+  const _pmSrc = await Deno.readTextFile("supabase/functions/shared/handlers/process-message.ts");
+  // 1) Yalan ifade hiçbir dilde kalmadı (TR kalıbı + EN/DE eski kalıpları)
+  assert("P9C.YALAN 'Kaldığınız yerden' kalktı", !/[Kk]aldığınız yerden/.test(_pmSrc));
+  assert("P9C.YALAN EN 'pick up again' kalktı", !_pmSrc.includes("pick up again"));
+  // 2) Dakika sayısı müşteri şablonlarından çıktı (log'da serbest)
+  assert("P9C.DAKİKA müşteri-metninde ageMinutes yok",
+    !/dakikadır yanıt|no response for \$\{|keine Antwort seit \$\{/.test(_pmSrc));
+  // 3) Dürüst sıfırlama metni 7 dilde mevcut
+  for (const [l, probe] of [["tr","Aradan zaman geçtiği için"],["en","starting your booking over"],["de","von vorn"],["ru","начнём ваше бронирование заново"],["ar","سنبدأ حجزك من جديد"],["fr","depuis le début"],["es","desde el principio"]] as [string,string][])
+    assert(`P9C.METİN ${l} dürüst sıfırlama`, _pmSrc.includes(probe));
+  // 4) Hatırlatma mekanizması: tek-adaylı pendingTourClarification + güncel-liste doğrulaması
+  assert("P9C.MEKANİZMA fresh ctx'e tek-adaylı öneri yazılıyor",
+    /_freshCtx\.pendingTourClarification = \[\{ id: _stTour\.id/.test(_pmSrc));
+  assert("P9C.MEKANİZMA tur güncel listeden doğrulanıyor (findTourById)",
+    /_stale\.lastTourId && _stale\.lastTourTitle \? findTourById\(_stale\.lastTourId, tours\)/.test(_pmSrc));
+  // 5) Bayat-tarih koruması: İstanbul-bugün karşılaştırması hatırlatma bloğunda
+  assert("P9C.BAYAT-TARİH bugün-veya-gelecek guard'ı var",
+    /_dateOk = !!_stale\.lastSelectedDate && String\(_stale\.lastSelectedDate\)\.slice\(0, 10\) >= _istToday/.test(_pmSrc));
+  // 6) 7b-0 olumlama YALNIZ tek-adayda
+  assert("P9C.OLUMLAMA 7b-0'da length===1 şartıyla",
+    /_clarCands\.length === 1 &&\s*\n?\s*\/\^\\s\*\(evet/.test(_pmSrc));
+  // 7) W8 regresyonu: stale dalında telefon-eki hâlâ boş
+  assert("P9C.W8 _agPhone stale dalında boş sabit", _pmSrc.includes('const _agPhone = "";'));
+  // 8) Restore-yasağı: produceTourChangeContext tarihleri sıfırlamaya devam ediyor
+  const _tcSrc = await Deno.readTextFile("supabase/functions/shared/services/tour-change.ts");
+  assert("P9C.RESTORE-YOK tour-change dateId'yi sıfırlıyor", /dateId: undefined/.test(_tcSrc));
+  // 9) İki adapter da hatırlatma-verisini taşıyor
+  for (const [tag, p] of [["wa","supabase/functions/whatsapp-webhook/adapter.ts"],["demo","supabase/functions/demo-chat/adapter.ts"]] as [string,string][]) {
+    const _a = await Deno.readTextFile(p);
+    assert(`P9C.ADAPTER ${tag} lastTourId/Title/SelectedDate sentinel'de`,
+      /lastTourId: /.test(_a) && /lastTourTitle: /.test(_a) && /lastSelectedDate: /.test(_a));
+  }
+  // 10) Bayat-tarih davranış-eşdeğeri: ISO string karşılaştırma mantığı
+  const _istToday = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" });
+  assert("P9C.TARİH geçmiş tarih anılmaz", !("2024-01-01" >= _istToday));
+  assert("P9C.TARİH gelecek tarih anılır", ("2030-01-01" >= _istToday));
+  assert("P9C.TARİH bugün anılır (>= sınırı)", (_istToday >= _istToday));
+}
+
 Deno.exit(fail === 0 ? 0 : 1);
