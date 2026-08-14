@@ -83,15 +83,15 @@ Instagram ve TikTok görsel/video içerik için güçlüdür. Facebook ise özel
 
 Türkiye'de WhatsApp iletişiminin en yaygın kanalıdır. Seyahat kararları çoğunlukla WhatsApp üzerinde alınır.
 
-**WhatsApp Business hesabı açın.** Profil fotoğrafı, açıklama, çalışma saatleri ve katalog (tur paketleriniz) ekleyin. WhatsApp Business'ın otomatik yanıtlama ve etiketleme özellikleri, az personelle bile düzenli bir hizmet sunmanıza olanak tanır.
+**WhatsApp Business hesabı açın.** Profil fotoğrafı, açıklama, çalışma saatleri ve katalog (tur paketleriniz) ekleyin. WhatsApp Business'ın otomatik yanıtlama ve etiketleme özellikleri, az personelle bile düzenli bir hizmet sunmanıza olanak tanır — adım adım kurulum için [WhatsApp Business rehberimize](/blog/acenteler-icin-whatsapp-business-kurulumu) bakın.
 
 **Yayın listesi oluşturun.** WhatsApp yayın listelerine eklediğiniz kişilere aynı anda kişisel görünen mesaj gönderebilirsiniz. Bu listeye yakın çevrenizden başlayın, zamanla eski müşterilerle zenginleştirin.
 
-**Hızlı yanıt verin.** Araştırmalar gösteriyor ki seyahat acentelerinde ilk 5 dakika içinde yanıt veren acenteler, dönüşüm oranını 3-4 kat artırıyor. Telefona bakamadığınız saatlerde otomatik yanıt mesajı ayarlayın.
+**Hızlı yanıt verin.** Araştırmalar gösteriyor ki seyahat acentelerinde ilk 5 dakika içinde yanıt veren acenteler, dönüşüm oranını 3-4 kat artırıyor. Telefona bakamadığınız saatlerde otomatik yanıt mesajı ayarlayın; cevap hızının satışa dönüşme mekaniğini [mesaj-dönüşüm rehberimizde](/blog/whatsappta-musteri-neden-cevapsiz-birakir) ayrıntılı anlattık.
 
 ## Adım 5: İlk Reklamlarınızı Deneyin (30-70 Müşteri)
 
-Organik kanallar ilk ivmeyi sağladıktan sonra ücretli reklam yatırımı mantıklı hale gelir.
+Organik kanallar ilk ivmeyi sağladıktan sonra ücretli reklam yatırımı mantıklı hale gelir — kurguyu baştan doğru kurmak için [Meta reklam rehberimizden](/blog/acenteler-icin-meta-reklam-rehberi) ilerleyin.
 
 **Meta (Facebook/Instagram) Reklamları:**
 

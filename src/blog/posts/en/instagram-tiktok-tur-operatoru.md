@@ -137,11 +137,11 @@ Including a WhatsApp link in your bio or link-in-bio page converts social media 
 
 ### 4. Convert Comments
 
-"I want to join this tour" or "what does this cost?" comments are active sales opportunities. Rather than replying with "send us a DM," proactively message those users directly. The conversion rate on this outreach is substantially higher than waiting.
+"I want to join this tour" or "what does this cost?" comments are active sales opportunities. Rather than replying with "send us a DM," proactively message those users directly; for the rules of carrying that conversation to a booking, see [our message-conversion guide](/en/blog/whatsappta-musteri-neden-cevapsiz-birakir). The conversion rate on this outreach is substantially higher than waiting.
 
 ## Paid Amplification: From Organic to Hybrid Strategy
 
-Once organic content is performing well, paid promotion amplifies that foundation.
+Once organic content is performing well, paid promotion amplifies that foundation — for the full campaign setup, move on to [our Meta ads guide](/en/blog/acenteler-icin-meta-reklam-rehberi).
 
 **Boosting:** Taking an organically high-performing Reel or TikTok and promoting it with a budget is the lowest-risk advertising approach — you're scaling content that has already proven it resonates.
 

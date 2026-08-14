@@ -137,11 +137,11 @@ Einen **WhatsApp Business Reiseveranstalter**-Link in Ihrer Bio oder auf Ihrer L
 
 ### 4. Kommentare konvertieren
 
-„Ich möchte an dieser Tour teilnehmen" oder „Was kostet das?" — Kommentare sind aktive Verkaufschancen. Anstatt mit „Schreiben Sie uns eine DM" zu antworten, schreiben Sie diesen Nutzern proaktiv direkt. Die Konversionsrate bei dieser Ansprache ist deutlich höher als beim Warten.
+„Ich möchte an dieser Tour teilnehmen" oder „Was kostet das?" — Kommentare sind aktive Verkaufschancen. Anstatt mit „Schreiben Sie uns eine DM" zu antworten, schreiben Sie diesen Nutzern proaktiv direkt. Die Konversionsrate bei dieser Ansprache ist deutlich höher als beim Warten. Die Regeln, wie aus diesem Gespräch eine Buchung wird, stehen in [unserem Nachrichten-Konversions-Leitfaden](/de/blog/whatsappta-musteri-neden-cevapsiz-birakir).
 
 ## Bezahlte Verstärkung: Von organisch zu hybrider Strategie
 
-Sobald organischer Content gut performt, verstärkt bezahlte Werbung dieses Fundament.
+Sobald organischer Content gut performt, verstärkt bezahlte Werbung dieses Fundament — das vollständige Kampagnen-Setup zeigt [unser Meta-Werbeleitfaden](/de/blog/acenteler-icin-meta-reklam-rehberi).
 
 **Boosting:** Ein organisch gut performendes Reel oder TikTok mit Budget zu promoten, ist der risikoärmste Werbeansat — Sie skalieren Content, der bereits bewiesen hat, dass er ankommt.
 

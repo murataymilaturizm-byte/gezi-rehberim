@@ -57,7 +57,7 @@ Minimum 3-5 posts per week on social media. Either build an internal team for co
 
 ## Step 3: WhatsApp Business API and AI Chatbot
 
-75% of communication in the travel sector passes through WhatsApp. For any agency handling 30+ messages per day on standard WhatsApp, moving to a professional infrastructure is mandatory.
+75% of communication in the travel sector passes through WhatsApp. For any agency handling 30+ messages per day on standard WhatsApp, moving to a professional infrastructure is mandatory — you can take the first step with [our WhatsApp Business setup guide](/en/blog/acenteler-icin-whatsapp-business-kurulumu).
 
 With WhatsApp Business API:
 - Multiple staff can work from the same number
@@ -76,7 +76,7 @@ Monthly cost in the $100-250 range. Returns are visible within the first 3 month
 
 ## Step 4: Data Collection and Customer Relationships (CRM)
 
-Where is your customer information? In staff Excel files, phone address books, scattered WhatsApp conversations. This creates several serious problems:
+Where is your customer information? In staff Excel files, phone address books, scattered WhatsApp conversations ([our agency CRM guide](/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis) shows how to bring that scatter into order). This creates several serious problems:
 
 **Customer loss.** You sent a customer to Antalya last year; they're now looking for a different destination this year. If you remembered, you'd make them a special offer — but there's no list, it can't be recalled.
 
@@ -95,7 +95,7 @@ Popular tools include HubSpot, Pipedrive, and Zoho, plus travel-specific solutio
 
 ## Step 5: Online Advertising and Performance Marketing
 
-Classic newspaper ads or trade show booths are history. You should allocate a significant portion of your budget to digital advertising.
+Classic newspaper ads or trade show booths are history. You should allocate a significant portion of your budget to digital advertising — [our Meta ads guide](/en/blog/acenteler-icin-meta-reklam-rehberi) can be your starting point for the campaign setup.
 
 **Google Ads:** For appearing on high-intent searches like "Antalya tour packages," "Cappadocia day trip." Conversion-focused campaigns.
 

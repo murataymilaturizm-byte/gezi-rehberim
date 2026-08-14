@@ -137,11 +137,11 @@ Instagram biyografisinde ya da "linktree" sayfasında WhatsApp linki bulundurmak
 
 ### 4. Yorumları Dönüştürün
 
-"Bu tura katılmak istiyorum" ya da "fiyat nedir?" gibi yorumlar aktif bir satış fırsatıdır. Bu yorumlara sadece "DM'den yazabilirsiniz" demek yerine doğrudan mesaj atın.
+"Bu tura katılmak istiyorum" ya da "fiyat nedir?" gibi yorumlar aktif bir satış fırsatıdır. Bu yorumlara sadece "DM'den yazabilirsiniz" demek yerine doğrudan mesaj atın; açılan sohbeti rezervasyona taşımanın kuralları için [mesaj-dönüşüm rehberimize](/blog/whatsappta-musteri-neden-cevapsiz-birakir) bakın.
 
 ## Ücretli Reklam Desteği: Organikten Hibrit Stratejiye
 
-Organik içerik güçlü bir temel oluşturduğunda ücretli reklam bu temeli güçlendirir.
+Organik içerik güçlü bir temel oluşturduğunda ücretli reklam bu temeli güçlendirir — kampanya kurgusunun tamamı için [Meta reklam rehberimize](/blog/acenteler-icin-meta-reklam-rehberi) geçin.
 
 **Boost (Öne çıkarma):** Organik olarak iyi performans gösteren bir Reels ya da TikTok'u ödeme yaparak daha geniş kitleye ulaştırmak, en düşük riskli reklam yöntemidir — zaten işe yarayan içeriği ölçeklendirirsiniz.
 

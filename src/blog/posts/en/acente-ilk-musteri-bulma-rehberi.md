@@ -83,15 +83,15 @@ Instagram and TikTok excel for visual and video content. Facebook remains effect
 
 WhatsApp is the primary communication channel for travel booking conversations in many markets — particularly Turkey, the Middle East, and Southeast Asia. Travel decisions frequently happen over messaging apps, not phone calls.
 
-**Set up WhatsApp Business:** Add a profile photo, business description, hours, and a product catalog with your main packages. WhatsApp Business's automated reply and label features allow you to run a professional service operation even with a very small team.
+**Set up WhatsApp Business:** Add a profile photo, business description, hours, and a product catalog with your main packages. WhatsApp Business's automated reply and label features allow you to run a professional service operation even with a very small team — see [our WhatsApp Business guide](/en/blog/acenteler-icin-whatsapp-business-kurulumu) for the step-by-step setup.
 
 **Build a broadcast list:** WhatsApp broadcast lists allow you to send the same message to multiple contacts in a way that appears as a personal conversation. Start with your close network; grow it over time with past clients and inquirers.
 
-**Respond fast:** Research consistently shows that travel agencies responding within 5 minutes convert at 3–4x the rate of those responding hours later. Set up an automated message acknowledging receipt when you can't respond immediately.
+**Respond fast:** Research consistently shows that travel agencies responding within 5 minutes convert at 3–4x the rate of those responding hours later. Set up an automated message acknowledging receipt when you can't respond immediately; the mechanics of how reply speed becomes sales are detailed in [our message-conversion guide](/en/blog/whatsappta-musteri-neden-cevapsiz-birakir).
 
 ## Step 5: Test Your First Paid Advertising (30–70 Clients)
 
-Once organic channels have generated initial momentum, paid advertising makes economic sense.
+Once organic channels have generated initial momentum, paid advertising makes economic sense — to build the setup right from the start, work from [our Meta ads guide](/en/blog/acenteler-icin-meta-reklam-rehberi).
 
 **Meta (Facebook/Instagram) Ads:**
 

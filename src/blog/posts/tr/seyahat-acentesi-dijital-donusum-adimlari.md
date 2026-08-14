@@ -57,7 +57,7 @@ Sosyal medyada haftada 3-5 paylaşım minimum. Düzenli içerik üretimi için y
 
 ## Adım 3: WhatsApp Business API ve AI Chatbot
 
-Türkiye'de tur sektöründe iletişimin %75'i WhatsApp üzerinden geçiyor. Standart WhatsApp ile 30+ mesaj/gün yöneten herhangi bir acente için profesyonel altyapıya geçiş zorunlu.
+Türkiye'de tur sektöründe iletişimin %75'i WhatsApp üzerinden geçiyor. Standart WhatsApp ile 30+ mesaj/gün yöneten herhangi bir acente için profesyonel altyapıya geçiş zorunlu — ilk adımı [WhatsApp Business kurulum rehberimizle](/blog/acenteler-icin-whatsapp-business-kurulumu) atabilirsiniz.
 
 WhatsApp Business API ile:
 
@@ -78,7 +78,7 @@ Aylık maliyet 3.000-8.000 TL bandında. Geri dönüşü ilk 3 ayda görünüyor
 
 ## Adım 4: Veri Toplama ve Müşteri İlişkileri (CRM)
 
-Müşteri bilgileriniz nerede? Personelin Excel dosyalarında, telefon defterlerinde, dağılmış WhatsApp konuşmalarında. Bu durum birkaç ciddi sorun yaratıyor:
+Müşteri bilgileriniz nerede? Personelin Excel dosyalarında, telefon defterlerinde, dağılmış WhatsApp konuşmalarında ([acente CRM rehberimiz](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) bu dağınıklığı toparlamanın yolunu anlatıyor). Bu durum birkaç ciddi sorun yaratıyor:
 
 **Müşteri kaybı.** Geçen yıl Antalya'ya gönderdiğiniz müşteri bu yıl başka bir destinasyon arıyor. Onu hatırlasanız özel teklif yapardınız ama liste yok, hatırlanamaz.
 
@@ -98,7 +98,7 @@ Türkiye'de Hubspot, Pipedrive, Zoho gibi global CRM'ler ile yerel çözümler v
 
 ## Adım 5: Online Reklam ve Performans Pazarlaması
 
-Klasik gazete reklamı ya da bayi standı dönemi geçti. Bütçenizin önemli kısmını dijital reklama ayırmalısınız.
+Klasik gazete reklamı ya da bayi standı dönemi geçti. Bütçenizin önemli kısmını dijital reklama ayırmalısınız — kampanya kurgusu için [Meta reklam rehberimiz](/blog/acenteler-icin-meta-reklam-rehberi) başlangıç noktanız olabilir.
 
 **Google Ads:** "Antalya tur paketleri", "Kapadokya günübirlik" gibi yüksek niyetli aramalarda görünmek için. Conversion-odaklı kampanyalar.
 

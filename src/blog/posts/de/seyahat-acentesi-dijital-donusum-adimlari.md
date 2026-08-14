@@ -57,7 +57,7 @@ Mindestens 3–5 Posts pro Woche in sozialen Medien. Entweder bauen Sie ein inte
 
 ## Schritt 3: WhatsApp Business API und KI-Chatbot
 
-75 % der Kommunikation in der Reisebranche läuft über WhatsApp. Für jede Agentur, die täglich 30+ Nachrichten über Standard-WhatsApp abwickelt, ist der Wechsel zu einer professionellen Infrastruktur obligatorisch.
+75 % der Kommunikation in der Reisebranche läuft über WhatsApp. Für jede Agentur, die täglich 30+ Nachrichten über Standard-WhatsApp abwickelt, ist der Wechsel zu einer professionellen Infrastruktur obligatorisch — den ersten Schritt macht [unser WhatsApp-Business-Einrichtungsleitfaden](/de/blog/acenteler-icin-whatsapp-business-kurulumu).
 
 Mit WhatsApp Business API:
 - Mehrere Mitarbeiter können von derselben Nummer aus arbeiten
@@ -76,7 +76,7 @@ Monatliche Kosten im Bereich von 100–250 €. Ergebnisse sind innerhalb der er
 
 ## Schritt 4: Datenerfassung und Kundenbeziehungen (CRM)
 
-Wo befinden sich Ihre Kundeninformationen? In Excel-Dateien der Mitarbeiter, Telefonkontakten, verstreuten WhatsApp-Gesprächen. Das verursacht mehrere ernste Probleme:
+Wo befinden sich Ihre Kundeninformationen? In Excel-Dateien der Mitarbeiter, Telefonkontakten, verstreuten WhatsApp-Gesprächen ([unser Agentur-CRM-Leitfaden](/de/blog/acente-icin-crm-musteri-listesi-yeniden-satis) zeigt, wie man diese Zerstreuung ordnet). Das verursacht mehrere ernste Probleme:
 
 **Kundenverlust.** Sie haben letztes Jahr einen Kunden nach Antalya geschickt; er sucht jetzt eine andere Destination. Wenn Sie sich daran erinnert hätten, würden Sie ihm ein Sonderangebot machen – aber es gibt keine Liste, es kann nicht abgerufen werden.
 
@@ -95,7 +95,7 @@ Beliebte Tools sind HubSpot, Pipedrive und Zoho, plus reisespezifische Lösungen
 
 ## Schritt 5: Online-Werbung und Performance-Marketing
 
-Klassische Zeitungsanzeigen oder Messestände gehören der Vergangenheit an. Sie sollten einen erheblichen Teil Ihres Budgets für digitale Werbung einsetzen.
+Klassische Zeitungsanzeigen oder Messestände gehören der Vergangenheit an. Sie sollten einen erheblichen Teil Ihres Budgets für digitale Werbung einsetzen — [unser Meta-Werbeleitfaden](/de/blog/acenteler-icin-meta-reklam-rehberi) kann Ihr Ausgangspunkt für das Kampagnen-Setup sein.
 
 **Google Ads:** Um bei hochintentionalen Suchen wie „Antalya-Tourpakete", „Kappadokien-Tagesausflug" zu erscheinen. Konversionsfokussierte Kampagnen.
 
