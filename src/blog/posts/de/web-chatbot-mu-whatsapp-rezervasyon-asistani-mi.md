@@ -69,7 +69,7 @@ Preisschilder nebeneinanderzulegen täuscht; der richtige Maßstab sind die **Ko
 
 ## Vor dem Kauf: 5 Testfragen
 
-Welches Produkt Sie auch prüfen — probieren Sie in der Demo diese fünf Dinge selbst:
+Welches Produkt Sie auch prüfen ([unser Software-Vergleich](/de/blog/whatsapp-chatbot-yazilim-karsilastirma-2026) stellt sechs Ansätze nebeneinander) — probieren Sie in der Demo diese fünf Dinge selbst:
 
 1. **Fragen Sie nach einer Tour, die es nicht gibt** („Haben Sie eine Nobelmarkt-Tour?") — erfindet er etwas, oder sagt er ehrlich „nein" und bietet Alternativen?
 2. **Führen Sie eine Buchung bis zum Ende** — entsteht wirklich ein Datensatz, oder kippt es irgendwo in „bitte Formular ausfüllen"?

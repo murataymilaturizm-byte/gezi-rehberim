@@ -90,7 +90,7 @@ Yukarıdaki düzen, günde birkaç yabancı müşteriye kadar insan gücüyle i�
 
 Bu eşikte devreye giren kategori, müşterinin **yazdığı dili otomatik tanıyıp aynı dilde cevap veren ve rezervasyonu — tarih, kişi sayısı, iletişim, teyit — o dilde uçtan uca tamamlayan asistan** katmanıdır. Fark, çeviri uygulamasıyla arasındaki farktır: çeviri metni aktarır, asistan satışı yürütür — gece 02.00'de gelen Rusça mesaj, sabah "cevaplanacaklar" listesine değil, gece kesinleşmiş bir rezervasyon olarak panele düşer. Bu kategorinin web-sitesi balonlarından farkını ve seçim kriterlerini [asistan kıyas rehberimizde](/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi) ayrıntılı anlattık.
 
-Incoming ve B2B çalışan acentelere de bir selam borcumuz var: yurt dışındaki partner acentelerden gelen taleplerde de bariyer aynıdır — teklifin, programın ve koşulların partnerin dilinde net iletilmesi, B2B ilişkinin de satış hızını belirler. Çok dilli düzen bir kez kurulunca, aynı altyapı hem son müşteriye hem partnere hizmet eder.
+Incoming ve B2B çalışan acentelere de bir selam borcumuz var: yurt dışındaki partner acentelerden gelen taleplerde de bariyer aynıdır — teklifin, programın ve koşulların partnerin dilinde net iletilmesi, B2B ilişkinin de satış hızını belirler. Çok dilli düzen bir kez kurulunca, aynı altyapı hem son müşteriye hem partnere hizmet eder — incoming operasyonunun dil tarafı için [7 dilde hizmet rehberimize](/blog/yabanci-turistlere-cok-dilli-hizmet-rehberi) bakın.
 
 ## Sık Sorulan Sorular (SSS)
 

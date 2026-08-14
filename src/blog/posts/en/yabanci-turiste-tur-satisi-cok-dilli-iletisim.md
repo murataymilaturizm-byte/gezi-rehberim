@@ -90,7 +90,7 @@ The setup above works by human power up to a few foreign customers a day. As vol
 
 The category that enters at this threshold is the assistant layer that **automatically recognises the language the customer writes in, replies in it, and completes the booking — date, head-count, contact, confirmation — end to end in that language.** The difference is the difference from a translation app: translation transfers text, the assistant runs the sale — the Russian message that arrives at 2 a.m. lands on your panel in the morning not as an item on the "to answer" list but as a booking confirmed overnight. We compared this category with website chat bubbles, test questions included, in [our assistant comparison guide](/en/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi).
 
-A word owed to incoming and B2B agencies: the barrier is identical in requests from partner agencies abroad — communicating the offer, the programme and the terms clearly in the partner's language sets the speed of the B2B relationship too. Once the multilingual setup exists, the same infrastructure serves both the end customer and the partner.
+A word owed to incoming and B2B agencies: the barrier is identical in requests from partner agencies abroad — communicating the offer, the programme and the terms clearly in the partner's language sets the speed of the B2B relationship too. Once the multilingual setup exists, the same infrastructure serves both the end customer and the partner — for the language side of incoming operations, see [our 7-language service guide](/en/blog/yabanci-turistlere-cok-dilli-hizmet-rehberi).
 
 ## Frequently Asked Questions (FAQ)
 

@@ -69,7 +69,7 @@ Putting price tags side by side is misleading; the right comparison is **cost pe
 
 ## Before You Buy: 5 Test Questions
 
-Whichever product you evaluate, try these five things yourself during the demo:
+Whichever product you evaluate ([our software comparison](/en/blog/whatsapp-chatbot-yazilim-karsilastirma-2026) puts six approaches side by side), try these five things yourself during the demo:
 
 1. **Ask for a tour that doesn't exist** ("Do you have a Nobel market tour?") — does it make something up, or honestly say "no" and offer alternatives?
 2. **Take a booking all the way** — does a record actually get created, or does it fall back to "fill in the form" somewhere?

@@ -125,7 +125,7 @@ Richtig geschrieben nicht — das Geheimnis ist, dass sie nichts verlangt. „He
 Nein — rechtlich riskant (Daten ohne Einwilligung, Nachrichten ohne Erlaubnis) und kommerziell leer: Niemand auf dieser Liste kennt Sie, das Vertrauen ist null, der Blockier-Reflex hoch. Alles in diesem Leitfaden beruht auf dem Vertrauen zu den eigenen Kunden; die gekaufte Liste ist dessen exaktes Gegenteil.
 
 **11. Was tue ich Besonderes für VIP-Stammgäste?**
-Keine Extravaganz nötig; Vorrang und Anerkennung genügen: Sie hören das neue Saisonprogramm zuerst, werden bei knappem Kontingent zuerst gefragt, und die Nachricht erwähnt ihre früheren Touren in einem Satz. Das Gefühl „die erinnern sich an uns" bindet stärker als die meisten Rabatte.
+Keine Extravaganz nötig; Vorrang und Anerkennung genügen: Sie hören das neue Saisonprogramm zuerst, werden bei knappem Kontingent zuerst gefragt, und die Nachricht erwähnt ihre früheren Touren in einem Satz. Das Gefühl „die erinnern sich an uns" bindet stärker als die meisten Rabatte; für ein formales Treueprogramm vergleicht [unser Treueprogramm-Leitfaden](/de/blog/musteri-sadakat-programi-tur-operatoru) die Modelle.
 
 **12. Worauf achte ich bei einem System, das Register automatisch sammelt?**
 Auf eine Frage: Ist das Register ein natürliches Nebenprodukt des Gesprächs? Im guten System fließen Name-Telefon-Tour-Datum beim Buchen von selbst in die Liste, das Label wird von selbst vergeben, Erinnerung und Zufriedenheitsfrage gehen von selbst hinaus — ohne zusätzliche Dateneingabe von Ihnen. Eine Lösung, die sagt „für das Register füllen Sie ein separates Formular aus", ist eine teure Kopie Ihres Excels.

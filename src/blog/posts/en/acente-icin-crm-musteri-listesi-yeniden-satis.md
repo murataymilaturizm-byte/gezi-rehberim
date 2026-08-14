@@ -125,7 +125,7 @@ Not if written right — the secret is that it asks for nothing. "A year ago tod
 No — it is legally risky (data without consent, messages without permission) and commercially empty: nobody on that list knows you, trust is zero, the block reflex is high. Everything in this guide rests on trust built with your own customers; a bought list is that trust's exact opposite.
 
 **11. What should I do specially for VIP-repeat customers?**
-No need for extravagance; priority and recognition are enough: they hear the new season's programme first, they are asked first as quota tightens, and the message mentions their past tours in a sentence. The feeling of "they remember us" binds more than most discounts.
+No need for extravagance; priority and recognition are enough: they hear the new season's programme first, they are asked first as quota tightens, and the message mentions their past tours in a sentence. The feeling of "they remember us" binds more than most discounts; if you want to build a formal loyalty programme, [our loyalty programme guide](/en/blog/musteri-sadakat-programi-tur-operatoru) compares the models.
 
 **12. What should I look for in a system that collects records automatically?**
 Focus on one question: is the record a natural by-product of the conversation? In a good system, as the booking is taken, name-phone-tour-date flows into the list by itself, the label is assigned by itself, the reminder and the satisfaction question go out by themselves — no extra data entry asked of you. A solution that says "you'll fill in a separate form for the record" is an expensive copy of your Excel.

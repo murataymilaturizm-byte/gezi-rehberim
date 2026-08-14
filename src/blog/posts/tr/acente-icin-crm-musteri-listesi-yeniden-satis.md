@@ -125,7 +125,7 @@ Doğru yazılırsa hayır — sırrı satış istememesindedir. "Geçen yaz bug�
 Olmaz — hem hukuken risklidir (izinsiz veri, izinsiz ileti) hem ticari olarak boştur: o listedeki kimse sizi tanımıyor, güven sıfır, engellenme reflexi yüksek. Bu rehberdeki her şey kendi müşterinizle kurulan güvene dayanır; satın alınmış liste o güvenin tam zıttıdır.
 
 **11. VIP-tekrarlayan müşteriye özel ne yapmalıyım?**
-Abartıya gerek yok; öncelik ve tanınırlık yeter: yeni sezon programını ilk onlar duysun, kontenjan daralırken önce onlara sorulsun, mesajda geçmiş turlarına bir cümleyle değinilsin. "Bizi hatırlıyorlar" duygusu, çoğu indirimden daha bağlayıcıdır.
+Abartıya gerek yok; öncelik ve tanınırlık yeter: yeni sezon programını ilk onlar duysun, kontenjan daralırken önce onlara sorulsun, mesajda geçmiş turlarına bir cümleyle değinilsin. "Bizi hatırlıyorlar" duygusu, çoğu indirimden daha bağlayıcıdır; kurumsal bir sadakat programı kurmak isterseniz [sadakat programı rehberimiz](/blog/musteri-sadakat-programi-tur-operatoru) modelleri karşılaştırıyor.
 
 **12. Kaydı otomatik toplayan sistem seçerken neye dikkat etmeliyim?**
 Tek soruya odaklanın: kayıt, sohbetin doğal çıktısı mı? İyi sistemde rezervasyon alınırken isim-telefon-tur-tarih kendiliğinden listeye düşer, etiket kendiliğinden atanır, hatırlatma ve memnuniyet sorusu kendiliğinden gider — sizden ek veri girişi istemez. "Kayıt için ayrıca form dolduracaksınız" diyen çözüm, Excel'inizin pahalı bir kopyasıdır.

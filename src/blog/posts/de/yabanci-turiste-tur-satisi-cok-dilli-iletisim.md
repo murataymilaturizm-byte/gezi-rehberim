@@ -90,7 +90,7 @@ Das obige Setup trägt mit Menschenkraft bis zu einigen ausländischen Kunden pr
 
 Die Kategorie an dieser Schwelle ist die Assistenten-Schicht, die **die Sprache des Kunden automatisch erkennt, darin antwortet und die Buchung — Datum, Personenzahl, Kontakt, Bestätigung — Ende-zu-Ende in dieser Sprache abschließt.** Der Unterschied ist der zur Übersetzungs-App: Übersetzung überträgt Text, der Assistent führt den Verkauf — die russische Nachricht von 2 Uhr nachts liegt morgens nicht auf der „zu beantworten"-Liste, sondern als über Nacht fixierte Buchung im Panel. Diese Kategorie haben wir, inklusive Testfragen, in [unserem Assistenten-Vergleichsleitfaden](/de/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi) ausführlich verglichen.
 
-Ein Wort an Incoming- und B2B-Agenturen: In Anfragen von Partneragenturen im Ausland ist die Barriere identisch — Angebot, Programm und Bedingungen klar in der Sprache des Partners zu übermitteln, bestimmt auch das Tempo der B2B-Beziehung. Steht das mehrsprachige Setup einmal, dient dieselbe Infrastruktur Endkunden und Partnern zugleich.
+Ein Wort an Incoming- und B2B-Agenturen: In Anfragen von Partneragenturen im Ausland ist die Barriere identisch — Angebot, Programm und Bedingungen klar in der Sprache des Partners zu übermitteln, bestimmt auch das Tempo der B2B-Beziehung. Steht das mehrsprachige Setup einmal, dient dieselbe Infrastruktur Endkunden und Partnern zugleich — zur Sprachseite des Incoming-Betriebs siehe [unseren Leitfaden für Service in 7 Sprachen](/de/blog/yabanci-turistlere-cok-dilli-hizmet-rehberi).
 
 ## Häufig gestellte Fragen (FAQ)
 
