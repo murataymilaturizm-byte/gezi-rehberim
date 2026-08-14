@@ -90,7 +90,7 @@ Dies ist ebenso eine langfristige Positionierungsinvestition wie eine Einnahmequ
 
 ## Kundenbeziehungen im Winter aktiv halten
 
-Ebenso wichtig wie die Umsatzstrategie ist es, zu verhindern, dass Ihre Kundenbasis zwischen den Saisons inaktiv wird.
+Ebenso wichtig wie die Umsatzstrategie ist es, zu verhindern, dass Ihre Kundenbasis zwischen den Saisons inaktiv wird — den saisonalen Re-Kontakt-Kalender legen wir Punkt für Punkt in [unserem CRM-Leitfaden](/de/blog/acente-icin-crm-musteri-listesi-yeniden-satis) dar.
 
 **Praktische Taktiken:**
 

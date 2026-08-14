@@ -90,7 +90,7 @@ Online kurs platformlarında destinasyon rehberliği ya da seyahat planlaması �
 
 ## Kış Döneminde Müşteri İlişkilerini Canlı Tutmak
 
-Gelir stratejisi kadar önemli bir diğer konu: kış boyunca müşteri tabanının "uyumasına" izin vermemektir.
+Gelir stratejisi kadar önemli bir diğer konu: kış boyunca müşteri tabanının "uyumasına" izin vermemektir — sezonluk yeniden-temas takvimini [CRM rehberimizde](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) kalem kalem verdik.
 
 **Pratik öneriler:**
 

@@ -90,7 +90,7 @@ This is a long-term positioning investment as much as a revenue source: agencies
 
 ## Keeping Client Relationships Active in Winter
 
-As important as revenue strategy is preventing your client base from going dormant between seasons.
+As important as revenue strategy is preventing your client base from going dormant between seasons — the seasonal re-contact calendar is laid out item by item in [our CRM guide](/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 **Practical tactics:**
 

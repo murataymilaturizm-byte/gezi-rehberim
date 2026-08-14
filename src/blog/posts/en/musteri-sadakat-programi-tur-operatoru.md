@@ -13,7 +13,7 @@ slug: "musteri-sadakat-programi-tur-operatoru"
 
 # Tour Operator Customer Loyalty Program: How to Build Repeat Clients
 
-Acquiring a new customer in the travel industry costs five times more than retaining an existing one. Despite this well-documented fact, most tour operators and travel agencies continue to funnel the majority of their marketing budget into new client acquisition while underinvesting in retention. A well-designed **tour operator customer loyalty program** dramatically reduces your growth costs, stabilizes revenue during slow seasons, and systematically generates word-of-mouth referrals.
+Acquiring a new customer in the travel industry costs five times more than retaining an existing one — we build the practical routine behind that in [our agency CRM and repeat-sales guide](/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis). Despite this well-documented fact, most tour operators and travel agencies continue to funnel the majority of their marketing budget into new client acquisition while underinvesting in retention. A well-designed **tour operator customer loyalty program** dramatically reduces your growth costs, stabilizes revenue during slow seasons, and systematically generates word-of-mouth referrals.
 
 This guide covers practical loyalty program models suited to independent agencies and larger tour operators alike, with step-by-step implementation advice and real-world examples. No theory for its own sake — only what you can actually use.
 

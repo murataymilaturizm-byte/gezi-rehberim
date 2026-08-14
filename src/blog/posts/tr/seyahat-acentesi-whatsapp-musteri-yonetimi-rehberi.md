@@ -35,7 +35,7 @@ Bu davranış değişikliği acentelere üç büyük fırsat sundu:
 
 Çoğu acente WhatsApp'ı bir veya iki personelin telefonu üzerinden manuel yönetiyor. Görünüşte ücretsiz ve esnek bir sistem. Ama gerçek tablo farklı:
 
-Bir personel günlük 80-100 müşteri mesajına aktif yanıt verebiliyor. Bunun ötesinde geç dönüş başlıyor. Geç dönüş demek, müşterinin başka acenteye yazması demek. Sektör verilerine göre ilk 5 dakika içinde yanıt alamayan müşterinin %42'si paralel olarak başka bir acentenin teklifini de inceliyor. İlk 30 dakikayı geçen yanıt süresinde rezervasyon kazanma oranı %67 düşüyor.
+Bir personel günlük 80-100 müşteri mesajına aktif yanıt verebiliyor. Bunun ötesinde geç dönüş başlıyor — geç dönüşün satışa etkisini [mesaj-dönüşüm rehberimizde](/blog/whatsappta-musteri-neden-cevapsiz-birakir) ölçtük. Geç dönüş demek, müşterinin başka acenteye yazması demek. Sektör verilerine göre ilk 5 dakika içinde yanıt alamayan müşterinin %42'si paralel olarak başka bir acentenin teklifini de inceliyor. İlk 30 dakikayı geçen yanıt süresinde rezervasyon kazanma oranı %67 düşüyor.
 
 İkinci görünmez maliyet bilgi tutarsızlığı. Aynı turun fiyatını üç farklı personel üç farklı şekilde söyleyebiliyor. Tur tarihleri kafalarda karışıyor. Ödeme yapıldı mı yapılmadı mı belirsiz kalıyor. Müşteriye söz verilen şey defterte not edilmiş ama operasyon ekibine geçmemiş oluyor. Bu kaoslar hem rezervasyon iptallerine hem de itibar kayıplarına neden oluyor.
 
@@ -87,7 +87,7 @@ Pratikte ne anlama geliyor? Bir müşterinin "Çocuk indirimi var mı? 6 yaşın
 
 AI chatbotların seyahat sektöründe en güçlü oldukları üç alan var:
 
-**Çok dilli müşteri hizmetleri.** Almanya'dan Türkçe bilmeyen bir turist, Suudi Arabistan'dan Arapça konuşan bir aile, Rusya'dan Rusça yazan bir çift — hepsiyle aynı kaliteyle konuşmak ve doğru fiyatlandırmayı sunmak mümkün hale geldi. İncoming acenteler için bu artık fark yaratan değil, var olmaya devam etmek için zorunlu olan bir özellik.
+**[Çok dilli müşteri hizmetleri](/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim).** Almanya'dan Türkçe bilmeyen bir turist, Suudi Arabistan'dan Arapça konuşan bir aile, Rusya'dan Rusça yazan bir çift — hepsiyle aynı kaliteyle konuşmak ve doğru fiyatlandırmayı sunmak mümkün hale geldi. İncoming acenteler için bu artık fark yaratan değil, var olmaya devam etmek için zorunlu olan bir özellik.
 
 **24/7 satış kapısı açık tutmak.** Avrupa'dan veya Körfez ülkelerinden müşteriler farklı saat dilimlerinde aktif. AI chatbot personel saati farketmeksizin satış sürecini başlatabiliyor. Sabah personel mesaja baktığında "Bu müşteri zaten 3 gece kalacak Antalya turuyla ilgileniyor, tarih önerileri verildi, şimdi ödeme aşamasında" notuyla devralabiliyor.
 
@@ -129,7 +129,7 @@ Eğer şu an manuel WhatsApp ile çalışıyorsanız ve sistematik bir geçiş i
 
 **8-14. günler:** Bir sağlayıcı seçin ve kurulumu başlatın. Meta hesap doğrulaması, numara taşıma veya yeni numara alımı, ekip eğitimi.
 
-**15-21. günler:** Otomasyon kurallarını yazın. En çok sorulan 20 soruya hazır yanıtlar oluşturun. Tur kataloğunuzu sisteme yükleyin. AI chatbot kullanıyorsanız sistem mesajlarını acentenizin tonuna göre ayarlayın.
+**15-21. günler:** Otomasyon kurallarını yazın. En çok sorulan 20 soruya hazır yanıtlar oluşturun ([kurulum rehberimiz](/blog/acenteler-icin-whatsapp-business-kurulumu) hızlı-yanıt şablonlarını adım adım gösterir). Tur kataloğunuzu sisteme yükleyin. AI chatbot kullanıyorsanız sistem mesajlarını acentenizin tonuna göre ayarlayın.
 
 **22-30. günler:** Test edin. Personelinizden 3-5 kişiyi "müşteri" olarak çalıştırın. Hatalı yanıtları düzeltin. Müşterilere yeni numarayı duyurun. İlk hafta yakın takipte tutun.
 

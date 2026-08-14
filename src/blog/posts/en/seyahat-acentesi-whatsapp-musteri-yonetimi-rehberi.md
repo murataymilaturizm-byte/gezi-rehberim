@@ -35,7 +35,7 @@ This behavioral shift has created three major opportunities for agencies:
 
 Most agencies manage WhatsApp manually through one or two staff members' phones. It looks like a free and flexible system — but the real picture is different.
 
-One staff member can actively respond to 80-100 customer messages per day. Beyond that, delayed responses begin. Delayed responses mean customers messaging other agencies. According to industry data, 42% of customers who don't receive a reply within the first 5 minutes simultaneously explore offers from a competitor. Response times over 30 minutes reduce the likelihood of winning a reservation by 67%.
+One staff member can actively respond to 80-100 customer messages per day. Beyond that, delayed responses begin — we measure the sales impact of delay in [our message-conversion guide](/en/blog/whatsappta-musteri-neden-cevapsiz-birakir). Delayed responses mean customers messaging other agencies. According to industry data, 42% of customers who don't receive a reply within the first 5 minutes simultaneously explore offers from a competitor. Response times over 30 minutes reduce the likelihood of winning a reservation by 67%.
 
 The second hidden cost is information inconsistency. Three different staff members might quote three different prices for the same tour. Tour dates get confused. Whether payment has been made remains unclear. A promise made to a customer gets noted down but never reaches the operations team. This chaos leads to both cancellations and reputation damage.
 
@@ -87,7 +87,7 @@ What does this mean in practice? A classic chatbot couldn't understand "Is there
 
 AI chatbots have three strongest application areas in the travel sector:
 
-**Multilingual customer service.** A tourist from Germany who doesn't speak Turkish, an Arabic-speaking family from Saudi Arabia, a Russian-speaking couple — all can now be served at the same quality level with the correct pricing. For incoming agencies, this is no longer a differentiator — it's a survival requirement.
+**[Multilingual customer service](/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim).** A tourist from Germany who doesn't speak Turkish, an Arabic-speaking family from Saudi Arabia, a Russian-speaking couple — all can now be served at the same quality level with the correct pricing. For incoming agencies, this is no longer a differentiator — it's a survival requirement.
 
 **Keeping the sales door open 24/7.** Customers from Europe, the Gulf, and North America operate in different time zones. An AI chatbot can start the sales process regardless of staff hours. When staff logs in in the morning, they can see: "This customer is already interested in a 3-night Antalya tour, date suggestions have been provided, now at the payment stage" — and pick up from there.
 
@@ -127,7 +127,7 @@ If you're currently on manual WhatsApp and want a systematic transition, here's 
 
 **Days 8-14:** Select a provider and start setup. Meta account verification, number porting or new number acquisition, team training.
 
-**Days 15-21:** Write your automation rules. Create ready answers to your 20 most common questions. Upload your tour catalog. If using an AI chatbot, tune system messages to your agency's tone.
+**Days 15-21:** Write your automation rules. Create ready answers to your 20 most common questions ([our setup guide](/en/blog/acenteler-icin-whatsapp-business-kurulumu) walks through quick-reply templates step by step). Upload your tour catalog. If using an AI chatbot, tune system messages to your agency's tone.
 
 **Days 22-30:** Test. Run 3-5 staff members as "customers." Fix incorrect responses. Announce the new number to customers. Keep close watch during the first week.
 

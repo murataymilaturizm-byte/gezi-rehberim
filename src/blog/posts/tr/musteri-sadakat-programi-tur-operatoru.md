@@ -13,7 +13,7 @@ slug: "musteri-sadakat-programi-tur-operatoru"
 
 # Tur Operatörleri için Müşteri Sadakat Programı: Tekrar Müşteri Yaratmak
 
-Seyahat sektöründe bir müşteriyi ikinci kez satın almaya ikna etmek, ona ilk satışı yapmaktan beş kat daha ucuzdur. Bu rakam pazarlama yazınında sıkça geçer; ancak çoğu tur operatörü hâlâ bütçesinin büyük bölümünü yeni müşteri edinmeye, çok küçük bir kısmını ise mevcut müşteriyi geri kazanmaya ayırır. Oysa sadık bir müşteri tabanı oluşturmak — yani **tur operatörü müşteri sadakat programı** geliştirmek — büyüme maliyetini dramatik biçimde düşürür, kriz dönemlerinde geliri stabilize eder ve ağızdan ağıza tavsiyeyi sistematik hale getirir.
+Seyahat sektöründe bir müşteriyi ikinci kez satın almaya ikna etmek, ona ilk satışı yapmaktan beş kat daha ucuzdur — bu ucuzluğun pratik düzenini [acente CRM ve yeniden-satış rehberimizde](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) kurduk. Bu rakam pazarlama yazınında sıkça geçer; ancak çoğu tur operatörü hâlâ bütçesinin büyük bölümünü yeni müşteri edinmeye, çok küçük bir kısmını ise mevcut müşteriyi geri kazanmaya ayırır. Oysa sadık bir müşteri tabanı oluşturmak — yani **tur operatörü müşteri sadakat programı** geliştirmek — büyüme maliyetini dramatik biçimde düşürür, kriz dönemlerinde geliri stabilize eder ve ağızdan ağıza tavsiyeyi sistematik hale getirir.
 
 Bu rehberde, küçük ve orta ölçekli Türk acentelerinden büyük turizm gruplarına kadar uygulanabilecek sadakat programı modellerini, somut adımları ve sektörden gerçek örnekleri bulacaksınız. Teori değil, uygulanabilir strateji sunmak önceliğimiz.
 
