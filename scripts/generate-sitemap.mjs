@@ -32,6 +32,11 @@ const STATIC_PAGES = [
   { path: '/cozum/gunubirlik-tur',                    priority: '0.8', changefreq: 'monthly' },
   { path: '/cozum/butik-acenteler',                   priority: '0.8', changefreq: 'monthly' },
   { path: '/karsilastir/turzz-vs-manuel-whatsapp',    priority: '0.8', changefreq: 'monthly' },
+  // ARAÇ-1 — Araçlar bölümü. Bu liste aynı zamanda PRERENDER setidir
+  // (vite.config.ts includedRoutes sitemap.xml'i okur) → hub + araç sayfası
+  // iskeleti statik HTML'e girer, form client-mount olur.
+  { path: '/araclar',                                 priority: '0.7', changefreq: 'monthly' },
+  { path: '/araclar/rehber-sozlesmesi-olusturucu',    priority: '0.8', changefreq: 'monthly' },
   { path: '/nasil-baslarim',                          priority: '0.7', changefreq: 'monthly' },
   { path: '/yardim',                                  priority: '0.7', changefreq: 'monthly' },
   { path: '/privacy-policy',                          priority: '0.3', changefreq: 'yearly'  },

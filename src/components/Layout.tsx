@@ -13,6 +13,7 @@ import {
 import { Menu, X, Phone } from "lucide-react";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { toolsHubUrl } from "@/lib/tools/registry";
 
 // Turzz destek hattı — Header'da görünür. POS-yok döneminde iletişim öncelikli.
 const SUPPORT_PHONE_DISPLAY = "0850 242 77 50";
@@ -32,7 +33,7 @@ const ozellikler = [
 ];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -91,9 +92,34 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               </NavigationMenuList>
             </NavigationMenu>
 
-            <Link to="/blog" className="px-3 py-2 text-sm hover:text-primary transition-colors">
-              {t("nav.blog")}
-            </Link>
+            {/* ARAÇ-1: Blog + Araçlar tek "Kaynaklar" başlığı altında — ikisi de
+                "satın almadan önce fayda al" yüzeyi; ürün menüleri kalabalıklaşmaz. */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="bg-transparent">{t("nav.resources")}</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="w-56 p-2">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/blog" className="block px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                            {t("nav.blog")}
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to={toolsHubUrl(i18n.language)} className="block px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                            {t("nav.tools")}
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+
             <Link to="/yardim" className="px-3 py-2 text-sm hover:text-primary transition-colors">
               {t("nav.help")}
             </Link>
@@ -157,7 +183,9 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               </Link>
             ))}
             <div className="border-t border-border pt-3 mt-2 space-y-1">
+              {/* Mobilde dropdown yerine düz iki satır (karar: B) */}
               <Link to="/blog" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.blog")}</Link>
+              <Link to={toolsHubUrl(i18n.language)} className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.tools")}</Link>
               <Link to="/yardim" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.help")}</Link>
               <Link to="/#pricing" className="block py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>{t("nav.pricing")}</Link>
               <a href={SUPPORT_PHONE_HREF} className="block py-2 text-sm hover:text-primary font-medium" onClick={() => setMobileOpen(false)}>
@@ -228,6 +256,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               <h3 className="font-semibold text-foreground mb-3 text-sm">{t("footer.resources")}</h3>
               <ul className="space-y-2">
                 <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-primary transition-colors">Blog</Link></li>
+                <li><Link to={toolsHubUrl(i18n.language)} className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("nav.tools")}</Link></li>
                 <li><Link to="/yardim" className="text-sm text-muted-foreground hover:text-primary transition-colors">Yardım Merkezi</Link></li>
                 <li><Link to="/nasil-baslarim" className="text-sm text-muted-foreground hover:text-primary transition-colors">Nasıl Başlarım?</Link></li>
                 <li><Link to="/karsilastir/turzz-vs-manuel-whatsapp" className="text-sm text-muted-foreground hover:text-primary transition-colors">Karşılaştırma</Link></li>

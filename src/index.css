@@ -201,3 +201,23 @@ All colors MUST be HSL.
     scroll-behavior: auto !important;
   }
 }
+
+/* ARAÇ-1: belge yazdırma — "PDF olarak indir" tarayıcının Save-as-PDF'ini kullanır.
+   Canlı önizleme DOM'u AYNI ZAMANDA yazdırma yüzeyidir (ikinci render yolu yok).
+   0 KB bundle: jsPDF standart fontu Ş/Ğ/İ/ı karakterlerini bozuyor (ölçüldü). */
+@media print {
+  body * { visibility: hidden !important; }
+  #sozlesme-onizleme, #sozlesme-onizleme * { visibility: visible !important; }
+  #sozlesme-onizleme {
+    position: absolute !important;
+    left: 0; top: 0; width: 100%;
+    border: 0 !important; border-radius: 0 !important;
+    padding: 0 !important; margin: 0 !important;
+    max-height: none !important; overflow: visible !important;
+    background: #fff !important; color: #000 !important;
+    font-size: 11pt; line-height: 1.5;
+  }
+  .print-area { max-height: none !important; overflow: visible !important; }
+  .no-print, header, footer { display: none !important; }
+  @page { size: A4; margin: 2cm; }
+}

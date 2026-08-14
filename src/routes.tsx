@@ -50,6 +50,10 @@ const TurzzVsManuel       = lazy(() => import("./pages/karsilastir/TurzzVsManuel
 const Blog                = lazy(() => import("./pages/Blog"));
 const BlogPost            = lazy(() => import("./pages/BlogPost"));
 
+// ARAÇ-1 — Araçlar bölümü (route'lar 3 dile hazır; pilot içerik TR)
+const ToolsHub            = lazy(() => import("./pages/ToolsHub"));
+const RehberSozlesmesi    = lazy(() => import("./pages/tools/RehberSozlesmesi"));
+
 const queryClient = new QueryClient();
 
 // Kök layout — tüm provider'lar + Suspense + Outlet. Eski App.tsx'in provider
@@ -109,6 +113,14 @@ export const routes: RouteRecord[] = [
 
       // SEO — Karşılaştırma
       { path: "karsilastir/turzz-vs-manuel-whatsapp", element: <TurzzVsManuel /> },
+
+      // ARAÇ-1 — Araçlar (hub + pilot). TR prefix'siz; EN/DE prefix'li (blog deseni).
+      { path: "araclar",                                 element: <ToolsHub /> },
+      { path: "araclar/rehber-sozlesmesi-olusturucu",    element: <RehberSozlesmesi /> },
+      { path: "en/tools",                                element: <ToolsHub /> },
+      { path: "en/tools/guide-contract-generator",       element: <RehberSozlesmesi /> },
+      { path: "de/tools",                                element: <ToolsHub /> },
+      { path: "de/tools/reiseleiter-vertrag-generator",  element: <RehberSozlesmesi /> },
 
       // Blog — Türkçe (prefix yok, default)
       { path: "blog",       element: <Blog /> },

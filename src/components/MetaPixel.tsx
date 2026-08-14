@@ -57,6 +57,23 @@ export function trackLead(params?: Record<string, unknown>) {
   }
 }
 
+/**
+ * ARAÇ-1 karne: araç sayfalarının üçlü ölçümü — görüntüleme / indirme / CTA.
+ * VERİ İLKESİ: yalnız araç kimliği ve biçim (doc|pdf) gönderilir; kullanıcının
+ * forma girdiği HİÇBİR alan değeri event'e KONMAZ (araç sayfası sunucusuz).
+ * trackLead ile aynı consent-kapısı: onay yoksa window.fbq yok → sessiz no-op,
+ * yani rakam eksik sayar (yön göstergesi, kesin sayaç değil).
+ */
+export function trackToolEvent(
+  kind: "view" | "download" | "cta",
+  params: { tool: string; format?: "doc" | "pdf"; target?: string },
+) {
+  if (typeof window !== "undefined" && typeof window.fbq === "function") {
+    const name = kind === "view" ? "ToolView" : kind === "download" ? "ToolDocumentGenerated" : "ToolCtaClick";
+    window.fbq("trackCustom", name, params);
+  }
+}
+
 export function MetaPixel() {
   useEffect(() => {
     function check() {

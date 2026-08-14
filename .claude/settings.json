@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit*)",
+      "Bash(./node_modules/.bin/tsc --noEmit*)",
+      "Bash(npx deno check *)",
+      "Bash(npx deno run --allow-read scripts/test_behavioral.ts*)",
+      "Bash(npx eslint *)"
+    ]
+  }
+}

@@ -13,7 +13,9 @@
     "freeTrial": "Free Trial",
     "menu": "Menu",
     "discoverFeatures": "Discover Features",
-    "callSupport": "Support Line"
+    "callSupport": "Support Line",
+    "resources": "Resources",
+    "tools": "Tools"
   },
   "currency": {
     "management": "Currency Management",

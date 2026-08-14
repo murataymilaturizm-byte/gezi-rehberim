@@ -5904,4 +5904,111 @@ console.log("\n── P9-C stale-reset dürüstlük + hatırlatma ──");
   assert("P9C.TARİH bugün anılır (>= sınırı)", (_istToday >= _istToday));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ARAÇ-1 — REHBER SÖZLEŞMESİ OLUŞTURUCU (2026-08-14) — KALICI
+// Kilit 1: opsiyonel alan boşsa madde/cümle DÜŞER; belgede placeholder KALMAZ.
+// Kilit 2: belge-içi marka satırı + avukat notu (üst ve alt) her zaman var.
+// Kilit 3: veri sunucuya gitmez — araç kodunda ağ çağrısı YOK.
+// Kilit 4: belge üretimi lazy import (ana bundle'a girmez).
+// Kilit 5: Ek-1 "Yürürlük ve Fesih" maddesi iptal maddesinden BAĞIMSIZ.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── ARAÇ-1 rehber sözleşmesi oluşturucu ──");
+{
+  const clausesSrc = await Deno.readTextFile("src/lib/tools/rehber-sozlesmesi/clauses.ts");
+  const exportSrc = await Deno.readTextFile("src/lib/tools/rehber-sozlesmesi/export.ts");
+  const pageSrc = await Deno.readTextFile("src/pages/tools/RehberSozlesmesi.tsx");
+  const schemaSrc = await Deno.readTextFile("src/lib/tools/rehber-sozlesmesi/schema.ts");
+  const articleSrc = await Deno.readTextFile("src/lib/tools/rehber-sozlesmesi/article.ts");
+
+  // 1) T.C. kimlik alanı YOK (karar)
+  assert("ARAÇ1.KVKK T.C. kimlik alanı yok",
+    !/tcKimlik|tcNo|TC Kimlik|T\.C\. kimlik numaras[ıi]n[ıi] (gir|yaz)/i.test(schemaSrc + pageSrc));
+  assert("ARAÇ1.KVKK ruhsat/çalışma kartı opsiyonel", /rehberKartNo/.test(schemaSrc) && /Ruhsat \/ çalışma kartı/.test(pageSrc));
+
+  // 2) Boş-alan → madde/cümle düşme kuralı kaynakta kilitli
+  for (const [tag, probe] of [
+    ["masraf", /const secili = EXPENSE_ITEMS\.filter\(\(it\) => has\(d\.masraflar\[it\.key\]\)\);/],
+    ["yetkili-yer", /if \(has\(d\.yetkiliYer\)\) \{/],
+    ["ek-koşullar", /if \(has\(d\.ekKosullar\)\) \{/],
+    ["kart-no cümlesi", /if \(has\(d\.rehberKartNo\)\)/],
+  ] as [string, RegExp][]) assert(`ARAÇ1.DÜŞ ${tag} koşullu`, probe.test(clausesSrc));
+
+  // 3) Placeholder yasağı — madde metinlerinde köşeli parantez/alt-çizgi şablonu yok
+  const bodyStrings = [...clausesSrc.matchAll(/`([^`]*)`/g)].map((m) => m[1]).join("\n");
+  assert("ARAÇ1.PLACEHOLDER madde metinlerinde [ ] veya ___ yok",
+    !/\[\s*\]|\[[A-ZÇĞİÖŞÜa-zçğıöşü ]{2,}\]|_{3,}/.test(bodyStrings), bodyStrings.slice(0, 80));
+
+  // 4) Marka satırı + avukat notu (belge İÇİNDE, üst ve alt)
+  assert("ARAÇ1.MARKA belge alt-bilgi satırı", /turzzai\.com araçlarıyla oluşturulmuştur/.test(clausesSrc));
+  assert("ARAÇ1.NOT üst avukat notu", /örnek bir iskelettir; imzalamadan önce hukuk danışmanınıza/.test(clausesSrc));
+  assert("ARAÇ1.NOT alt bilgilendirme notu", /hukuki danışmanlık değildir/.test(clausesSrc));
+  assert("ARAÇ1.MARKA .doc çıktısına gömülü", /BRAND_LINE/.test(exportSrc) && /LAWYER_NOTE_TOP/.test(exportSrc) && /LAWYER_NOTE_BOTTOM/.test(exportSrc));
+  assert("ARAÇ1.MARKA önizlemeye gömülü", /BRAND_LINE/.test(pageSrc) && /LAWYER_NOTE_BOTTOM/.test(pageSrc));
+
+  // 5) Ek-1: Yürürlük ve Fesih ayrı madde (iptal maddesinden bağımsız)
+  assert("ARAÇ1.EK1 'Yürürlük ve Fesih' ayrı madde", /baslik: "Yürürlük ve Fesih"/.test(clausesSrc));
+  assert("ARAÇ1.EK1 iptal maddesinden ayrı", /baslik: "İptal ve Değişiklik"/.test(clausesSrc));
+  assert("ARAÇ1.EK1 fesih bildirim süresi boşsa cümle sadeleşir", /has\(d\.fesihBildirimGun\)\s*\n?\s*\?/.test(clausesSrc));
+
+  // 6) Veri sunucuya GİTMEZ — araç kodunda ağ çağrısı yok
+  for (const [tag, src] of [["clauses", clausesSrc], ["export", exportSrc], ["page", pageSrc]] as [string, string][])
+    assert(`ARAÇ1.SUNUCUSUZ ${tag} içinde fetch/axios/supabase yok`,
+      !/\bfetch\(|axios|supabase|XMLHttpRequest|navigator\.sendBeacon/.test(src));
+  assert("ARAÇ1.SUNUCUSUZ güven cümlesi sayfada", /cihazınızdan çıkmaz/.test(pageSrc));
+
+  // 7) Lazy import — belge üretimi tıklamada yüklenir (ana bundle'a girmez)
+  assert("ARAÇ1.LAZY export modülü dinamik import",
+    /await import\("@\/lib\/tools\/rehber-sozlesmesi\/export"\)/.test(pageSrc));
+  assert("ARAÇ1.LAZY statik import YOK",
+    !/^import .*rehber-sozlesmesi\/export/m.test(pageSrc));
+
+  // 8) jsPDF kullanılmıyor (TR karakter kaybı — ölçüldü)
+  // (yorum satırlarındaki "jsPDF neden kullanılmadı" açıklaması hariç — gerçek kullanım aranır)
+  const codeOnly = (s: string) => s.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+  assert("ARAÇ1.TR-KARAKTER jsPDF kullanılmıyor",
+    !/jspdf|jsPDF|new jsPDF/i.test(codeOnly(exportSrc) + codeOnly(pageSrc)));
+  assert("ARAÇ1.TR-KARAKTER .doc çıktısı UTF-8 + BOM", /charset=utf-8/.test(exportSrc) && /\\uFEFF|﻿/.test(exportSrc));
+
+  // 9) Analytics üçlüsü — yalnız araç kimliği/biçim, form alanı YOK
+  const pixelSrc = await Deno.readTextFile("src/components/MetaPixel.tsx");
+  assert("ARAÇ1.KARNE trackToolEvent mevcut", /export function trackToolEvent/.test(pixelSrc));
+  for (const k of ["view", "download", "cta"])
+    assert(`ARAÇ1.KARNE ${k} event'i bağlı`, new RegExp(`trackToolEvent\\("${k}"`).test(pageSrc));
+  assert("ARAÇ1.KARNE event'e form değeri konmuyor",
+    !/trackToolEvent\([^)]*data\.[a-zA-Z]/.test(pageSrc));
+
+  // 10) SSS → FAQPage şeması (Ek-2): makale M-serisi biçiminde, extractFaq parse eder
+  assert("ARAÇ1.FAQ makale SSS başlığı M-serisi biçiminde", /## Sık Sorulan Sorular \(SSS\)/.test(articleSrc));
+  const faqCount = (articleSrc.match(/^\*\*\d+\. .+\*\*$/gm) || []).length;
+  assert("ARAÇ1.FAQ 8 soru kalın-paragraf biçiminde", faqCount === 8, `bulunan: ${faqCount}`);
+  assert("ARAÇ1.FAQ sayfa buildFaqSchema kullanıyor", /buildFaqSchema\(extractFaq\(ARTICLE_MD\)\)/.test(pageSrc));
+
+  // 11) Prerender iskeleti: form client-mount guard
+  assert("ARAÇ1.PRERENDER form mounted-guard arkasında", /\{!mounted \?/.test(pageSrc));
+  assert("ARAÇ1.PRERENDER SEO metinleri guard DIŞINDA (H1 statik)",
+    pageSrc.indexOf("<h1") < pageSrc.indexOf("{!mounted ?"));
+
+  // 12) Route + sitemap + nav bağları
+  const routesSrc = await Deno.readTextFile("src/routes.tsx");
+  const sitemapSrc = await Deno.readTextFile("scripts/generate-sitemap.mjs");
+  const layoutSrc = await Deno.readTextFile("src/components/Layout.tsx");
+  for (const p of ["araclar", "araclar/rehber-sozlesmesi-olusturucu", "en/tools", "de/tools"])
+    assert(`ARAÇ1.ROUTE /${p}`, routesSrc.includes(`path: "${p}"`));
+  assert("ARAÇ1.SITEMAP hub + araç kayıtlı",
+    sitemapSrc.includes("'/araclar'") && sitemapSrc.includes("'/araclar/rehber-sozlesmesi-olusturucu'"));
+  assert("ARAÇ1.NAV Kaynaklar dropdown + Araçlar linki",
+    /nav\.resources/.test(layoutSrc) && /toolsHubUrl\(i18n\.language\)/.test(layoutSrc));
+  // 7 dilde nav anahtarları (Layout tüm dillerde render edilir)
+  for (const l of ["tr", "en", "de", "ru", "ar", "fr", "es"]) {
+    const j = JSON.parse((await Deno.readTextFile(`src/i18n/locales/${l}.json`)).replace(/^﻿/, ""));
+    assert(`ARAÇ1.i18n ${l} nav.resources+nav.tools`, !!j.nav?.resources && !!j.nav?.tools);
+  }
+
+  // 13) Yenileme-kaybı: depolama YOK, beforeunload VAR
+  assert("ARAÇ1.KVKK localStorage/sessionStorage kullanılmıyor",
+    !/localStorage|sessionStorage/.test(pageSrc + exportSrc + schemaSrc));
+  assert("ARAÇ1.UX beforeunload uyarısı var", /beforeunload/.test(pageSrc));
+  assert("ARAÇ1.UX taslak indir/yükle var", /downloadDraft/.test(exportSrc) && /Taslak yükle/.test(pageSrc));
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

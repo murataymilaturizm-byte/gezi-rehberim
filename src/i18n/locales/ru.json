@@ -36,7 +36,9 @@
     "freeTrial": "Бесплатная версия",
     "menu": "Меню",
     "discoverFeatures": "Изучить возможности",
-    "callSupport": "Линия поддержки"
+    "callSupport": "Линия поддержки",
+    "resources": "Ресурсы",
+    "tools": "Инструменты"
   },
   "hero": {
     "title": "Автоматизация Продаж Туров через WhatsApp",
