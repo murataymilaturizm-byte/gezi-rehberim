@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SiteHeader } from "@/components/SiteHeader";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,7 @@ const DataExport = () => {
   if (exported) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <SiteHeader />
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-8 pb-8 space-y-4">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />

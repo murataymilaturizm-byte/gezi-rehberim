@@ -1,24 +1,16 @@
 import { SEOHead } from "@/components/SEOHead";
+import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ArrowRight, ArrowUp, Menu, Phone } from "lucide-react";
+import { MessageSquare, ArrowRight, ArrowUp } from "lucide-react";
 
 // Turzz destek hattı — landing header'ında görünür. Layout.tsx ile birebir aynı değerler.
 const SUPPORT_PHONE_DISPLAY = "0850 242 77 50";
 const SUPPORT_PHONE_HREF = "tel:+908502427750";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { DemoChat } from "@/components/DemoChat";
-import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { SalesChatWidget } from "@/components/SalesChatWidget";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { LanguageSelector } from "@/components/LanguageSelector";
 import { IndexBlogSection } from "@/components/IndexBlogSection";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
@@ -105,84 +97,8 @@ const Index = () => {
         canonical="/"
         schema={faqSchema}
       />
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3">
-              <img src={turzzLogo} alt="Turzz Logo" className="h-10 sm:h-14 md:h-16 w-auto transition-transform duration-300 hover:scale-105" />
-              <div className="hidden sm:block">
-                <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Destek telefonu — masaüstü: ikon + numara, mobil: sadece ikon (Layout.tsx ile aynı stil) */}
-              <a
-                href={SUPPORT_PHONE_HREF}
-                className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground hover:text-primary transition-colors"
-                aria-label={t("nav.callSupport", { defaultValue: "Destek Hattı" })}
-              >
-                <Phone className="h-4 w-4 text-primary" />
-                <span className="font-medium tabular-nums">{SUPPORT_PHONE_DISPLAY}</span>
-              </a>
-              <a
-                href={SUPPORT_PHONE_HREF}
-                className="md:hidden inline-flex p-2 rounded-md hover:bg-accent transition-colors"
-                aria-label={t("nav.callSupport", { defaultValue: "Destek Hattı" })}
-                title={SUPPORT_PHONE_DISPLAY}
-              >
-                <Phone className="h-5 w-5 text-primary" />
-              </a>
-              <LanguageSelector />
-              <ThemeToggle />
-              <a href="/whatsapp-chatbot-seyahat-acentesi" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
-                {t("nav.features")}
-              </a>
-              <a href="/cozum/incoming-acenteler" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
-                {t("nav.solutions")}
-              </a>
-              <a href="/blog" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
-                {t("nav.blog")}
-              </a>
-              <a href="/yardim" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
-                {t("nav.help")}
-              </a>
-              <a href="/#pricing" className="hidden lg:inline-flex text-sm text-muted-foreground hover:text-foreground transition-colors px-2">
-                {t("nav.pricing")}
-              </a>
-              <Button asChild size="sm" className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105 sm:size-default">
-                <a href="/auth">{t("auth.login")}</a>
-              </Button>
+      <SiteHeader />
 
-              {/* Mobile hamburger menu (lg altı) */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden" aria-label={t("nav.menu", "Menü")}>
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <a href="/whatsapp-chatbot-seyahat-acentesi">{t("nav.features")}</a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href="/cozum/incoming-acenteler">{t("nav.solutions")}</a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href="/blog">{t("nav.blog")}</a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href="/yardim">{t("nav.help")}</a>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <a href="/#pricing">{t("nav.pricing")}</a>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
-      </header>
 
       {/* Hero Section
           Mobile padding (py-10 sm:py-16) korundu — kullanıcı bozma talimatı.

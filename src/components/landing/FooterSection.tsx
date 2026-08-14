@@ -74,7 +74,11 @@ export const FooterSection = () => {
             <ul className="space-y-2">
               {[
                 { href: "/blog", label: t("nav.blog") },
+                { href: "/araclar", label: t("nav.tools") },
                 { href: "/yardim", label: t("footer.helpCenter") },
+                // SITE-MENU-1: Fiyatlandırma menüden kalktı, buradan ve landing
+                // paket bölümünden erişilir. PayTR sonrası menüye dönecek.
+                { href: "/#pricing", label: t("nav.pricing") },
                 { href: "/nasil-baslarim", label: t("nav.gettingStarted") },
                 { href: "/auth?mode=signup", label: t("footer.requestDemo") },
               ].map((item) => (

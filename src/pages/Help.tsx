@@ -1,3 +1,4 @@
+import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -52,31 +53,7 @@ const Help = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <a href="/"><img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer" /></a>
-              <div className="hidden sm:block">
-                <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <LanguageSelector />
-              <ThemeToggle />
-              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
-                <a href="/">{t("nav.home")}</a>
-              </Button>
-              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
-                <a href="/nasil-baslarim">{t("nav.gettingStarted")}</a>
-              </Button>
-              <Button asChild className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105">
-                <a href="/auth">{t("auth.login")}</a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background py-12">

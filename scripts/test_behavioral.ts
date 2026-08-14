@@ -5996,8 +5996,12 @@ console.log("\n── ARAÇ-1 rehber sözleşmesi oluşturucu ──");
     assert(`ARAÇ1.ROUTE /${p}`, routesSrc.includes(`path: "${p}"`));
   assert("ARAÇ1.SITEMAP hub + araç kayıtlı",
     sitemapSrc.includes("'/araclar'") && sitemapSrc.includes("'/araclar/rehber-sozlesmesi-olusturucu'"));
-  assert("ARAÇ1.NAV Kaynaklar dropdown + Araçlar linki",
-    /nav\.resources/.test(layoutSrc) && /toolsHubUrl\(i18n\.language\)/.test(layoutSrc));
+  // SITE-MENU-1 (2026-08-14): "Kaynaklar dropdown" kararı İPTAL → Blog ve Araçlar
+  // birinci seviye, TEK header bileşeninde (SiteHeader). Footer linki korunur.
+  const headerSrc = await Deno.readTextFile("src/components/SiteHeader.tsx");
+  assert("ARAÇ1.NAV Araçlar birinci-seviye menüde",
+    /key: "nav\.tools", href: toolsHubUrl\(lang\)/.test(headerSrc));
+  assert("ARAÇ1.NAV footer'da Araçlar linki", /toolsHubUrl\(i18n\.language\)/.test(layoutSrc));
   // 7 dilde nav anahtarları (Layout tüm dillerde render edilir)
   for (const l of ["tr", "en", "de", "ru", "ar", "fr", "es"]) {
     const j = JSON.parse((await Deno.readTextFile(`src/i18n/locales/${l}.json`)).replace(/^﻿/, ""));
@@ -6009,6 +6013,56 @@ console.log("\n── ARAÇ-1 rehber sözleşmesi oluşturucu ──");
     !/localStorage|sessionStorage/.test(pageSrc + exportSrc + schemaSrc));
   assert("ARAÇ1.UX beforeunload uyarısı var", /beforeunload/.test(pageSrc));
   assert("ARAÇ1.UX taslak indir/yükle var", /downloadDraft/.test(exportSrc) && /Taslak yükle/.test(pageSrc));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SITE-MENU-1 — TEK HEADER MUHAFIZI (2026-08-14) — KALICI
+// Canlı gözlem: menü landing'de başka, blogda başkaydı (4 ayrı header bileşeni).
+// Kilit: public sayfalarda sayfa-özel <header> YAZILMAZ; hepsi SiteHeader kullanır.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── SITE-MENU-1 tek header ──");
+{
+  const hdr = await Deno.readTextFile("src/components/SiteHeader.tsx");
+  // 1) Menü tek kaynak: desktop ve mobil AYNI diziyi map'ler
+  assert("MENU.TEK-KAYNAK navItems dizisi var", /export function navItems/.test(hdr));
+  assert("MENU.TEK-KAYNAK mobil ayrı liste tutmuyor",
+    hdr.split("items.map(").length - 1 === 2, "desktop+mobil aynı diziyi map'lemeli");
+  // 2) Menü öğeleri kararı
+  for (const k of ["nav.home", "nav.features", "nav.blog", "nav.tools", "nav.contact"])
+    assert(`MENU.ÖĞE ${k}`, hdr.includes(`key: "${k}"`));
+  assert("MENU.KALKAN Yardım menüde YOK", !/key: "nav.help"/.test(hdr));
+  assert("MENU.KALKAN Fiyatlandırma menüde YOK", !/key: "nav.pricing"/.test(hdr));
+  assert("MENU.KALKAN Çözümler menüde YOK", !/key: "nav.solutions"/.test(hdr));
+  assert("MENU.PayTR notu kodda", /PayTR/.test(hdr));
+  // 3) Aktif-sayfa vurgusu
+  assert("MENU.AKTİF aria-current kullanılıyor", hdr.includes('aria-current={active ? "page"'));
+  // 4) Public sayfalarda sayfa-özel header YOK (BlogPost'un <header class="mb-8">
+  //    makale başlığıdır — sticky site header'ı değil; onu ayırt ederek ararız)
+  const publicPages = ["Index", "Help", "GettingStarted", "PrivacyPolicy", "TermsOfService", "DataDeletion", "DataExport", "NotFound"];
+  for (const p of publicPages) {
+    const src = await Deno.readTextFile(`src/pages/${p}.tsx`);
+    assert(`MENU.TEK-HEADER ${p} sticky header yazmıyor`, !/<header[^>]*sticky/.test(src));
+    assert(`MENU.TEK-HEADER ${p} SiteHeader kullanıyor`, /<SiteHeader \/>/.test(src));
+  }
+  const layout = await Deno.readTextFile("src/components/Layout.tsx");
+  assert("MENU.TEK-HEADER Layout SiteHeader kullanıyor", /<SiteHeader \/>/.test(layout));
+  assert("MENU.TEK-HEADER Layout kendi header'ını yazmıyor", !/<header/.test(layout));
+  // 5) Yardım + Fiyatlandırma footer'da (iki footer da)
+  assert("MENU.FOOTER Layout footer'da Yardım", layout.includes("/yardim"));
+  assert("MENU.FOOTER Layout footer'da Fiyatlandırma", layout.includes("/#pricing"));
+  const lf = await Deno.readTextFile("src/components/landing/FooterSection.tsx");
+  assert("MENU.FOOTER landing footer'da Yardım", lf.includes("/yardim"));
+  assert("MENU.FOOTER landing footer'da Fiyatlandırma", lf.includes("/#pricing"));
+  assert("MENU.FOOTER landing footer'da Araçlar", lf.includes("/araclar"));
+  // 6) 7 dilde menü etiketleri
+  for (const l of ["tr", "en", "de", "ru", "ar", "fr", "es"]) {
+    const j = JSON.parse((await Deno.readTextFile(`src/i18n/locales/${l}.json`)).replace(/^﻿/, ""));
+    assert(`MENU.i18n ${l} home+contact+tools`, !!j.nav?.home && !!j.nav?.contact && !!j.nav?.tools);
+  }
+  // 7) Makale tablosu mobil taşma fix'i
+  const bp = await Deno.readTextFile("src/pages/BlogPost.tsx");
+  assert("MENU.MOBİL makale tablosu kendi kabında kayar",
+    bp.includes('table: ({ children }: any) => (') && bp.includes('<div className="overflow-x-auto'));
 }
 
 Deno.exit(fail === 0 ? 0 : 1);

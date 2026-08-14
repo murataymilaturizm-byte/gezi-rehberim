@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { SiteHeader } from "@/components/SiteHeader";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -35,6 +36,7 @@ const PrivacyPolicy = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SiteHeader />
       <div className="max-w-3xl mx-auto px-4 py-12">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6">
           <ArrowLeft className="h-4 w-4 me-2 rtl:rotate-180" />

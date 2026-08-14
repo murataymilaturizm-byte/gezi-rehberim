@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/SiteHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
-import { LanguageSelector } from "@/components/LanguageSelector";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   ArrowRight,
   CheckCircle2,
@@ -129,31 +128,7 @@ const GettingStarted = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/95 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <a href="/"><img src={turzzLogo} alt="Turzz Logo" className="h-14 sm:h-16 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer" /></a>
-              <div className="hidden sm:block">
-                <p className="text-sm text-muted-foreground">{t("hero.subtitle")}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <LanguageSelector />
-              <ThemeToggle />
-              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
-                <a href="/">{t("nav.home")}</a>
-              </Button>
-              <Button asChild variant="ghost" className="hidden md:inline-flex hover:scale-105 transition-transform duration-300">
-                <a href="/yardim">{t("nav.help")}</a>
-              </Button>
-              <Button asChild className="bg-gradient-ocean hover:opacity-90 transition-all duration-300 hover:scale-105">
-                <a href="/auth">{t("auth.login")}</a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-b from-accent/20 to-background">

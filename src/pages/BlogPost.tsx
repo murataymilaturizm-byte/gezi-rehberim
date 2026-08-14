@@ -189,6 +189,13 @@ function headingText(children: unknown): string {
 const MD_COMPONENTS = {
   h2: ({ children }: any) => <h2 id={slugifyHeading(headingText(children))}>{children}</h2>,
   h3: ({ children }: any) => <h3 id={slugifyHeading(headingText(children))}>{children}</h3>,
+  // Mobil taşma fix'i (2026-08-14): M-serisindeki karşılaştırma tabloları 360px'te
+  // gövdeyi yatay kaydırıyordu; tablo KENDİ kabında kaydırılır, sayfa taşmaz.
+  table: ({ children }: any) => (
+    <div className="overflow-x-auto -mx-1 px-1">
+      <table>{children}</table>
+    </div>
+  ),
 };
 
 export default function BlogPost() {
