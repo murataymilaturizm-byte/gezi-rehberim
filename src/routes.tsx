@@ -43,10 +43,9 @@ const WhatsAppChatbot     = lazy(() => import("./pages/WhatsAppChatbot"));
 const AITurRezervasyonu   = lazy(() => import("./pages/AITurRezervasyonu"));
 const CokDilliHizmet      = lazy(() => import("./pages/CokDilliHizmet"));
 const TurOtomasyonu       = lazy(() => import("./pages/TurOtomasyonu"));
-const IncomingAcenteler   = lazy(() => import("./pages/cozum/IncomingAcenteler"));
-const GunubirlikTur       = lazy(() => import("./pages/cozum/GunubirlikTur"));
-const ButikAcenteler      = lazy(() => import("./pages/cozum/ButikAcenteler"));
-const TurzzVsManuel       = lazy(() => import("./pages/karsilastir/TurzzVsManuel"));
+// SITE-MENU-1 FAZ-C (2026-08-14): /cozum/* ve /karsilastir/* sayfaları emekli edildi.
+// incoming + günübirlik → zenginleştirilip bloga taşındı; butik → M1'e, karşılaştırma
+// → mevcut blog yazısına 301'lendi (vercel.json, permanent: true).
 const Blog                = lazy(() => import("./pages/Blog"));
 const BlogPost            = lazy(() => import("./pages/BlogPost"));
 
@@ -105,14 +104,6 @@ export const routes: RouteRecord[] = [
       { path: "ai-tur-rezervasyonu",               element: <AITurRezervasyonu /> },
       { path: "cok-dilli-musteri-hizmetleri",      element: <CokDilliHizmet /> },
       { path: "tur-otomasyonu",                    element: <TurOtomasyonu /> },
-
-      // SEO — Çözümler
-      { path: "cozum/incoming-acenteler", element: <IncomingAcenteler /> },
-      { path: "cozum/gunubirlik-tur",     element: <GunubirlikTur /> },
-      { path: "cozum/butik-acenteler",    element: <ButikAcenteler /> },
-
-      // SEO — Karşılaştırma
-      { path: "karsilastir/turzz-vs-manuel-whatsapp", element: <TurzzVsManuel /> },
 
       // ARAÇ-1 — Araçlar (hub + pilot). TR prefix'siz; EN/DE prefix'li (blog deseni).
       { path: "araclar",                                 element: <ToolsHub /> },

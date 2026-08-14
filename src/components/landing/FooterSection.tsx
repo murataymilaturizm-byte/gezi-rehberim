@@ -28,25 +28,6 @@ export const FooterSection = () => {
               ))}
             </ul>
           </div>
-          {/* Çözümler */}
-          <div>
-            <h4 className="font-semibold text-foreground text-sm mb-3 uppercase tracking-wider">{t("footer.solutions")}</h4>
-            <ul className="space-y-2">
-              {[
-                { href: "/cozum/incoming-acenteler", label: t("footer.incomingAgencies") },
-                { href: "/cozum/gunubirlik-tur", label: t("footer.dayTours") },
-                { href: "/cozum/butik-acenteler", label: t("footer.boutiqueAgencies") },
-                { href: "/karsilastir/turzz-vs-manuel-whatsapp", label: t("footer.comparison") },
-              ].map((item) => (
-                <li key={item.href}>
-                  <a href={item.href} className="group text-sm text-muted-foreground hover:text-primary inline-flex items-center transition-all duration-200">
-                    <span className="w-0 group-hover:w-2 h-px bg-primary me-0 group-hover:me-1.5 transition-all duration-200 rtl:hidden" />
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
           {/* Şirket */}
           <div>
             <h4 className="font-semibold text-foreground text-sm mb-3 uppercase tracking-wider">{t("footer.company")}</h4>

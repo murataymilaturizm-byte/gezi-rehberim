@@ -34,30 +34,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://turzzai.com/cozum/incoming-acenteler</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://turzzai.com/cozum/gunubirlik-tur</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://turzzai.com/cozum/butik-acenteler</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://turzzai.com/karsilastir/turzz-vs-manuel-whatsapp</loc>
-    <lastmod>2026-08-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://turzzai.com/araclar</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
@@ -150,7 +126,67 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Blog yazıları (28 yazı, 120 URL girişi) -->
+  <!-- Blog yazıları (30 yazı, 126 URL girişi) -->
+  <url>
+    <loc>https://turzzai.com/blog/gunubirlik-tur-operatoru-rehberi</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/gunubirlik-tur-operatoru-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/gunubirlik-tur-operatoru-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/gunubirlik-tur-operatoru-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/gunubirlik-tur-operatoru-rehberi"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/en/blog/gunubirlik-tur-operatoru-rehberi</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/gunubirlik-tur-operatoru-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/gunubirlik-tur-operatoru-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/gunubirlik-tur-operatoru-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/gunubirlik-tur-operatoru-rehberi"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/de/blog/gunubirlik-tur-operatoru-rehberi</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/gunubirlik-tur-operatoru-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/gunubirlik-tur-operatoru-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/gunubirlik-tur-operatoru-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/gunubirlik-tur-operatoru-rehberi"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/blog/incoming-acente-rehberi</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/incoming-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/incoming-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/incoming-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/incoming-acente-rehberi"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/en/blog/incoming-acente-rehberi</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/incoming-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/incoming-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/incoming-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/incoming-acente-rehberi"/>
+  </url>
+  <url>
+    <loc>https://turzzai.com/de/blog/incoming-acente-rehberi</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://turzzai.com/blog/incoming-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://turzzai.com/en/blog/incoming-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://turzzai.com/de/blog/incoming-acente-rehberi"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://turzzai.com/en/blog/incoming-acente-rehberi"/>
+  </url>
   <url>
     <loc>https://turzzai.com/blog/acente-icin-crm-musteri-listesi-yeniden-satis</loc>
     <lastmod>2026-09-02</lastmod>

@@ -6065,4 +6065,56 @@ console.log("\n── SITE-MENU-1 tek header ──");
     bp.includes('table: ({ children }: any) => (') && bp.includes('<div className="overflow-x-auto'));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SITE-MENU-1 FAZ-C — ÇÖZÜMLER TAŞIMA MUHAFIZI (2026-08-14) — KALICI
+// 4 ince sayfa emekli edildi; 2'si zenginleştirilip bloga taşındı, 2'si
+// en yakın hedefe 301'lendi. Kilit: 301'ler KALICI, zincir yok, eski route yok.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── SITE-MENU-1 FAZ-C çözümler taşıma ──");
+{
+  const vercel = JSON.parse(await Deno.readTextFile("vercel.json"));
+  const EXPECTED: Record<string, string> = {
+    "/cozum/incoming-acenteler": "/blog/incoming-acente-rehberi",
+    "/cozum/gunubirlik-tur": "/blog/gunubirlik-tur-operatoru-rehberi",
+    "/cozum/butik-acenteler": "/blog/seyahat-acentesi-nasil-acilir",
+    "/karsilastir/turzz-vs-manuel-whatsapp": "/blog/manuel-whatsapp-vs-ai-chatbot-karsilastirma",
+  };
+  for (const [src, dest] of Object.entries(EXPECTED)) {
+    const r = vercel.redirects?.find((x: any) => x.source === src);
+    assert(`FAZC.301 ${src} yönlendirmesi var`, !!r);
+    assert(`FAZC.301 ${src} → ${dest}`, r?.destination === dest);
+    assert(`FAZC.301 ${src} KALICI (permanent:true)`, r?.permanent === true);
+    // zincir yasağı: hedef başka bir yönlendirmenin kaynağı olamaz
+    assert(`FAZC.301 ${src} zincir yok`, !vercel.redirects.some((x: any) => x.source === dest));
+  }
+  // Eski route'lar kalkmış olmalı
+  const routes = await Deno.readTextFile("src/routes.tsx");
+  assert("FAZC.ROUTE cozum route'u yok", !routes.includes('path: "cozum/'));
+  assert("FAZC.ROUTE karsilastir route'u yok", !routes.includes('path: "karsilastir/'));
+  // Sitemap'te eski URL kalmamalı, yeni makaleler olmalı
+  const sm = await Deno.readTextFile("scripts/generate-sitemap.mjs");
+  assert("FAZC.SITEMAP eski URL yok", !sm.includes("/cozum/") && !sm.includes("/karsilastir/"));
+  // Taşınan makaleler 3 dilde ve blog standardında
+  for (const slug of ["incoming-acente-rehberi", "gunubirlik-tur-operatoru-rehberi"]) {
+    for (const lang of ["tr", "en", "de"]) {
+      const md = await Deno.readTextFile(`src/blog/posts/${lang}/${slug}.md`);
+      const body = md.split("---").slice(2).join("---");
+      const words = body.split(/\s+/).filter(Boolean).length;
+      assert(`FAZC.İÇERİK ${lang}/${slug} ≥800 kelime (${words})`, words >= 800);
+      const faqCount = (body.match(/^\*\*\d+\. .+\*\*$/gm) || []).length;
+      assert(`FAZC.İÇERİK ${lang}/${slug} 12 SSS (${faqCount})`, faqCount === 12);
+    }
+  }
+  // İç linkler 301'e düşmemeli (zincir önleme)
+  for (const f of ["src/components/Layout.tsx", "src/pages/WhatsAppChatbot.tsx"]) {
+    const s = await Deno.readTextFile(f);
+    assert(`FAZC.İÇLİNK ${f} eski URL'e link vermiyor`, !s.includes("/karsilastir/") && !s.includes("/cozum/"));
+  }
+  // Footer'lardan Çözümler kolonu kalktı
+  const layout = await Deno.readTextFile("src/components/Layout.tsx");
+  const lf = await Deno.readTextFile("src/components/landing/FooterSection.tsx");
+  assert("FAZC.FOOTER Layout Çözümler kolonu yok", !layout.includes("footer.solutions"));
+  assert("FAZC.FOOTER landing Çözümler kolonu yok", !lf.includes("footer.solutions"));
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

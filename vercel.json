@@ -1,13 +1,52 @@
 {
   "cleanUrls": true,
   "redirects": [
-    { "source": "/gizlilik-politikasi", "destination": "/privacy-policy", "permanent": true }
+    {
+      "source": "/gizlilik-politikasi",
+      "destination": "/privacy-policy",
+      "permanent": true
+    },
+    {
+      "source": "/cozum/incoming-acenteler",
+      "destination": "/blog/incoming-acente-rehberi",
+      "permanent": true
+    },
+    {
+      "source": "/cozum/gunubirlik-tur",
+      "destination": "/blog/gunubirlik-tur-operatoru-rehberi",
+      "permanent": true
+    },
+    {
+      "source": "/cozum/butik-acenteler",
+      "destination": "/blog/seyahat-acentesi-nasil-acilir",
+      "permanent": true
+    },
+    {
+      "source": "/karsilastir/turzz-vs-manuel-whatsapp",
+      "destination": "/blog/manuel-whatsapp-vs-ai-chatbot-karsilastirma",
+      "permanent": true
+    }
   ],
   "rewrites": [
-    { "source": "/admin/:path*", "destination": "/spa-fallback" },
-    { "source": "/admin", "destination": "/spa-fallback" },
-    { "source": "/auth", "destination": "/spa-fallback" },
-    { "source": "/reset-password", "destination": "/spa-fallback" },
-    { "source": "/(.*)", "destination": "/spa-fallback" }
+    {
+      "source": "/admin/:path*",
+      "destination": "/spa-fallback"
+    },
+    {
+      "source": "/admin",
+      "destination": "/spa-fallback"
+    },
+    {
+      "source": "/auth",
+      "destination": "/spa-fallback"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/spa-fallback"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/spa-fallback"
+    }
   ]
 }

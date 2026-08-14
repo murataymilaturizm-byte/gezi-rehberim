@@ -160,7 +160,7 @@ export default function WhatsAppChatbot() {
             </table>
           </div>
           <p className="text-center mt-4">
-            <Link to="/karsilastir/turzz-vs-manuel-whatsapp" className="text-sm text-orange-500 hover:underline">
+            <Link to="/blog/manuel-whatsapp-vs-ai-chatbot-karsilastirma" className="text-sm text-orange-500 hover:underline">
               {t(`${wb}.comparisonSection.detailLink`)}
             </Link>
           </p>

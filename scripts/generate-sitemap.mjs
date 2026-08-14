@@ -28,10 +28,10 @@ const STATIC_PAGES = [
   { path: '/ai-tur-rezervasyonu',                     priority: '0.9', changefreq: 'monthly' },
   { path: '/cok-dilli-musteri-hizmetleri',            priority: '0.8', changefreq: 'monthly' },
   { path: '/tur-otomasyonu',                          priority: '0.8', changefreq: 'monthly' },
-  { path: '/cozum/incoming-acenteler',                priority: '0.8', changefreq: 'monthly' },
-  { path: '/cozum/gunubirlik-tur',                    priority: '0.8', changefreq: 'monthly' },
-  { path: '/cozum/butik-acenteler',                   priority: '0.8', changefreq: 'monthly' },
-  { path: '/karsilastir/turzz-vs-manuel-whatsapp',    priority: '0.8', changefreq: 'monthly' },
+  
+  
+  
+  
   // ARAÇ-1 — Araçlar bölümü. Bu liste aynı zamanda PRERENDER setidir
   // (vite.config.ts includedRoutes sitemap.xml'i okur) → hub + araç sayfası
   // iskeleti statik HTML'e girer, form client-mount olur.

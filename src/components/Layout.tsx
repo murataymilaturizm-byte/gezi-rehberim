@@ -6,12 +6,6 @@ import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { SiteHeader } from "@/components/SiteHeader";
 import { toolsHubUrl } from "@/lib/tools/registry";
 
-const cozumler = [
-  { href: "/cozum/incoming-acenteler", label: "Incoming Acenteler" },
-  { href: "/cozum/gunubirlik-tur", label: "Günübirlik Tur Operatörleri" },
-  { href: "/cozum/butik-acenteler", label: "Butik Acenteler" },
-];
-
 const ozellikler = [
   { href: "/whatsapp-chatbot-seyahat-acentesi", label: "WhatsApp Chatbot" },
   { href: "/ai-tur-rezervasyonu", label: "AI Tur Rezervasyonu" },
@@ -47,18 +41,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold text-foreground mb-3 text-sm">{t("footer.solutions")}</h3>
-              <ul className="space-y-2">
-                {cozumler.map((item) => (
-                  <li key={item.href}>
-                    <Link to={item.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
               <h3 className="font-semibold text-foreground mb-3 text-sm">{t("footer.company")}</h3>
               <ul className="space-y-2">
                 <li><Link to="/#about" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.about")}</Link></li>
@@ -79,7 +61,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 {/* SITE-MENU-1: Fiyatlandırma menüden kalktı, buradan erişilir.
                     PayTR entegrasyonu tamamlandığında menüye geri dönecek. */}
                 <li><Link to="/#pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("nav.pricing")}</Link></li>
-                <li><Link to="/karsilastir/turzz-vs-manuel-whatsapp" className="text-sm text-muted-foreground hover:text-primary transition-colors">Karşılaştırma</Link></li>
+                <li><Link to="/blog/manuel-whatsapp-vs-ai-chatbot-karsilastirma" className="text-sm text-muted-foreground hover:text-primary transition-colors">Karşılaştırma</Link></li>
               </ul>
             </div>
           </div>
