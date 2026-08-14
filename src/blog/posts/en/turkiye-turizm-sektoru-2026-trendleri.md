@@ -55,7 +55,7 @@ Characteristics of this segment:
 
 **Off-season active.** High activity outside the classic June-September tourist season (especially March-April and October-November).
 
-To serve this market, Arabic customer service, cultural sensitivity, and halal tourism expertise are critical. Agencies with these capabilities will see significant growth over the next 5 years.
+To serve this market, Arabic customer service, cultural sensitivity, and halal tourism expertise are critical ([our multilingual communication guide](/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim) covers the practical setup). Agencies with these capabilities will see significant growth over the next 5 years.
 
 ## Trend 3: Behavioral Changes in Traditional Tourist Markets
 

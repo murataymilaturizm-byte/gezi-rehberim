@@ -88,7 +88,7 @@ Soyut bir kavram olarak değil, somut iş sonuçlarına bakalım. Çoklu dil AI 
 
 **Yorum ve değerlendirme puanları artıyor.** TripAdvisor, Google Maps gibi platformlarda turistlerin verdiği puanlar yükseliyor. "Almanca destek aldım, çok memnun kaldım" tarzı yorumlar yeni müşteri çekmeye devam ediyor.
 
-**Tekrar müşteri oranı artıyor.** İlk seyahatinden memnun ayrılan turist 2-3 yıl içinde yeniden geldiğinde sizi tercih ediyor, hatta arkadaşlarını yönlendiriyor.
+**Tekrar müşteri oranı artıyor.** İlk seyahatinden memnun ayrılan turist 2-3 yıl içinde yeniden geldiğinde sizi tercih ediyor, hatta arkadaşlarını yönlendiriyor — bu döngüyü sisteme bağlamanın yolu [CRM ve yeniden-satış rehberimizde](/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 **Ortalama rezervasyon değeri yükseliyor.** Çünkü AI chatbot upsell tekliflerini her dilde, her müşteriye sistematik olarak yapıyor. Almanca müşteriye balon turu önerisini Almanca yapmak, Arapça müşteriye yat turu paketini Arapça anlatmak — bu küçük dokunuşlar büyük fark yaratıyor.
 
@@ -158,7 +158,7 @@ Türkiye'de çoklu dil destekli profesyonel bir AI chatbot sisteminin aylık mal
 
 **Yetersiz altyapı.** Çoklu dilde mesaj geliyor ama tur kataloğunuz sadece Türkçe — hangi otelin Almanca açıklaması var, hangisinin yok belirsiz. Bu altyapı sorunları sonradan ciddi tıkanıklık yaratıyor.
 
-**Hızlı yanıt vermeyi unutmak.** Yabancı turist daha aceleci. Karar verme süreçleri kısa. Geç yanıt = kayıp müşteri. Çoklu dil destek hız ile birleşmediğinde değer azalıyor.
+**Hızlı yanıt vermeyi unutmak.** Yabancı turist daha aceleci. Karar verme süreçleri kısa. Geç yanıt = kayıp müşteri ([mesaj-dönüşüm rehberimiz](/blog/whatsappta-musteri-neden-cevapsiz-birakir) bu kaybın mekaniğini açar). Çoklu dil destek hız ile birleşmediğinde değer azalıyor.
 
 ## İncoming Acentelerin AI'lı Geleceği
 

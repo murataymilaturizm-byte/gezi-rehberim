@@ -27,7 +27,7 @@ Die Agentur hatte echte Expertise in türkischen Destinationen. Kappadokien, Tag
 
 ### Was nicht funktionierte
 
-**Sprachbarriere:** Etwa 35–40 % der eingehenden Anfragen trafen auf Deutsch, Russisch oder Arabisch ein. Die Agentur hatte keine Mitarbeiter, die eine dieser Sprachen sprachen. Diese Anfragen wurden entweder holprig über Google Translate beantwortet oder blieben völlig unbeantwortet. Der Agentureigentümer spürte intuitiv, dass dies Buchungen kostete, hatte aber keine Möglichkeit, es zu messen.
+**Sprachbarriere:** Etwa 35–40 % der eingehenden Anfragen trafen auf Deutsch, Russisch oder Arabisch ein. Die Agentur hatte keine Mitarbeiter, die eine dieser Sprachen sprachen. Diese Anfragen wurden entweder holprig über Google Translate beantwortet oder blieben völlig unbeantwortet. Der Agentureigentümer spürte intuitiv, dass dies Buchungen kostete, hatte aber keine Möglichkeit, es zu messen — die Verkaufsseite der Sprachbarriere behandeln wir ausführlich in [unserem Leitfaden für mehrsprachige Kommunikation](/de/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim).
 
 **Die Nacht-Todeszone:** Ein erheblicher Anteil der Kunden aus den Golfstaaten schrieb zwischen 21 und 1 Uhr Istanbuler Zeit — ihre normalen Geschäftszeiten, die tiefe Nacht der Agentur. Diese Nachrichten blieben bis zum Morgen unbeantwortet. Bis dahin hatte der Kunde oft bereits woanders gebucht.
 

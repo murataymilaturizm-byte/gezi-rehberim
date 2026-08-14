@@ -27,7 +27,7 @@ Acentenin Türkiye destinasyonlarında gerçek bir uzmanlığı vardı. Kapadoky
 
 ### Ne Çalışmıyordu
 
-**Dil bariyeri:** Sorguların yaklaşık %35-40'ı Almanca, Rusça ya da Arapçaydı. Acentede bu dillerde konuşabilen tek bir personel bile yoktu. Bu sorgular ya Google Translate ile yarım yanıtlanıyor ya da tamamen yanıtsız kalıyordu. Acente sahibi bu kayıpların büyüklüğünü sezgisel olarak biliyordu ama ölçemiyordu.
+**Dil bariyeri:** Sorguların yaklaşık %35-40'ı Almanca, Rusça ya da Arapçaydı. Acentede bu dillerde konuşabilen tek bir personel bile yoktu. Bu sorgular ya Google Translate ile yarım yanıtlanıyor ya da tamamen yanıtsız kalıyordu. Acente sahibi bu kayıpların büyüklüğünü sezgisel olarak biliyordu ama ölçemiyordu — dil bariyerinin satış tarafını [çok dilli iletişim rehberimizde](/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim) ayrıntılı ele aldık.
 
 **Gece kördüğümü:** Körfez pazarından gelen müşterilerin büyük bölümü Türkiye saatiyle gece 21:00-01:00 arası mesaj atıyordu. Bu mesajlar sabaha kadar yanıtsız kalıyordu. Sabah yanıt geldiğinde müşteri ya başka acenteye gitmiş ya da konuyu unutmuştu.
 

@@ -82,7 +82,7 @@ Looking at concrete business results rather than abstract concepts. Changes obse
 
 **Review scores increase.** Ratings on TripAdvisor, Google Maps, and similar platforms rise. Reviews like "I received German-language support, very satisfied" continue to attract new customers.
 
-**Repeat customer rate increases.** A tourist who leaves after a satisfying first trip returns within 2-3 years and chooses you again — and even refers friends.
+**Repeat customer rate increases.** A tourist who leaves after a satisfying first trip returns within 2-3 years and chooses you again — and even refers friends; how to systematise that loop is covered in [our CRM and repeat-sales guide](/en/blog/acente-icin-crm-musteri-listesi-yeniden-satis).
 
 **Average booking value rises.** Because an AI chatbot systematically makes upsell offers in every language to every customer. Suggesting a hot air balloon ride to a German customer in German, explaining a yacht tour package to an Arabic customer in Arabic — these small touches make a big difference.
 
@@ -148,7 +148,7 @@ A professional multilingual AI chatbot system's monthly cost in most markets sta
 
 **Insufficient infrastructure.** Multilingual messages arrive but your tour catalog only has local-language descriptions — which hotels have German descriptions, which don't? This infrastructure problem creates serious bottlenecks later.
 
-**Forgetting fast response.** Foreign tourists are more impatient. Decision cycles are short. Late response = lost customer. Multilingual support loses its value if not combined with speed.
+**Forgetting fast response.** Foreign tourists are more impatient. Decision cycles are short. Late response = lost customer ([our message-conversion guide](/en/blog/whatsappta-musteri-neden-cevapsiz-birakir) unpacks the mechanics of that loss). Multilingual support loses its value if not combined with speed.
 
 ## Turzz AI: The Complete Solution for Incoming Agencies
 

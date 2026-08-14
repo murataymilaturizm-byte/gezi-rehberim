@@ -27,7 +27,7 @@ The agency had genuine expertise in Turkish destinations. Cappadocia, Aegean isl
 
 ### What Wasn't Working
 
-**Language barrier:** Approximately 35–40% of incoming queries arrived in German, Russian, or Arabic. The agency had no staff members who spoke any of these languages. These queries were either answered haltingly through Google Translate or left unanswered entirely. The agency owner knew intuitively this was costing bookings but had no way to measure it.
+**Language barrier:** Approximately 35–40% of incoming queries arrived in German, Russian, or Arabic. The agency had no staff members who spoke any of these languages. These queries were either answered haltingly through Google Translate or left unanswered entirely. The agency owner knew intuitively this was costing bookings but had no way to measure it — we cover the sales side of the language barrier in detail in [our multilingual communication guide](/en/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim).
 
 **The after-hours dead zone:** A significant share of customers from Gulf states were messaging between 9pm and 1am Istanbul time — their normal business hours, the agency's deep night. These messages sat unanswered until morning. By then, the customer had often already booked elsewhere.
 

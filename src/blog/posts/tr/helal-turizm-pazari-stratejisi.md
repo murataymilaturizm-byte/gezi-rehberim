@@ -13,7 +13,7 @@ slug: "helal-turizm-pazari-stratejisi"
 
 # Helal Turizm Pazarı: Müslüman Turistlere Hizmet Eden Acentelerin Stratejisi
 
-Küresel Müslüman nüfus 2 milyarı aştı ve bu kitlenin seyahat harcamaları her yıl büyümeye devam ediyor. Mastercard-CrescentRating Global Muslim Travel Index 2024 raporuna göre küresel helal turizm pazarı 220 milyar dolara ulaştı ve 2030'da 300 milyar doları geçmesi bekleniyor. **Helal turizm stratejisi** geliştiren acenteler için bu pazar, yüksek sadakat oranları ve güçlü büyüme potansiyeliyle son derece cazip bir segment oluşturuyor.
+Küresel Müslüman nüfus 2 milyarı aştı ve bu kitlenin seyahat harcamaları her yıl büyümeye devam ediyor. Mastercard-CrescentRating Global Muslim Travel Index 2024 raporuna göre küresel helal turizm pazarı 220 milyar dolara ulaştı ve 2030'da 300 milyar doları geçmesi bekleniyor. **Helal turizm stratejisi** geliştiren acenteler için bu pazar, yüksek sadakat oranları ve güçlü büyüme potansiyeliyle son derece cazip bir segment oluşturuyor — sadakati satışa çevirmenin düzeni için [acente CRM rehberimize](/blog/acente-icin-crm-musteri-listesi-yeniden-satis) bakın.
 
 Türkiye bu pazarda stratejik bir avantaja sahip. Hem coğrafi konum hem kültürel yakınlık hem de zengin İslam mirasıyla Türkiye, Körfez ülkeleri, Güneydoğu Asya ve Orta Doğu'dan gelen Müslüman turistler için doğal bir destinasyon. Bu rehberde helal turizm pazarının dinamiklerini, acentenizi bu segmente nasıl konumlandıracağınızı ve somut pazarlama stratejilerini bulacaksınız.
 
@@ -105,7 +105,7 @@ Helal turizm tur tasarımında göz önünde bulundurulması gereken pratik deta
 
 ### 1. Arapça ve Endonezce Dijital Varlık
 
-Hedef pazarın dilinde içerik üretmek, güven inşasının birinci adımıdır. Web sitenizde Arapça sayfa, sosyal medya hesaplarında Arapça içerik ve WhatsApp'ta Arapça müşteri hizmetleri sunabiliyorsanız, rakiplerinizin büyük çoğunluğunun önüne geçersiniz.
+Hedef pazarın dilinde içerik üretmek, güven inşasının birinci adımıdır. Web sitenizde Arapça sayfa, sosyal medya hesaplarında Arapça içerik ve WhatsApp'ta Arapça müşteri hizmetleri sunabiliyorsanız, rakiplerinizin büyük çoğunluğunun önüne geçersiniz — çok dilli düzenin pratik kurulumu [yabancı turiste tur satışı rehberimizde](/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim).
 
 WhatsApp Körfez pazarında iletişimin ana kanalıdır. Arapça WhatsApp Business hattı, bu kitlenin tercihi olan bir temas noktası olarak öne çıkar.
 
