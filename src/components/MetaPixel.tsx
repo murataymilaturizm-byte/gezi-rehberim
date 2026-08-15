@@ -65,11 +65,17 @@ export function trackLead(params?: Record<string, unknown>) {
  * yani rakam eksik sayar (yön göstergesi, kesin sayaç değil).
  */
 export function trackToolEvent(
-  kind: "view" | "download" | "cta",
+  kind: "view" | "calc" | "download" | "cta",
   params: { tool: string; format?: "doc" | "pdf"; target?: string },
 ) {
   if (typeof window !== "undefined" && typeof window.fbq === "function") {
-    const name = kind === "view" ? "ToolView" : kind === "download" ? "ToolDocumentGenerated" : "ToolCtaClick";
+    // ARAÇ-2: "calc" = sonuç panelinin ilk anlamlı dolumu (oturumda bir kez).
+    // Payload'a form DEĞERİ konmaz — yalnız araç kimliği taşınır.
+    const name =
+      kind === "view" ? "ToolView"
+      : kind === "calc" ? "ToolCalculated"
+      : kind === "download" ? "ToolDocumentGenerated"
+      : "ToolCtaClick";
     window.fbq("trackCustom", name, params);
   }
 }

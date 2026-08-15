@@ -59,6 +59,26 @@ export const TOOLS: ToolEntry[] = [
     // Pilot: içerik TR. EN/DE route'ları hazır ama araç henüz TR yayında.
     langs: ["tr"],
   },
+  {
+    id: "tur-kar-hesaplayici",
+    path: {
+      tr: "/araclar/tur-kar-hesaplayici",
+      en: "/en/tools/tour-profit-calculator",
+      de: "/de/tools/tour-gewinn-rechner",
+    },
+    title: {
+      tr: "Tur Kâr ve Fiyat Hesaplayıcı",
+      en: "Tour Profit & Price Calculator",
+      de: "Tour-Gewinn- und Preisrechner",
+    },
+    description: {
+      tr: "Sabit ve kişi-başı giderlerinizi girin; kişi başı maliyeti, önerilen satış fiyatını, başabaş noktasını ve doluluk senaryolarında kârı görün. Rakamlarınız cihazınızdan çıkmaz.",
+      en: "Enter fixed and per-person costs to see unit cost, a suggested selling price, the break-even point and profit across occupancy scenarios. Your figures never leave your device.",
+      de: "Geben Sie Fix- und Personenkosten ein und sehen Sie Stückkosten, empfohlenen Verkaufspreis, Break-even-Punkt und Gewinn je Auslastung. Ihre Zahlen verlassen Ihr Gerät nicht.",
+    },
+    // ARAÇ-2 de TR pilot — EN/DE route'ları hazır, içerik henüz TR.
+    langs: ["tr"],
+  },
 ];
 
 /** Belirli bir dilde yayında olan araçlar (hub kartları) */

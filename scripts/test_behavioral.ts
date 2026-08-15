@@ -6117,4 +6117,181 @@ console.log("\n── SITE-MENU-1 FAZ-C çözümler taşıma ──");
   assert("FAZC.FOOTER landing Çözümler kolonu yok", !lf.includes("footer.solutions"));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ARAÇ-2 — TUR KÂR/FİYAT HESAPLAYICI MUHAFIZI (2026-08-15) — KALICI
+// Hesap çekirdeği saf JS olduğu için burada GERÇEK matematik doğrulanır:
+// elle hesaplanmış beklenen değerler kodun çıktısıyla karşılaştırılır.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── ARAÇ-2 kâr/fiyat hesaplayıcı ──");
+{
+  const calcSrc = await Deno.readTextFile("src/lib/tools/tur-kar-hesaplayici/calc.ts");
+  const schemaSrc = await Deno.readTextFile("src/lib/tools/tur-kar-hesaplayici/schema.ts");
+  const pageSrc = await Deno.readTextFile("src/pages/tools/TurKarHesaplayici.tsx");
+  const shareSrc = await Deno.readTextFile("src/lib/tools/tur-kar-hesaplayici/share.ts");
+  const articleSrc = await Deno.readTextFile("src/lib/tools/tur-kar-hesaplayici/article.ts");
+
+  // 1) Kütüphane yasağı — hesap saf JS, belge üretimi tarayıcı yazdırması
+  assert("ARAÇ2.SAF-JS calc.ts dış bağımlılık kullanmıyor",
+    !/^import .* from "(?!\.)/m.test(calcSrc.replace(/import \{[^}]*\} from "\.\/schema";/g, "")));
+  assert("ARAÇ2.SAF-JS jsPDF/docx yok", !/jspdf|docx|pdfmake/i.test(pageSrc + calcSrc));
+  assert("ARAÇ2.PDF tarayıcı yazdırması", pageSrc.includes("window.print()"));
+
+  // 2) Kâr modu seçtirme (şemanın en kritik kararı)
+  assert("ARAÇ2.KÂR-MODU markup + marj ikisi de var",
+    calcSrc.includes("cPlan * (1 + m)") && calcSrc.includes("cPlan / (1 - m)"));
+  assert("ARAÇ2.KÂR-MODU form seçtiriyor",
+    pageSrc.includes('set("karModu", "markup")') && pageSrc.includes('set("karModu", "marj")'));
+
+  // 3) Komisyon opsiyonel — boşsa hesaptan düşer
+  assert("ARAÇ2.KOMİSYON opsiyonel", schemaSrc.includes("komisyon: \"\"") || /komisyon: ""/.test(schemaSrc));
+
+  // 4) Panel tutarlılığı: ilan/KDV/senaryolar AYNI fiyattan
+  assert("ARAÇ2.TUTARLILIK KDV dahil yuvarlanmış fiyattan", calcSrc.includes("pKdvli = pYuvarlak * (1 + kdv)"));
+  assert("ARAÇ2.TUTARLILIK senaryolar yuvarlanmış fiyattan", calcSrc.includes("num(input.kendiFiyat) : pYuvarlak"));
+
+  // 5) Analytics üçlüsü + sızıntı yasağı
+  const pixel = await Deno.readTextFile("src/components/MetaPixel.tsx");
+  assert("ARAÇ2.ANALYTICS ToolCalculated tanımlı", pixel.includes("ToolCalculated"));
+  for (const e of ["\"view\"", "\"calc\"", "\"cta\""])
+    assert(`ARAÇ2.ANALYTICS ${e} tetikleniyor`, pageSrc.includes(`trackToolEvent(${e}`));
+  assert("ARAÇ2.ANALYTICS calc oturumda BİR kez", pageSrc.includes("calcFired.current"));
+  assert("ARAÇ2.GİZLİLİK event payload sadece tool kimliği",
+    !/trackToolEvent\([^)]*input\./.test(pageSrc));
+
+  // 6) Veri lokalde — sunucuya gönderim yok
+  assert("ARAÇ2.GİZLİLİK fetch/XHR yok", !/fetch\(|XMLHttpRequest|axios|supabase/.test(pageSrc));
+  assert("ARAÇ2.GİZLİLİK güven cümlesi sayfada", pageSrc.includes("sunucumuza gönderilmez"));
+
+  // 7) URL paylaşımı OPT-IN (adres çubuğu kendiliğinden yazılmaz)
+  assert("ARAÇ2.PAYLAŞIM opt-in düğme", pageSrc.includes("buildShareUrl"));
+  assert("ARAÇ2.PAYLAŞIM otomatik URL yazımı YOK",
+    !/history\.(replaceState|pushState)/.test(pageSrc));
+  assert("ARAÇ2.PAYLAŞIM maliyet-linkte uyarısı", pageSrc.includes("yalnız güvendiğiniz kişilerle"));
+  assert("ARAÇ2.PAYLAŞIM alan sırası sabit (eski linkler bozulmasın)",
+    shareSrc.includes("Sıra SABİTTİR"));
+
+  // 8) Prerender/CLS: form client-mount, yer tutucu var
+  assert("ARAÇ2.PRERENDER mounted guard", pageSrc.includes("const [mounted, setMounted]"));
+  assert("ARAÇ2.CLS yer tutucu min-h", pageSrc.includes("min-h-[560px]"));
+
+  // 9) Kardeş makale — 12 SSS + uydurma oran yasağı
+  const faqCount = (articleSrc.match(/^\*\*\d+\. .+\*\*$/gm) || []).length;
+  assert(`ARAÇ2.MAKALE 12 SSS (${faqCount})`, faqCount === 12);
+  assert("ARAÇ2.MAKALE SSS başlığı extractFaq deseninde",
+    articleSrc.includes("## Sık Sorulan Sorular (SSS)"));
+  // Yalnız makale GÖVDESİ taranır — dosyanın başındaki kural yorumu bu deseni
+  // örnek olarak içerdiği için tüm dosyayı taramak yanlış pozitif üretiyordu.
+  const articleBody = articleSrc.split("ARTICLE_MD")[1] || "";
+  assert("ARAÇ2.MAKALE uydurma sektör-oranı yok",
+    !/acentelerin %\d+|sektörün %\d+|araştırmalara göre %\d+/i.test(articleBody));
+
+  // 10) Registry + route + sitemap üçlüsü
+  const reg = await Deno.readTextFile("src/lib/tools/registry.ts");
+  const routes = await Deno.readTextFile("src/routes.tsx");
+  const sitemap = await Deno.readTextFile("scripts/generate-sitemap.mjs");
+  assert("ARAÇ2.KAYIT registry'de", reg.includes('id: "tur-kar-hesaplayici"'));
+  assert("ARAÇ2.KAYIT route'u var", routes.includes('path: "araclar/tur-kar-hesaplayici"'));
+  assert("ARAÇ2.KAYIT sitemap/prerender setinde", sitemap.includes("/araclar/tur-kar-hesaplayici"));
+}
+
+// ── ARAÇ-2 MATEMATİK (elle doğrulanmış beklenen değerler) ──
+// Referans senaryo: 45 koltuk · F=18.300 · v=800 · %70 planlama · markup %25 · KDV %20
+{
+  const calcMod = await import("../src/lib/tools/tur-kar-hesaplayici/calc.ts");
+  const schemaMod = await import("../src/lib/tools/tur-kar-hesaplayici/schema.ts");
+  const base = schemaMod.DEFAULT_INPUT;
+  const S1 = calcMod.calculate({ ...base,
+    arac: "12000", rehber: "4000", soforKonaklama: "1500", parkGecis: "800",
+    muze: "400", yemekOgun: "1", yemekTutar: "350", sigorta: "50",
+    kapasite: "45", planlamaDoluluk: 0.7, karModu: "markup", karOrani: "25", kdv: "20" });
+  assert("ARAÇ2.MAT S1 sabit gider 18.300", S1.F === 18300);
+  assert("ARAÇ2.MAT S1 kişi-başı 800", S1.v === 800);
+  assert("ARAÇ2.MAT S1 planlama kişi 31 (floor 31,5)", S1.nPlan === 31);
+  assert("ARAÇ2.MAT S1 kişi-başı maliyet 1390,32", Math.abs(S1.cPlan - 1390.3226) < 0.01);
+  assert("ARAÇ2.MAT S1 ham fiyat 1737,90", Math.abs(S1.pListe - 1737.9032) < 0.01);
+  assert("ARAÇ2.MAT S1 yuvarlanmış ilan 1750", S1.pYuvarlak === 1750);
+  assert("ARAÇ2.MAT S1 KDV dahil 2100 (yuvarlanmıştan)", Math.abs(S1.pKdvli - 2100) < 0.01);
+  assert("ARAÇ2.MAT S1 başabaş 20 kişi", S1.breakeven.n === 20);
+  const kar = S1.scenarios.map((s: any) => Math.round(s.kar));
+  assert(`ARAÇ2.MAT S1 senaryo kârları 2600/11150/17800/24450 (${kar.join("/")})`,
+    kar[0] === 2600 && kar[1] === 11150 && kar[2] === 17800 && kar[3] === 24450);
+  const kisi = S1.scenarios.map((s: any) => s.n);
+  assert(`ARAÇ2.MAT S1 kişi sayıları 22/31/38/45 (${kisi.join("/")})`,
+    kisi[0] === 22 && kisi[1] === 31 && kisi[2] === 38 && kisi[3] === 45);
+
+  // Marj modu AYNI yüzdeyle DAHA YÜKSEK fiyat üretir (şemanın gerekçesi)
+  const S2 = calcMod.calculate({ ...base,
+    arac: "12000", rehber: "4000", soforKonaklama: "1500", parkGecis: "800",
+    muze: "400", yemekOgun: "1", yemekTutar: "350", sigorta: "50",
+    kapasite: "45", planlamaDoluluk: 0.7, karModu: "marj", karOrani: "25", kdv: "20" });
+  assert("ARAÇ2.MAT S2 marj fiyatı 1853,76", Math.abs(S2.pListe - 1853.7634) < 0.01);
+  assert("ARAÇ2.MAT S2 marj > markup (aynı %25)", S2.pListe > S1.pListe);
+
+  // Komisyon liste fiyatını yukarı iter, acenteye kalan net korunur
+  const S3 = calcMod.calculate({ ...base,
+    arac: "12000", rehber: "4000", soforKonaklama: "1500", parkGecis: "800",
+    muze: "400", yemekOgun: "1", yemekTutar: "350", sigorta: "50",
+    kapasite: "45", planlamaDoluluk: 0.7, karModu: "markup", karOrani: "25",
+    komisyon: "10", kdv: "20" });
+  assert("ARAÇ2.MAT S3 komisyonlu liste 1931,00", Math.abs(S3.pListe - 1931.0036) < 0.01);
+  assert("ARAÇ2.MAT S3 komisyon sonrası net = komisyonsuz fiyat",
+    Math.abs(S3.pListe * 0.9 - S1.pListe) < 0.01);
+
+  // Üç uyarı dalı
+  const neg = calcMod.calculate({ ...base,
+    arac: "30000", rehber: "9000", soforKonaklama: "4000", parkGecis: "1500",
+    muze: "600", yemekOgun: "4", yemekTutar: "300", konaklamaGece: "2",
+    konaklamaTutar: "900", sigorta: "120", kapasite: "40",
+    priceMode: "test", kendiFiyat: "3000", kdv: "20" });
+  assert("ARAÇ2.UYARI negatif katkı → başabaş yok", !neg.breakeven.possible);
+  assert("ARAÇ2.UYARI negatif katkı uyarısı", neg.warning === "negatif-katki");
+  assert("ARAÇ2.UYARI negatif katkıda doluluk arttıkça zarar büyür",
+    neg.scenarios[3].kar < neg.scenarios[0].kar);
+
+  const asim = calcMod.calculate({ ...base,
+    arac: "30000", rehber: "9000", soforKonaklama: "4000", parkGecis: "1500",
+    muze: "600", yemekOgun: "4", yemekTutar: "300", konaklamaGece: "2",
+    konaklamaTutar: "900", sigorta: "120", kapasite: "40",
+    priceMode: "test", kendiFiyat: "4400", kdv: "20" });
+  assert("ARAÇ2.UYARI başabaş > kapasite → kapasite-aşımı", asim.warning === "kapasite-asimi");
+
+  const risk = calcMod.calculate({ ...base,
+    arac: "30000", rehber: "9000", soforKonaklama: "4000", parkGecis: "1500",
+    muze: "600", yemekOgun: "4", yemekTutar: "300", konaklamaGece: "2",
+    konaklamaTutar: "900", sigorta: "120", kapasite: "40",
+    priceMode: "test", kendiFiyat: "4956", kdv: "20" });
+  assert("ARAÇ2.UYARI başabaş kapasite×0,85 üstü → riskli", risk.warning === "riskli");
+  assert("ARAÇ2.UYARI riskli dalında başabaş 37", risk.breakeven.n === 37);
+
+  // Sayı ayrıştırma: TR binlik ve ondalık biçimleri
+  assert("ARAÇ2.SAYI 1.500 → 1500 (TR binlik)", calcMod.num("1.500") === 1500);
+  assert("ARAÇ2.SAYI 1500,50 → 1500,5 (TR ondalık)", calcMod.num("1500,50") === 1500.5);
+  assert("ARAÇ2.SAYI 1500.50 → 1500,5 (nokta ondalık)", calcMod.num("1500.50") === 1500.5);
+  assert("ARAÇ2.SAYI 12.000 → 12000 (TR binlik, sessiz veri kaybı fix)", calcMod.num("12.000") === 12000);
+  assert("ARAÇ2.SAYI 1.234.567 → 1234567", calcMod.num("1.234.567") === 1234567);
+  assert("ARAÇ2.SAYI 12.000,50 → 12000,5", calcMod.num("12.000,50") === 12000.5);
+  assert("ARAÇ2.SAYI 1.5 → 1,5 (ondalık korunur)", calcMod.num("1.5") === 1.5);
+  assert("ARAÇ2.SAYI negatif reddedilir", calcMod.num("-500") === 0);
+  assert("ARAÇ2.SAYI boş → 0", calcMod.num("") === 0);
+  assert("ARAÇ2.YUVARLAMA 1737,90 → 1750", calcMod.roundUpTo(1737.9, 50) === 1750);
+  assert("ARAÇ2.YUVARLAMA tam katı sabit kalır", calcMod.roundUpTo(1750, 50) === 1750);
+
+  // URL paylaşımı gidiş-dönüş
+  const shareMod = await import("../src/lib/tools/tur-kar-hesaplayici/share.ts");
+  const orig = { ...base, arac: "12000", rehber: "4000", kapasite: "45",
+    karOrani: "25", karModu: "marj" as const, paraBirimi: "EUR" as const,
+    digerSabit: [{ id: "s1", label: "Otopark", amount: "300" }] };
+  const code = shareMod.encodeState(orig);
+  const back = shareMod.decodeState(code);
+  assert("ARAÇ2.PAYLAŞIM kod üretiliyor", code.length > 0);
+  assert(`ARAÇ2.PAYLAŞIM kod kısa (${code.length} karakter < 400)`, code.length < 400);
+  assert("ARAÇ2.PAYLAŞIM gidiş-dönüş: sabit gider", back?.arac === "12000");
+  assert("ARAÇ2.PAYLAŞIM gidiş-dönüş: kâr modu", back?.karModu === "marj");
+  assert("ARAÇ2.PAYLAŞIM gidiş-dönüş: para birimi", back?.paraBirimi === "EUR");
+  assert("ARAÇ2.PAYLAŞIM gidiş-dönüş: serbest satır", back?.digerSabit[0]?.amount === "300");
+  assert("ARAÇ2.PAYLAŞIM bozuk kod null döner", shareMod.decodeState("@@@bozuk@@@") === null);
+  assert("ARAÇ2.PAYLAŞIM aynı hesap → aynı sonuç",
+    calcMod.calculate(orig).pYuvarlak === calcMod.calculate(back!).pYuvarlak);
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

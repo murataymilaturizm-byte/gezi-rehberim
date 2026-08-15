@@ -52,6 +52,7 @@ const BlogPost            = lazy(() => import("./pages/BlogPost"));
 // ARAÇ-1 — Araçlar bölümü (route'lar 3 dile hazır; pilot içerik TR)
 const ToolsHub            = lazy(() => import("./pages/ToolsHub"));
 const RehberSozlesmesi    = lazy(() => import("./pages/tools/RehberSozlesmesi"));
+const TurKarHesaplayici    = lazy(() => import("./pages/tools/TurKarHesaplayici"));
 
 const queryClient = new QueryClient();
 
@@ -108,10 +109,13 @@ export const routes: RouteRecord[] = [
       // ARAÇ-1 — Araçlar (hub + pilot). TR prefix'siz; EN/DE prefix'li (blog deseni).
       { path: "araclar",                                 element: <ToolsHub /> },
       { path: "araclar/rehber-sozlesmesi-olusturucu",    element: <RehberSozlesmesi /> },
+      { path: "araclar/tur-kar-hesaplayici",             element: <TurKarHesaplayici /> },
       { path: "en/tools",                                element: <ToolsHub /> },
       { path: "en/tools/guide-contract-generator",       element: <RehberSozlesmesi /> },
+      { path: "en/tools/tour-profit-calculator",         element: <TurKarHesaplayici /> },
       { path: "de/tools",                                element: <ToolsHub /> },
       { path: "de/tools/reiseleiter-vertrag-generator",  element: <RehberSozlesmesi /> },
+      { path: "de/tools/tour-gewinn-rechner",            element: <TurKarHesaplayici /> },
 
       // Blog — Türkçe (prefix yok, default)
       { path: "blog",       element: <Blog /> },
