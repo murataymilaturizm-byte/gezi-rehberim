@@ -5967,7 +5967,10 @@ console.log("\n── ARAÇ-1 rehber sözleşmesi oluşturucu ──");
   const codeOnly = (s: string) => s.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
   assert("ARAÇ1.TR-KARAKTER jsPDF kullanılmıyor",
     !/jspdf|jsPDF|new jsPDF/i.test(codeOnly(exportSrc) + codeOnly(pageSrc)));
-  assert("ARAÇ1.TR-KARAKTER .doc çıktısı UTF-8 + BOM", /charset=utf-8/.test(exportSrc) && /\\uFEFF|﻿/.test(exportSrc));
+  // BOM + charset ARAÇ-4 ile paylaşılan ortak çekirdeğe taşındı (src/lib/tools/docx.ts)
+  const docxCore = await Deno.readTextFile("src/lib/tools/docx.ts");
+  assert("ARAÇ1.TR-KARAKTER .doc çıktısı UTF-8 + BOM",
+    /charset=utf-8/.test(exportSrc + docxCore) && /\\uFEFF|﻿/.test(docxCore));
 
   // 9) Analytics üçlüsü — yalnız araç kimliği/biçim, form alanı YOK
   const pixelSrc = await Deno.readTextFile("src/components/MetaPixel.tsx");
@@ -6292,6 +6295,173 @@ console.log("\n── ARAÇ-2 kâr/fiyat hesaplayıcı ──");
   assert("ARAÇ2.PAYLAŞIM bozuk kod null döner", shareMod.decodeState("@@@bozuk@@@") === null);
   assert("ARAÇ2.PAYLAŞIM aynı hesap → aynı sonuç",
     calcMod.calculate(orig).pYuvarlak === calcMod.calculate(back!).pYuvarlak);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ARAÇ-4 — TUR SATIŞ SÖZLEŞMESİ + ÖN BİLGİLENDİRME MUHAFIZI (2026-08-15) — KALICI
+// TEK FORM → İKİ BELGE. En kritik kilit: iptal merdiveni TEK kaynaktan iki
+// belgeye de işlenir; çelişen iki belge, tek belgeden kötüdür.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── ARAÇ-4 tur satış sözleşmesi + ön bilgilendirme ──");
+{
+  const clausesSrc = await Deno.readTextFile("src/lib/tools/tur-satis-sozlesmesi/clauses.ts");
+  const schemaSrc = await Deno.readTextFile("src/lib/tools/tur-satis-sozlesmesi/schema.ts");
+  const pageSrc = await Deno.readTextFile("src/pages/tools/TurSatisSozlesmesi.tsx");
+  const exportSrc = await Deno.readTextFile("src/lib/tools/tur-satis-sozlesmesi/export.ts");
+  const articleSrc = await Deno.readTextFile("src/lib/tools/tur-satis-sozlesmesi/article.ts");
+  const docxSrc = await Deno.readTextFile("src/lib/tools/docx.ts");
+
+  // 1) Kütüphane yasağı + ortak docx çekirdeği paylaşımı
+  // Yorum satırları çıkarılır — "jsPDF NEDEN KULLANILMIYOR" açıklaması kodun
+  // kendisi değildir, tarama onu yakalamamalı.
+  const kodSatirlari = (s: string) => s.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+  assert("ARAÇ4.SAF jsPDF/docx kütüphanesi yok",
+    !/jspdf|from "docx"|pdfmake|jszip/i.test(kodSatirlari(pageSrc) + kodSatirlari(exportSrc) + kodSatirlari(docxSrc)));
+  assert("ARAÇ4.ORTAK docx çekirdeği kullanılıyor", exportSrc.includes('from "../docx"'));
+  const a1export = await Deno.readTextFile("src/lib/tools/rehber-sozlesmesi/export.ts");
+  assert("ARAÇ4.ORTAK ARAÇ-1 de aynı çekirdeği kullanıyor (kopya kod yok)", a1export.includes('from "../docx"'));
+  assert("ARAÇ4.PDF tarayıcı yazdırması", docxSrc.includes("window.print()"));
+
+  // 2) TC kimlik yasağı (ARAÇ-1 kararı emsal)
+  assert("ARAÇ4.GİZLİLİK TC kimlik alanı YOK", !/tcKimlik|tcNo|kimlikNo/i.test(schemaSrc));
+  assert("ARAÇ4.GİZLİLİK fetch/XHR yok", !/fetch\(|XMLHttpRequest|axios|supabase/.test(pageSrc));
+  assert("ARAÇ4.GİZLİLİK güven cümlesi sayfada", pageSrc.includes("sunucumuza gönderilmez"));
+
+  // 3) Hukuki disiplin — uydurma madde-no / oran yasağı
+  const hukukiMetin = clausesSrc.split("CONTRACT_TITLE")[1] || "";
+  assert("ARAÇ4.HUKUK uydurma yönetmelik madde-no yok",
+    !/\d+\s*(?:sayılı|inci|nci|üncü)\s*madde|madde\s+\d+\s*\/|Yönetmeliğin\s+\d+/i.test(hukukiMetin));
+  assert("ARAÇ4.HUKUK genel mevzuat ifadesi kullanılıyor", clausesSrc.includes("İlgili mevzuat hükümleri saklıdır"));
+  assert("ARAÇ4.HUKUK avukat notu her iki belgede", clausesSrc.includes("avukatınıza inceletin"));
+  assert("ARAÇ4.HUKUK marka satırı", clausesSrc.includes("turzzai.com/araclar"));
+  assert("ARAÇ4.HUKUK teslim beyanı ibaresi",
+    clausesSrc.includes("satış işleminin gerçekleşmesinden önce tüketiciye verilmiş"));
+
+  // 4) Merdiven varsayılanı ORAN İÇERMEZ (uydurma tarife dağıtmama kararı)
+  assert("ARAÇ4.MERDİVEN şablon gün aralığı veriyor", schemaSrc.includes("M8_LADDER_TEMPLATE"));
+  const tmpl = schemaSrc.split("M8_LADDER_TEMPLATE")[1].split("];")[0];
+  assert("ARAÇ4.MERDİVEN şablonda hazır ORAN YOK", !/%\s*\d+/.test(tmpl));
+  assert("ARAÇ4.MERDİVEN oran alanı boş başlar", pageSrc.includes('sure: t.sure, iade: ""'));
+
+  // 5) Dahil/hariç öneri listeleri — hiçbiri ön-işaretli değil
+  assert("ARAÇ4.LİSTE dahil önerileri var", schemaSrc.includes("INCLUDED_SUGGESTIONS"));
+  assert("ARAÇ4.LİSTE hariç önerileri var", schemaSrc.includes("EXCLUDED_SUGGESTIONS"));
+  assert("ARAÇ4.LİSTE varsayılan seçim YOK",
+    schemaSrc.includes("dahilHizmetler: [], haricHizmetler: []"));
+
+  // 6) Analytics üçlüsü + sızıntı yasağı
+  for (const e of ["\"view\"", "\"download\"", "\"cta\""])
+    assert(`ARAÇ4.ANALYTICS ${e} tetikleniyor`, pageSrc.includes(`trackToolEvent(${e}`));
+  assert("ARAÇ4.ANALYTICS iki belge ayrı ayrı raporlanıyor",
+    pageSrc.includes('target: "sozlesme"') && pageSrc.includes('target: "on-bilgilendirme"'));
+  assert("ARAÇ4.GİZLİLİK event payload form değeri taşımıyor", !/trackToolEvent\([^)]*data\./.test(pageSrc));
+
+  // 7) Prerender / CLS
+  assert("ARAÇ4.PRERENDER mounted guard", pageSrc.includes("const [mounted, setMounted]"));
+  assert("ARAÇ4.CLS yer tutucu", pageSrc.includes("min-h-[560px]"));
+  assert("ARAÇ4.LAZY belge modülü tıklamada yükleniyor",
+    pageSrc.includes('await import("@/lib/tools/tur-satis-sozlesmesi/export")'));
+
+  // 8) Kardeş makale
+  const faqCount = (articleSrc.match(/^\*\*\d+\. .+\*\*$/gm) || []).length;
+  assert(`ARAÇ4.MAKALE 12 SSS (${faqCount})`, faqCount === 12);
+  assert("ARAÇ4.MAKALE SSS başlığı extractFaq deseninde", articleSrc.includes("## Sık Sorulan Sorular (SSS)"));
+  assert("ARAÇ4.MAKALE M8 linki", articleSrc.includes("/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir"));
+  assert("ARAÇ4.MAKALE M5 tahsilat linki", articleSrc.includes("/blog/acente-icin-crm-musteri-listesi-yeniden-satis"));
+
+  // 9) Kayıt üçlüsü
+  const reg = await Deno.readTextFile("src/lib/tools/registry.ts");
+  const routes = await Deno.readTextFile("src/routes.tsx");
+  const sitemap = await Deno.readTextFile("scripts/generate-sitemap.mjs");
+  assert("ARAÇ4.KAYIT registry", reg.includes('id: "tur-satis-sozlesmesi"'));
+  assert("ARAÇ4.KAYIT route", routes.includes('path: "araclar/tur-satis-sozlesmesi-olusturucu"'));
+  assert("ARAÇ4.KAYIT sitemap/prerender", sitemap.includes("/araclar/tur-satis-sozlesmesi-olusturucu"));
+}
+
+// ── ARAÇ-4 DAVRANIŞ: iki belge, tek merdiven ──
+{
+  const cl = await import("../src/lib/tools/tur-satis-sozlesmesi/clauses.ts");
+  const sc = await import("../src/lib/tools/tur-satis-sozlesmesi/schema.ts");
+  const base = { ...sc.INITIAL_DATA, acenteUnvan: "Işık Turizm", acenteTelefon: "0384 213 45 67",
+    musteriAd: "Şule Güngör", turAdi: "Kapadokya Kültür Turu", baslangicTarihi: "2026-09-10",
+    bedelTutar: "8500", yetiskinSayisi: "3", cocukSayisi: "1" };
+
+  // Bedel: kişi başı + toplam BİRLİKTE yazılır
+  const kisi = cl.bedelCumlesi(base);
+  assert(`ARAÇ4.BEDEL kişi-başı modu 8.500 × 4 = 34.000 (${kisi})`,
+    kisi.includes("kişi başı 8.500") && kisi.includes("toplam 34.000"));
+  const toplam = cl.bedelCumlesi({ ...base, bedelBazi: "toplam" });
+  assert(`ARAÇ4.BEDEL toplam modu 8.500 ÷ 4 = 2.125 (${toplam})`,
+    toplam.includes("kişi başı 2.125") && toplam.includes("toplam 8.500"));
+
+  // Merdiven TEK KAYNAK: iki belgede birebir aynı satırlar
+  const dolu = { ...base, merdiven: [
+    { id: "m1", sure: "30 gün ve öncesi", iade: "tam iade" },
+    { id: "m2", sure: "0-7 gün", iade: "iade yok" } ] };
+  const cTab = cl.contractSpec(dolu).bolumler.find((b: any) => b.tablo)?.tablo;
+  const pTab = cl.prebriefSpec(dolu).bolumler.find((b: any) => b.tablo)?.tablo;
+  assert("ARAÇ4.MERDİVEN sözleşmede tablo var", !!cTab);
+  assert("ARAÇ4.MERDİVEN ön bilgilendirmede tablo var", !!pTab);
+  assert("ARAÇ4.MERDİVEN iki belgede BİREBİR aynı",
+    JSON.stringify(cTab?.satirlar) === JSON.stringify(pTab?.satirlar));
+
+  // Yarım satır (süre var, iade yok) belgeye GİRMEZ
+  const yarim = cl.ladderRows({ ...base, merdiven: [
+    { id: "m1", sure: "30 gün", iade: "" },
+    { id: "m2", sure: "0-7 gün", iade: "iade yok" } ] });
+  assert("ARAÇ4.MERDİVEN yarım satır düşer", yarim.length === 1);
+
+  // Merdiven boşken tablo basılmaz, alternatif cümle gelir
+  const bosIptal = cl.contractSpec(base).bolumler.find((b: any) => b.baslik.includes("İptal"));
+  assert("ARAÇ4.MERDİVEN boşken tablo YOK", !bosIptal?.tablo);
+  assert("ARAÇ4.MERDİVEN boşken alternatif cümle",
+    bosIptal!.paragraflar.some((p: string) => p.includes("ayrıca belirlenir")));
+
+  // Boş opsiyoneller düşer, madde numaraları ARDIŞIK kalır
+  const bosNo = cl.contractSpec(base).bolumler.map((b: any) => b.no);
+  const doluForm = { ...base, dahilHizmetler: [{ id: "a", label: "Ulaşım" }],
+    haricHizmetler: [{ id: "b", label: "Bahşişler" }], tesisAdi: "Otel", ekKosullar: "Ek koşul" };
+  const doluNo = cl.contractSpec(doluForm).bolumler.map((b: any) => b.no);
+  assert(`ARAÇ4.NUMARA boş formda ardışık (${bosNo.join(",")})`, bosNo.every((n: number, i: number) => n === i + 1));
+  assert(`ARAÇ4.NUMARA dolu formda ardışık (${doluNo.join(",")})`, doluNo.every((n: number, i: number) => n === i + 1));
+  assert("ARAÇ4.NUMARA opsiyoneller madde sayısını artırır", doluNo.length > bosNo.length);
+
+  // Boş alanın cümlesi belgeye hiç girmez + placeholder yok
+  const metin = JSON.stringify(cl.contractSpec(base)) + JSON.stringify(cl.prebriefSpec(base));
+  assert("ARAÇ4.BOŞ-ALAN vergi no satırı yok", !metin.includes("Vergi no"));
+  assert("ARAÇ4.BOŞ-ALAN katılımcı adları satırı yok", !metin.includes("Katılımcılar:"));
+  assert("ARAÇ4.BOŞ-ALAN placeholder yok", !/\[\s*\]|___/.test(metin));
+
+  // Şikâyet kanalı boşsa acente telefonuna düşer
+  assert("ARAÇ4.ŞİKÂYET boş kanal → acente telefonu", metin.includes("0384 213 45 67"));
+
+  // Ön bilgilendirme: beyan HER ZAMAN var (belgenin hukuki işlevi)
+  assert("ARAÇ4.BEYAN her zaman var", !!cl.prebriefSpec(base).beyan);
+  assert("ARAÇ4.BEYAN teslim tarihi işleniyor",
+    cl.prebriefSpec({ ...base, formTeslimTarihi: "2026-08-18" }).beyan!.includes("18 Ağustos 2026"));
+
+  // Teslim tarihi uyarısı
+  assert("ARAÇ4.TARİH teslim < sözleşme → uyarı yok",
+    !cl.deliveryDateWarning({ ...base, sozlesmeTarihi: "2026-08-20", formTeslimTarihi: "2026-08-18" }));
+  assert("ARAÇ4.TARİH teslim > sözleşme → uyarı var",
+    cl.deliveryDateWarning({ ...base, sozlesmeTarihi: "2026-08-20", formTeslimTarihi: "2026-08-25" }));
+
+  // İki belge FARKLI yapıda (biri numaralı madde, diğeri numarasız bölüm)
+  assert("ARAÇ4.YAPI sözleşme numaralı maddelerden oluşur",
+    cl.contractSpec(base).bolumler.every((b: any) => typeof b.no === "number"));
+  assert("ARAÇ4.YAPI ön bilgilendirme numarasız bölümlerden oluşur",
+    cl.prebriefSpec(base).bolumler.every((b: any) => b.no === null));
+
+  // Word HTML üretimi: TR karakter + Word namespace
+  const dx = await import("../src/lib/tools/docx.ts");
+  const html = dx.buildDocHtml(cl.contractSpec(dolu));
+  assert("ARAÇ4.DOCX Word namespace", html.includes("schemas-microsoft-com:office:word"));
+  assert("ARAÇ4.DOCX TR karakterler bozulmuyor", html.includes("Şule Güngör") && html.includes("Kapadokya"));
+  assert("ARAÇ4.DOCX merdiven tablosu HTML'e giriyor", html.includes("tam iade"));
+  assert("ARAÇ4.DOCX avukat notu + marka satırı",
+    html.includes("avukatınıza inceletin") && html.includes("turzzai.com/araclar"));
+  const pHtml = dx.buildDocHtml(cl.prebriefSpec({ ...dolu, formTeslimTarihi: "2026-08-18" }));
+  assert("ARAÇ4.DOCX ön bilgilendirmede teslim beyanı", pHtml.includes("gerçekleşmesinden önce"));
 }
 
 Deno.exit(fail === 0 ? 0 : 1);

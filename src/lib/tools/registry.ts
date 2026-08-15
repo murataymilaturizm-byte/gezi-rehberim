@@ -79,6 +79,25 @@ export const TOOLS: ToolEntry[] = [
     // ARAÇ-2 de TR pilot — EN/DE route'ları hazır, içerik henüz TR.
     langs: ["tr"],
   },
+  {
+    id: "tur-satis-sozlesmesi",
+    path: {
+      tr: "/araclar/tur-satis-sozlesmesi-olusturucu",
+      en: "/en/tools/tour-sales-contract-generator",
+      de: "/de/tools/reisevertrag-generator",
+    },
+    title: {
+      tr: "Tur Satış Sözleşmesi + Ön Bilgilendirme Formu",
+      en: "Tour Sales Contract & Pre-Contract Information Form",
+      de: "Reisevertrag & Vorvertragliches Informationsformular",
+    },
+    description: {
+      tr: "Tek formu doldurun; paket tur satış sözleşmesi ile ön bilgilendirme formu birlikte üretilsin. İptal merdiveni iki belgeye de aynı kaynaktan işlenir. Bilgileriniz cihazınızdan çıkmaz.",
+      en: "Fill one form and generate both the package tour sales contract and the pre-contract information form. The refund ladder is written to both from a single source. Your data never leaves your device.",
+      de: "Ein Formular, zwei Dokumente: Reisevertrag und vorvertragliches Informationsformular. Die Stornostaffel wird aus einer Quelle in beide geschrieben. Ihre Daten verlassen Ihr Gerät nicht.",
+    },
+    langs: ["tr"],
+  },
 ];
 
 /** Belirli bir dilde yayında olan araçlar (hub kartları) */

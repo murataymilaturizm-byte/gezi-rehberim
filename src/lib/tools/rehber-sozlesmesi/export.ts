@@ -11,16 +11,12 @@
 import type { ContractData } from "./schema";
 import { buildClauses, signatureBlocks, BRAND_LINE, LAWYER_NOTE_TOP, LAWYER_NOTE_BOTTOM, DOC_TITLE, trDate } from "./clauses";
 
-const esc = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+// ORTAK çekirdek (ARAÇ-4 ile paylaşılır) — kopya kod tutulmaz.
+import { esc, slugForFile, downloadBlob } from "../docx";
 
 /** Dosya adı: tur adı + tarih (Türkçe karakterler sadeleştirilir) */
 export function fileNameFor(d: ContractData, ext: string): string {
-  const slug = (d.turAdi || "rehber-sozlesmesi")
-    .toLocaleLowerCase("tr-TR")
-    .replace(/[ıİ]/g, "i").replace(/[şŞ]/g, "s").replace(/[ğĞ]/g, "g")
-    .replace(/[üÜ]/g, "u").replace(/[öÖ]/g, "o").replace(/[çÇ]/g, "c")
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48) || "rehber-sozlesmesi";
+  const slug = slugForFile(d.turAdi, "rehber-sozlesmesi");
   const tarih = d.duzenlemeTarihi || new Date().toISOString().slice(0, 10);
   return `rehber-sozlesmesi-${slug}-${tarih}.${ext}`;
 }
@@ -75,17 +71,7 @@ ${sigHtml}
 
 /** .doc indir — hiçbir veri ağa çıkmaz, Blob tamamen tarayıcıda üretilir */
 export function downloadDoc(d: ContractData): void {
-  const html = buildDocHtml(d);
-  // BOM: Word'ün UTF-8'i doğru tanıması için
-  const blob = new Blob(["﻿", html], { type: "application/msword;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileNameFor(d, "doc");
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadBlob(buildDocHtml(d), fileNameFor(d, "doc"), "application/msword;charset=utf-8");
 }
 
 /** PDF: tarayıcının yazdırma diyaloğu (Save as PDF) — önizleme DOM'u basılır */
@@ -95,15 +81,7 @@ export function printDocument(): void {
 
 /** Taslak indir/yükle — kullanıcının KENDİ diskine; bizde hiçbir kayıt tutulmaz */
 export function downloadDraft(d: ContractData): void {
-  const blob = new Blob([JSON.stringify(d, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileNameFor(d, "taslak.json");
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  downloadBlob(JSON.stringify(d, null, 2), fileNameFor(d, "taslak.json"), "application/json");
 }
 
 export { trDate };
