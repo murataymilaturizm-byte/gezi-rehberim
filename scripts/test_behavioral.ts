@@ -6464,4 +6464,159 @@ console.log("\n── ARAÇ-4 tur satış sözleşmesi + ön bilgilendirme ─�
   assert("ARAÇ4.DOCX ön bilgilendirmede teslim beyanı", pHtml.includes("gerçekleşmesinden önce"));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ARAÇ-5 — TUR TEKLİFİ MUHAFIZI (2026-08-15) — KALICI
+// Teklif TİCARİ belgedir: avukat notu YOK, imza bloğu YOK.
+// Dahil/hariç listeleri ARAÇ-4 ile ORTAK kaynaktan gelir.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── ARAÇ-5 tur teklifi ──");
+{
+  const schemaSrc = await Deno.readTextFile("src/lib/tools/tur-teklifi/schema.ts");
+  const docSrc = await Deno.readTextFile("src/lib/tools/tur-teklifi/document.ts");
+  const pageSrc = await Deno.readTextFile("src/pages/tools/TurTeklifi.tsx");
+  const exportSrc = await Deno.readTextFile("src/lib/tools/tur-teklifi/export.ts");
+  const articleSrc = await Deno.readTextFile("src/lib/tools/tur-teklifi/article.ts");
+  const listsSrc = await Deno.readTextFile("src/lib/tools/service-lists.ts");
+  const a4schema = await Deno.readTextFile("src/lib/tools/tur-satis-sozlesmesi/schema.ts");
+  const kodSatirlari = (s: string) => s.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+
+  // 1) ⑤ ORTAK LİSTE — iki araç tek kaynaktan
+  assert("ARAÇ5.ORTAK service-lists.ts var", listsSrc.includes("INCLUDED_SUGGESTIONS") && listsSrc.includes("EXCLUDED_SUGGESTIONS"));
+  assert("ARAÇ5.ORTAK ARAÇ-5 ortak listeden okuyor", schemaSrc.includes('from "../service-lists"'));
+  assert("ARAÇ5.ORTAK ARAÇ-4 de ortak listeden okuyor", a4schema.includes('from "../service-lists"'));
+  assert("ARAÇ5.ORTAK ARAÇ-4 kendi kopyasını tutmuyor",
+    !/const INCLUDED_SUGGESTIONS = \[/.test(a4schema) && !/const EXCLUDED_SUGGESTIONS = \[/.test(a4schema));
+
+  // 2) Teklif ≠ sözleşme: avukat notu ve imza bloğu YOK
+  // Kaynak yorumlarını değil ÜRETİLEN BELGEYİ tarar (yorumda "avukat notu yok"
+  // yazması belgenin kendisinde avukat notu olduğu anlamına gelmez).
+  {
+    const d0 = await import("../src/lib/tools/tur-teklifi/document.ts");
+    const s0 = await import("../src/lib/tools/tur-teklifi/schema.ts");
+    const cikti = JSON.stringify(d0.offerSpec({ ...s0.INITIAL_OFFER,
+      acenteUnvan: "Test", muhatapAd: "Test", turAdi: "Test", priceMode: "tek", tekFiyat: "100" }));
+    assert("ARAÇ5.TİCARİ avukat/örnek-iskelet notu yok", !/avukat|örnek iskelet/i.test(cikti));
+  }
+  assert("ARAÇ5.TİCARİ imza bloğu yok", docSrc.includes("imzalar: []"));
+  assert("ARAÇ5.TİCARİ üst not boş", docSrc.includes('ustNot: ""'));
+  assert("ARAÇ5.TİCARİ marka satırı var", docSrc.includes("turzzai.com/araclar"));
+
+  // 3) ① LOGO: formda not var, Word çıktısına yazılmıyor
+  assert("ARAÇ5.LOGO formda uyarı notu",
+    pageSrc.includes("Logo PDF'de yer alır; Word düzenleme-kopyasıdır"));
+  assert("ARAÇ5.LOGO belge üreticisine hiç girmiyor", !/logoDataUrl/.test(docSrc));
+  assert("ARAÇ5.LOGO client-side küçültme (canvas)", pageSrc.includes("createElement(\"canvas\")"));
+  assert("ARAÇ5.LOGO boyut sınırı", schemaSrc.includes("LOGO_MAX_BYTES") && schemaSrc.includes("LOGO_MAX_WIDTH"));
+  // Ağ çağrısı deseni — "Upload" lucide ikon adıdır, ağ işlemi değil
+  assert("ARAÇ5.LOGO sunucuya gitmiyor",
+    !/fetch\(|XMLHttpRequest|new FormData|\.upload\(|supabase/.test(kodSatirlari(pageSrc)));
+
+  // 4) Kütüphane yasağı + ortak docx zinciri
+  assert("ARAÇ5.SAF yeni kütüphane yok", !/jspdf|from "docx"|pdfmake|jszip/i.test(kodSatirlari(pageSrc) + kodSatirlari(exportSrc)));
+  assert("ARAÇ5.ORTAK docx çekirdeği", exportSrc.includes('from "../docx"'));
+  assert("ARAÇ5.LAZY belge modülü tıklamada", pageSrc.includes('await import("@/lib/tools/tur-teklifi/export")'));
+
+  // 5) Analytics üçlüsü + sızıntı yasağı
+  for (const e of ["\"view\"", "\"download\"", "\"cta\""])
+    assert(`ARAÇ5.ANALYTICS ${e} tetikleniyor`, pageSrc.includes(`trackToolEvent(${e}`));
+  assert("ARAÇ5.GİZLİLİK event payload form değeri taşımıyor", !/trackToolEvent\([^)]*data\./.test(pageSrc));
+  assert("ARAÇ5.GİZLİLİK güven cümlesi", pageSrc.includes("sunucumuza gönderilmez"));
+
+  // 6) Prerender / CLS
+  assert("ARAÇ5.PRERENDER mounted guard", pageSrc.includes("const [mounted, setMounted]"));
+  assert("ARAÇ5.CLS yer tutucu", pageSrc.includes("min-h-[560px]"));
+
+  // 7) Kardeş makale
+  const faqCount = (articleSrc.match(/^\*\*\d+\. .+\*\*$/gm) || []).length;
+  assert(`ARAÇ5.MAKALE 12 SSS (${faqCount})`, faqCount === 12);
+  assert("ARAÇ5.MAKALE SSS başlığı", articleSrc.includes("## Sık Sorulan Sorular (SSS)"));
+  assert("ARAÇ5.MAKALE ARAÇ-2 linki", articleSrc.includes("/araclar/tur-kar-hesaplayici"));
+  assert("ARAÇ5.MAKALE ARAÇ-4 linki", articleSrc.includes("/araclar/tur-satis-sozlesmesi-olusturucu"));
+  assert("ARAÇ5.MAKALE M5 linki", articleSrc.includes("/blog/acente-icin-crm-musteri-listesi-yeniden-satis"));
+  const govde = articleSrc.split("ARTICLE_MD")[1] || "";
+  assert("ARAÇ5.MAKALE uydurma sektör-oranı yok",
+    !/acentelerin %\d+|sektörün %\d+|araştırmalara göre %\d+/i.test(govde));
+
+  // 8) Kayıt üçlüsü
+  const reg = await Deno.readTextFile("src/lib/tools/registry.ts");
+  const routes = await Deno.readTextFile("src/routes.tsx");
+  const sitemap = await Deno.readTextFile("scripts/generate-sitemap.mjs");
+  assert("ARAÇ5.KAYIT registry", reg.includes('id: "tur-teklifi"'));
+  assert("ARAÇ5.KAYIT route", routes.includes('path: "araclar/tur-teklifi-olusturucu"'));
+  assert("ARAÇ5.KAYIT sitemap/prerender", sitemap.includes("/araclar/tur-teklifi-olusturucu"));
+}
+
+// ── ARAÇ-5 DAVRANIŞ ──
+{
+  const doc = await import("../src/lib/tools/tur-teklifi/document.ts");
+  const sc = await import("../src/lib/tools/tur-teklifi/schema.ts");
+  const base = { ...sc.INITIAL_OFFER, acenteUnvan: "Işık Turizm", muhatapAd: "Ata Holding",
+    turAdi: "Kapadokya Kurumsal Turu", priceMode: "tek" as const, tekFiyat: "4500" };
+
+  // ③ TEK GÜNLÜK TURDA "Gün 1" BAŞLIĞI BASILMAZ
+  const tek = doc.buildOfferSections({ ...base, program: [{ id: "p1", metin: "Göreme, Uçhisar, Avanos" }] });
+  const tekProg = tek.find((s: any) => s.baslik === "Program");
+  assert("ARAÇ5.PROGRAM tek satırda Gün başlığı YOK",
+    !!tekProg && !tekProg.paragraflar.some((p: string) => p.startsWith("Gün ")));
+  const cok = doc.buildOfferSections({ ...base, program: [
+    { id: "p1", metin: "Göreme" }, { id: "p2", metin: "Ihlara" }] });
+  const cokProg = cok.find((s: any) => s.baslik === "Program");
+  assert("ARAÇ5.PROGRAM çok satırda Gün N numaralanır",
+    cokProg!.paragraflar[0].startsWith("Gün 1:") && cokProg!.paragraflar[1].startsWith("Gün 2:"));
+  assert("ARAÇ5.PROGRAM boşken bölüm yok",
+    !doc.buildOfferSections(base).some((s: any) => s.baslik === "Program"));
+
+  // Fiyat aralığı denetimi
+  const mk = (rows: string[][]) => ({ ...base, priceMode: "aralik" as const,
+    fiyatSatirlari: rows.map((r, i) => ({ id: "f" + i, minKisi: r[0], maxKisi: r[1], fiyat: r[2] })) });
+  assert("ARAÇ5.ARALIK çakışma yakalanıyor",
+    sc.rangeIssues(mk([["20","29","5000"],["25","39","4500"]])).some((x: any) => x.kind === "cakisma"));
+  assert("ARAÇ5.ARALIK boşluk yakalanıyor",
+    sc.rangeIssues(mk([["20","29","5000"],["35","45","4200"]])).some((x: any) => x.kind === "bosluk"));
+  assert("ARAÇ5.ARALIK ters aralık yakalanıyor",
+    sc.rangeIssues(mk([["30","20","5000"]])).some((x: any) => x.kind === "ters"));
+  assert("ARAÇ5.ARALIK bitişik aralıkta uyarı YOK",
+    sc.rangeIssues(mk([["20","29","5000"],["30","39","4500"]])).length === 0);
+  assert("ARAÇ5.ARALIK satırlar min'e göre sıralanır",
+    sc.sortedPriceRows(mk([["30","39","4500"],["20","29","5000"]]))[0].minKisi === "20");
+
+  // Fiyat tablosu render
+  const tab = doc.buildOfferSections(mk([["20","29","5000"],["30","","4500"]])).find((s: any) => s.tablo);
+  assert("ARAÇ5.FİYAT tablo satırları", JSON.stringify(tab!.tablo!.satirlar) ===
+    JSON.stringify([["20-29 kişi","5.000 TL"],["30 kişi ve üzeri","4.500 TL"]]));
+  assert("ARAÇ5.FİYAT üst sınırsız satır 've üzeri' yazar",
+    tab!.tablo!.satirlar[1][0].includes("ve üzeri"));
+  assert("ARAÇ5.KDV hariç ibaresi", doc.kdvIbaresi(base) === "Fiyatlara KDV dahil değildir.");
+  assert("ARAÇ5.KDV dahil ibaresi", doc.kdvIbaresi({ ...base, kdvModu: "dahil" }) === "Fiyatlara KDV dahildir.");
+
+  // Geçerlilik satırı
+  assert("ARAÇ5.GEÇERLİLİK tarih boşsa satır basılmaz", doc.validityLine(base) === "");
+  assert("ARAÇ5.GEÇERLİLİK tarih varsa satır basılır",
+    doc.validityLine({ ...base, gecerlilikTarihi: "2026-09-01" }).includes("1 Eylül 2026"));
+
+  // Boş alan düşme
+  const metin = JSON.stringify(doc.offerSpec(base));
+  assert("ARAÇ5.BOŞ-ALAN teklif no satırı yok", !metin.includes("Teklif no:"));
+  assert("ARAÇ5.BOŞ-ALAN ödeme bölümü yok", !metin.includes("Ödeme Koşulları"));
+  assert("ARAÇ5.BOŞ-ALAN ek notlar bölümü yok", !metin.includes("Ek Notlar"));
+  // Placeholder taraması JSON yapısını değil BELGE METNİNİ hedefler
+  // (JSON'daki "imzalar":[] bir yer tutucu değildir).
+  const belgeMetni = doc.offerSpec(base).bolumler
+    .flatMap((s: any) => [s.baslik, ...s.paragraflar, ...(s.tablo?.satirlar.flat() ?? [])]).join(" ");
+  assert("ARAÇ5.BOŞ-ALAN placeholder yok", !/\[\s*\]|___/.test(belgeMetni));
+
+  // Word çıktısı: logo YOK, TR karakter sağlam
+  const dx = await import("../src/lib/tools/docx.ts");
+  const dolu = { ...base, logoDataUrl: "data:image/png;base64,AAAA", teklifNo: "2026-014",
+    program: [{ id: "p1", metin: "Göreme" }, { id: "p2", metin: "Ihlara" }],
+    gecerlilikTarihi: "2026-09-01", odemeOzeti: "%30 kapora" };
+  const html = dx.buildDocHtml(doc.offerSpec(dolu));
+  assert("ARAÇ5.DOCX logo HTML'e girmiyor", !html.includes("data:image"));
+  assert("ARAÇ5.DOCX TR karakter sağlam", html.includes("Işık Turizm") && html.includes("Göreme"));
+  assert("ARAÇ5.DOCX Word namespace", html.includes("schemas-microsoft-com:office:word"));
+  assert("ARAÇ5.DOCX imza tablosu basılmıyor", !html.includes("Kaşe / İmza"));
+  assert("ARAÇ5.DOCX geçerlilik satırı", html.includes("1 Eylül 2026 tarihine kadar geçerlidir"));
+  assert("ARAÇ5.DOCX teklif no", html.includes("2026-014"));
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

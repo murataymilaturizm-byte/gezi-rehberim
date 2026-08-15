@@ -104,7 +104,8 @@ export function buildDocHtml(spec: DocSpec): string {
     ? `<p style="margin:22pt 0 0 0;padding:8pt;border:1px solid #999;font-size:10pt;">${esc(spec.beyan)}</p>`
     : "";
 
-  const sigHtml =
+  // İmza bloğu olmayan belgeler (ör. ARAÇ-5 teklifi) boş tablo basmamalı
+  const sigHtml = spec.imzalar.length === 0 ? "" :
     `<table style="width:100%;margin-top:20pt;border-collapse:collapse;"><tr>` +
     spec.imzalar
       .map(
@@ -130,7 +131,7 @@ export function buildDocHtml(spec: DocSpec): string {
 </style></head>
 <body>
 <h1>${esc(spec.baslik)}</h1>
-<p class="note">${esc(spec.ustNot)}</p>
+${spec.ustNot ? `<p class="note">${esc(spec.ustNot)}</p>` : ""}
 ${body}
 ${beyanHtml}
 ${sigHtml}

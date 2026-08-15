@@ -54,6 +54,7 @@ const ToolsHub            = lazy(() => import("./pages/ToolsHub"));
 const RehberSozlesmesi    = lazy(() => import("./pages/tools/RehberSozlesmesi"));
 const TurKarHesaplayici    = lazy(() => import("./pages/tools/TurKarHesaplayici"));
 const TurSatisSozlesmesi   = lazy(() => import("./pages/tools/TurSatisSozlesmesi"));
+const TurTeklifi           = lazy(() => import("./pages/tools/TurTeklifi"));
 
 const queryClient = new QueryClient();
 
@@ -112,14 +113,17 @@ export const routes: RouteRecord[] = [
       { path: "araclar/rehber-sozlesmesi-olusturucu",    element: <RehberSozlesmesi /> },
       { path: "araclar/tur-kar-hesaplayici",             element: <TurKarHesaplayici /> },
       { path: "araclar/tur-satis-sozlesmesi-olusturucu", element: <TurSatisSozlesmesi /> },
+      { path: "araclar/tur-teklifi-olusturucu",          element: <TurTeklifi /> },
       { path: "en/tools",                                element: <ToolsHub /> },
       { path: "en/tools/guide-contract-generator",       element: <RehberSozlesmesi /> },
       { path: "en/tools/tour-profit-calculator",         element: <TurKarHesaplayici /> },
       { path: "en/tools/tour-sales-contract-generator",  element: <TurSatisSozlesmesi /> },
+      { path: "en/tools/tour-quote-generator",           element: <TurTeklifi /> },
       { path: "de/tools",                                element: <ToolsHub /> },
       { path: "de/tools/reiseleiter-vertrag-generator",  element: <RehberSozlesmesi /> },
       { path: "de/tools/tour-gewinn-rechner",            element: <TurKarHesaplayici /> },
       { path: "de/tools/reisevertrag-generator",         element: <TurSatisSozlesmesi /> },
+      { path: "de/tools/tour-angebot-generator",         element: <TurTeklifi /> },
 
       // Blog — Türkçe (prefix yok, default)
       { path: "blog",       element: <Blog /> },

@@ -39,6 +39,7 @@ const STATIC_PAGES = [
   { path: '/araclar/rehber-sozlesmesi-olusturucu',    priority: '0.8', changefreq: 'monthly' },
   { path: '/araclar/tur-kar-hesaplayici',             priority: '0.8', changefreq: 'monthly' },
   { path: '/araclar/tur-satis-sozlesmesi-olusturucu', priority: '0.8', changefreq: 'monthly' },
+  { path: '/araclar/tur-teklifi-olusturucu',          priority: '0.8', changefreq: 'monthly' },
   { path: '/nasil-baslarim',                          priority: '0.7', changefreq: 'monthly' },
   { path: '/yardim',                                  priority: '0.7', changefreq: 'monthly' },
   { path: '/privacy-policy',                          priority: '0.3', changefreq: 'yearly'  },

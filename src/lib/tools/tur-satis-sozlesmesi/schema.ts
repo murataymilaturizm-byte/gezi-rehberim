@@ -14,43 +14,12 @@
 
 export type PriceBasis = "kisi" | "toplam";
 
-/** Serbest/işaretlenebilir hizmet kalemi */
-export interface ServiceItem {
-  id: string;
-  label: string;
-}
-
-/**
- * DAHİL hizmet öneri listesi — hiçbiri önceden işaretli DEĞİL.
- * Acente işaretler, sonra serbestçe düzenler/ekler.
- */
-export const INCLUDED_SUGGESTIONS = [
-  "Ulaşım (belirtilen araç ile)",
-  "Konaklama (belirtilen tesis ve oda tipinde)",
-  "Belirtilen öğünler",
-  "Profesyonel rehberlik hizmeti",
-  "Programda belirtilen müze / ören yeri girişleri",
-  "Zorunlu seyahat sigortası",
-  "Araç içi ikramlar",
-  "Otopark, köprü ve geçiş ücretleri",
-] as const;
-
-/**
- * HARİÇ hizmet öneri listesi — anlaşmazlıkların ana kaynağı olduğu için
- * ayrı, vurgulu ve öneriyle desteklenmiş bir alan.
- */
-export const EXCLUDED_SUGGESTIONS = [
-  "Kişisel harcamalar",
-  "Yiyecek-içecek (programda belirtilenler dışında)",
-  "Alkollü ve alkolsüz içecekler",
-  "Programda belirtilmeyen müze / ören yeri girişleri",
-  "Seyahat sigortası (yaptırılmadıysa)",
-  "Tek kişilik oda farkı",
-  "Bahşişler",
-  "Opsiyonel (ekstra) turlar",
-  "Vize, pasaport ve harç işlemleri",
-  "Sağlık giderleri",
-] as const;
+// ARAÇ-5 (2026-08-15): dahil/hariç öneri listeleri ORTAK modüle taşındı —
+// sözleşme (ARAÇ-4) ve teklif (ARAÇ-5) aynı kaynaktan beslenir; iki listenin
+// zamanla ayrışması yapısal olarak engellenir. Buradan yeniden dışa aktarılır
+// ki ARAÇ-4'ün mevcut import'ları kırılmasın.
+export { INCLUDED_SUGGESTIONS, EXCLUDED_SUGGESTIONS } from "../service-lists";
+export type { ServiceItem } from "../service-lists";
 
 /** İptal-iade merdiveni satırı */
 export interface RefundRow {

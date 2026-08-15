@@ -98,6 +98,25 @@ export const TOOLS: ToolEntry[] = [
     },
     langs: ["tr"],
   },
+  {
+    id: "tur-teklifi",
+    path: {
+      tr: "/araclar/tur-teklifi-olusturucu",
+      en: "/en/tools/tour-quote-generator",
+      de: "/de/tools/tour-angebot-generator",
+    },
+    title: {
+      tr: "Tur Teklifi Oluşturucu",
+      en: "Tour Quote Generator",
+      de: "Tour-Angebot-Generator",
+    },
+    description: {
+      tr: "Grup ve kurumsal turlar için başlıklı, kişi-aralıklı fiyat tablolu profesyonel teklif belgesi hazırlayın; Word veya PDF olarak indirin. Bilgileriniz cihazınızdan çıkmaz.",
+      en: "Prepare a professional quote document with a headed layout and a per-group-size price table; download as Word or PDF. Your data never leaves your device.",
+      de: "Erstellen Sie ein professionelles Angebot mit Kopfzeile und gestaffelter Preistabelle; als Word oder PDF herunterladen. Ihre Daten verlassen Ihr Gerät nicht.",
+    },
+    langs: ["tr"],
+  },
 ];
 
 /** Belirli bir dilde yayında olan araçlar (hub kartları) */
