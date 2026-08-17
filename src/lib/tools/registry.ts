@@ -117,6 +117,25 @@ export const TOOLS: ToolEntry[] = [
     },
     langs: ["tr"],
   },
+  {
+    id: "transfer-sozlesmesi",
+    path: {
+      tr: "/araclar/transfer-sozlesmesi-olusturucu",
+      en: "/en/tools/transport-contract-generator",
+      de: "/de/tools/transportvertrag-generator",
+    },
+    title: {
+      tr: "Transfer ve Araç Kiralama Sözleşmesi",
+      en: "Transport & Vehicle Hire Contract",
+      de: "Transport- und Fahrzeugmietvertrag",
+    },
+    description: {
+      tr: "Acente ile otobüs/transfer firması arasındaki taşıma sözleşmesinin örnek iskeletini üretin — ikame araç yükümlülüğü, masraf paylaşımı ve fesih dahil. Bilgileriniz cihazınızdan çıkmaz.",
+      en: "Generate a sample transport service contract between agency and coach operator — replacement-vehicle duty, cost allocation and termination included. Your data never leaves your device.",
+      de: "Erstellen Sie ein Muster-Transportvertragsgerüst zwischen Agentur und Busunternehmen — Ersatzfahrzeugpflicht, Kostenverteilung und Kündigung inklusive. Ihre Daten verlassen Ihr Gerät nicht.",
+    },
+    langs: ["tr"],
+  },
 ];
 
 /** Belirli bir dilde yayında olan araçlar (hub kartları) */

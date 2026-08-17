@@ -73,7 +73,7 @@ Bu yazıda, yeni acentelerin en sık düştüğü 10 tuzağı ve her biri için 
 
 **Gerçek:** Sezonun en dolu haftasında otobüs arıza yapar, otel kontenjanı geri çeker, rehber başka işe gider. B planı olmayan acente, sattığı turu iptal etmek zorunda kalır — ve iptal edilen tur, sosyal medyada bir daha silinmeyen yorumdur.
 
-**Çözüm:** Her kritik halkada (ulaşım, konaklama, rehberlik) en az iki çalışılabilir alternatif tutun. İkinci tedarikçiyle küçük de olsa gerçek iş yapın — kriz günü ilk kez aranan tedarikçi, tedarikçi değildir.
+**Çözüm:** Her kritik halkada (ulaşım, konaklama, rehberlik) en az iki çalışılabilir alternatif tutun. İkinci tedarikçiyle küçük de olsa gerçek iş yapın — kriz günü ilk kez aranan tedarikçi, tedarikçi değildir. Ulaşım tarafında bir adım daha atabilirsiniz: taşıma anlaşmanızı yazılı yapıp **ikame araç yükümlülüğünü** sözleşmeye geçirmek, arıza sabahında pazarlığı baştan bitirir — bunun için [transfer ve araç kiralama sözleşmesi aracımızı](/araclar/transfer-sozlesmesi-olusturucu) kullanabilirsiniz.
 
 ## 8. Sezonsallığı Yok Saymak
 

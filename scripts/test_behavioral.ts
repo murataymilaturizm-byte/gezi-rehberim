@@ -6619,4 +6619,174 @@ console.log("\n── ARAÇ-5 tur teklifi ──");
   assert("ARAÇ5.DOCX teklif no", html.includes("2026-014"));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ARAÇ-6 — TAŞIMA SÖZLEŞMESİ MUHAFIZI (2026-08-15) — KALICI
+// Belgenin ÖZÜ ikame-araç maddesidir (M4-#7'nin yazılı karşılığı): her iki
+// modda da basılır. İki mod (tek-sefer ↔ dönem) aynı belgede KARIŞMAZ.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── ARAÇ-6 taşıma sözleşmesi ──");
+{
+  const schemaSrc = await Deno.readTextFile("src/lib/tools/transfer-sozlesmesi/schema.ts");
+  const clSrc = await Deno.readTextFile("src/lib/tools/transfer-sozlesmesi/clauses.ts");
+  const pageSrc = await Deno.readTextFile("src/pages/tools/TransferSozlesmesi.tsx");
+  const exportSrc = await Deno.readTextFile("src/lib/tools/transfer-sozlesmesi/export.ts");
+  const articleSrc = await Deno.readTextFile("src/lib/tools/transfer-sozlesmesi/article.ts");
+  const kod = (s: string) => s.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+
+  // 1) Hukuki disiplin (M8 rejimi)
+  assert("ARAÇ6.HUKUK avukat notu belge içinde", clSrc.includes("avukatınıza inceletin"));
+  assert("ARAÇ6.HUKUK genel mevzuat ifadesi", clSrc.includes("İlgili mevzuat hükümleri saklıdır"));
+  assert("ARAÇ6.HUKUK marka satırı", clSrc.includes("turzzai.com/araclar"));
+
+  // 2) TC kimlik yasağı
+  assert("ARAÇ6.GİZLİLİK TC kimlik alanı yok", !/tcKimlik|tcNo|kimlikNo/i.test(schemaSrc));
+  assert("ARAÇ6.GİZLİLİK ağ çağrısı yok", !/fetch\(|XMLHttpRequest|new FormData|supabase/.test(kod(pageSrc)));
+  assert("ARAÇ6.GİZLİLİK güven cümlesi", pageSrc.includes("sunucumuza gönderilmez"));
+
+  // 3) Kütüphane yasağı + ortak docx
+  assert("ARAÇ6.SAF yeni kütüphane yok", !/jspdf|from "docx"|pdfmake|jszip/i.test(kod(pageSrc) + kod(exportSrc)));
+  assert("ARAÇ6.ORTAK docx çekirdeği", exportSrc.includes('from "../docx"'));
+  assert("ARAÇ6.LAZY belge modülü tıklamada", pageSrc.includes('await import("@/lib/tools/transfer-sozlesmesi/export")'));
+  assert("ARAÇ6.KAPSAM service-lists.ts'e dokunulmadı", !/service-lists/.test(schemaSrc + clSrc + pageSrc));
+
+  // 4) Analytics üçlüsü
+  for (const e of ["\"view\"", "\"download\"", "\"cta\""])
+    assert(`ARAÇ6.ANALYTICS ${e} tetikleniyor`, pageSrc.includes(`trackToolEvent(${e}`));
+  assert("ARAÇ6.GİZLİLİK event payload form değeri taşımıyor", !/trackToolEvent\([^)]*data\./.test(pageSrc));
+
+  // 5) Prerender / CLS
+  assert("ARAÇ6.PRERENDER mounted guard", pageSrc.includes("const [mounted, setMounted]"));
+  assert("ARAÇ6.CLS yer tutucu", pageSrc.includes("min-h-[560px]"));
+
+  // 6) Kardeş makale + M4 ÇİFT-YÖN link
+  const faqCount = (articleSrc.match(/^\*\*\d+\. .+\*\*$/gm) || []).length;
+  assert(`ARAÇ6.MAKALE 12 SSS (${faqCount})`, faqCount === 12);
+  assert("ARAÇ6.MAKALE SSS başlığı", articleSrc.includes("## Sık Sorulan Sorular (SSS)"));
+  assert("ARAÇ6.MAKALE M4 linki (araç → makale)", articleSrc.includes("/blog/acente-acarken-yapilan-10-hata"));
+  const m4 = await Deno.readTextFile("src/blog/posts/tr/acente-acarken-yapilan-10-hata.md");
+  assert("ARAÇ6.ÇİFT-YÖN M4 → araç linki", m4.includes("/araclar/transfer-sozlesmesi-olusturucu"));
+  assert("ARAÇ6.ÇİFT-YÖN link 7. hata bölümünde",
+    m4.split("## 7.")[1]?.split("## 8.")[0]?.includes("/araclar/transfer-sozlesmesi-olusturucu") === true);
+  const govde = articleSrc.split("ARTICLE_MD")[1] || "";
+  assert("ARAÇ6.MAKALE uydurma sektör-oranı yok",
+    !/acentelerin %\d+|sektörün %\d+|araştırmalara göre %\d+/i.test(govde));
+
+  // 7) Kayıt üçlüsü
+  const reg = await Deno.readTextFile("src/lib/tools/registry.ts");
+  const routes = await Deno.readTextFile("src/routes.tsx");
+  const sitemap = await Deno.readTextFile("scripts/generate-sitemap.mjs");
+  assert("ARAÇ6.KAYIT registry", reg.includes('id: "transfer-sozlesmesi"'));
+  assert("ARAÇ6.KAYIT route", routes.includes('path: "araclar/transfer-sozlesmesi-olusturucu"'));
+  assert("ARAÇ6.KAYIT sitemap/prerender", sitemap.includes("/araclar/transfer-sozlesmesi-olusturucu"));
+}
+
+// ── ARAÇ-6 DAVRANIŞ: iki mod + ikame araç ──
+{
+  const cl = await import("../src/lib/tools/transfer-sozlesmesi/clauses.ts");
+  const sc = await import("../src/lib/tools/transfer-sozlesmesi/schema.ts");
+  const b = { ...sc.INITIAL_TRANSFER, acenteUnvan: "Işık Turizm", acenteTelefon: "0384 213 45 67",
+    tasiyiciUnvan: "Öz Kapadokya Taşımacılık", tasiyiciTelefon: "0532 111 22 33",
+    isAdi: "Kapadokya günübirlik transfer", bedelTutar: "12000" };
+  const tek = { ...b, mod: "tek-sefer" as const, bedelBazi: "sefer" as const,
+    seferTarihi: "2026-09-10", seferSaati: "07:00", bulusmaNoktasi: "Otel önü" };
+  const don = { ...b, mod: "donem" as const, bedelBazi: "donemlik" as const,
+    donemBaslangic: "2026-06-01", donemBitis: "2026-09-30", donemGunler: "hafta sonları", fesihGun: "30" };
+
+  // İKAME ARAÇ: her iki modda da basılır (belgenin özü)
+  for (const [ad, d] of [["tek-sefer", tek], ["dönem", don]] as const) {
+    const ik = cl.buildTransferSections(d).find((s: any) => s.baslik.includes("İkame"));
+    assert(`ARAÇ6.İKAME ${ad} modunda madde var`, !!ik);
+    assert(`ARAÇ6.İKAME ${ad} bildirim yükümlülüğü`,
+      ik!.paragraflar.some((p: string) => p.includes("gecikmeksizin bilgilendirir")));
+    assert(`ARAÇ6.İKAME ${ad} zarar talebi saklı`,
+      ik!.paragraflar.some((p: string) => p.includes("talep hakları saklıdır")));
+  }
+  const iksBos = cl.buildTransferSections({ ...tek, ikameSure: "" }).find((s: any) => s.baslik.includes("İkame"));
+  assert("ARAÇ6.İKAME süre boşken 'en kısa süre' ifadesi",
+    iksBos!.paragraflar.some((p: string) => p.includes("en kısa sürede")));
+  const iksDolu = cl.buildTransferSections({ ...tek, ikameSure: "2" }).find((s: any) => s.baslik.includes("İkame"));
+  assert("ARAÇ6.İKAME süre girilince saat yazılır",
+    iksDolu!.paragraflar.some((p: string) => p.includes("en geç 2 saat içinde")));
+  const ikKapKapali = cl.buildTransferSections({ ...tek, ikameKapasite: false }).find((s: any) => s.baslik.includes("İkame"));
+  assert("ARAÇ6.İKAME kapasite şartı kaldırılabilir",
+    !ikKapKapali!.paragraflar.some((p: string) => p.includes("eşdeğer veya üst nitelikte")));
+
+  // İKİ MOD KARIŞMAZ
+  const tekKonu = cl.buildTransferSections(tek).find((s: any) => s.baslik === "Sözleşmenin Konusu")!;
+  const donKonu = cl.buildTransferSections(don).find((s: any) => s.baslik === "Sözleşmenin Konusu")!;
+  assert("ARAÇ6.MOD tek-seferde sefer tarihi", tekKonu.paragraflar.some((p: string) => p.includes("Sefer tarihi")));
+  assert("ARAÇ6.MOD tek-seferde dönem ifadesi YOK", !tekKonu.paragraflar.some((p: string) => p.includes("Hizmet dönemi")));
+  assert("ARAÇ6.MOD dönemde hizmet dönemi", donKonu.paragraflar.some((p: string) => p.includes("Hizmet dönemi")));
+  assert("ARAÇ6.MOD dönemde sefer tarihi YOK", !donKonu.paragraflar.some((p: string) => p.includes("Sefer tarihi")));
+
+  // Fesih maddesi moda göre değişir
+  const tekSon = cl.buildTransferSections(tek).find((s: any) => /Sona Erme|Feshi/.test(s.baslik))!;
+  const donSon = cl.buildTransferSections(don).find((s: any) => /Sona Erme|Feshi/.test(s.baslik))!;
+  assert("ARAÇ6.FESİH tek-sefer: sona erme maddesi", tekSon.baslik === "Sözleşmenin Sona Ermesi");
+  assert("ARAÇ6.FESİH dönem: süre ve fesih maddesi", donSon.baslik === "Sözleşmenin Süresi ve Feshi");
+  assert("ARAÇ6.FESİH dönemde bildirim süresi yazılıyor",
+    donSon.paragraflar.some((p: string) => p.includes("en az 30 gün önceden")));
+  assert("ARAÇ6.FESİH dönemde satılmış seferler korunuyor",
+    donSon.paragraflar.some((p: string) => p.includes("satışı yapılmış")));
+
+  // Mod ↔ bedel bazı tutarlılığı
+  assert("ARAÇ6.BEDEL tek-sefer varsayılanı sefer başı", sc.defaultFeeBasis("tek-sefer") === "sefer");
+  assert("ARAÇ6.BEDEL dönem varsayılanı dönemlik", sc.defaultFeeBasis("donem") === "donemlik");
+  assert("ARAÇ6.BEDEL tek-seferde dönemlik seçeneği YOK",
+    !sc.feeBasisOptions("tek-sefer").includes("donemlik"));
+
+  // Boş alan düşme
+  const bosMet = JSON.stringify(cl.transferSpec(tek));
+  assert("ARAÇ6.BOŞ araç maddesi yok", !bosMet.includes("Tahsis Edilen Araçlar"));
+  assert("ARAÇ6.BOŞ şoför maddesi yok", !bosMet.includes("Görevli Şoförler"));
+  assert("ARAÇ6.BOŞ ek koşullar yok", !bosMet.includes("Ek Koşullar"));
+  assert("ARAÇ6.BOŞ masraf tablosu yok", !bosMet.includes("Masraf kalemi"));
+  assert("ARAÇ6.BOŞ yetki belgesi satırı yok", !bosMet.includes("Yetki belgesi no"));
+  const bosText = cl.buildTransferSections(tek).flatMap((s: any) => s.paragraflar).join(" ");
+  assert("ARAÇ6.BOŞ placeholder yok", !/\[\s*\]|___/.test(bosText));
+
+  // Dolu hâl: tablolar + ardışık numara
+  const dolu = { ...don,
+    araclar: [{ id: "v1", tip: "45 kişilik otobüs", plaka: "50 AB 123", koltuk: "45" },
+              { id: "v2", tip: "16 kişilik minibüs", plaka: "", koltuk: "16" }],
+    soforler: [{ id: "s1", ad: "Şükrü Güneş", telefon: "0532 999 88 77" }],
+    masraflar: { yakit: "tasiyici" as const, gecis: "acente" as const, otopark: "" as const, soforKonaklama: "tasiyici" as const },
+    tasiyiciYetkiBelge: "D2-45678", ekKosullar: "Araçlar sefer öncesi temizlenmiş olacaktır.", odemeVadesi: "7 gün" };
+  const secs = cl.buildTransferSections(dolu);
+  const at = secs.find((s: any) => s.baslik.includes("Araçlar"))!;
+  assert("ARAÇ6.ARAÇ tablosu çoklu satır", at.tablo!.satirlar.length === 2);
+  assert("ARAÇ6.ARAÇ boş plaka tire ile gösterilir", at.tablo!.satirlar[1][1] === "—");
+  const mt = secs.find((s: any) => s.tablo && s.baslik.includes("Bedel"))!;
+  assert("ARAÇ6.MASRAF yalnız işaretliler tabloda (3/4)", mt.tablo!.satirlar.length === 3);
+  assert("ARAÇ6.MASRAF işaretlenmeyen kalem yok",
+    !mt.tablo!.satirlar.some((r: string[]) => r[0].includes("Otopark")));
+  const nos = secs.map((s: any) => s.no);
+  assert(`ARAÇ6.NUMARA dolu formda ardışık (${nos.join(",")})`, nos.every((n: number, i: number) => n === i + 1));
+  assert("ARAÇ6.NUMARA opsiyoneller madde sayısını artırır",
+    nos.length > cl.buildTransferSections(tek).length);
+
+  // Sigorta beyanı açılıp kapanıyor
+  const sigAcik = secs.find((s: any) => s.baslik.includes("Sigorta"))!;
+  assert("ARAÇ6.SİGORTA beyan işaretliyken paragraf var",
+    sigAcik.paragraflar.some((p: string) => p.includes("zorunlu sigortaların")));
+  const sigKapali = cl.buildTransferSections({ ...dolu, sigortaBeyani: false }).find((s: any) => s.baslik.includes("Sigorta"))!;
+  assert("ARAÇ6.SİGORTA beyan kapalıyken paragraf düşer",
+    !sigKapali.paragraflar.some((p: string) => p.includes("zorunlu sigortaların")));
+
+  // Uydurma madde-no yasağı (üretilen METİN üzerinde)
+  const tumMetin = secs.flatMap((s: any) => s.paragraflar).join(" ");
+  assert("ARAÇ6.HUKUK uydurma yönetmelik madde-no yok",
+    !/\d+\s*(?:sayılı|inci|nci|üncü)\s*madde|Yönetmeliğin\s+\d+/i.test(tumMetin));
+
+  // Word çıktısı
+  const dx = await import("../src/lib/tools/docx.ts");
+  const html = dx.buildDocHtml(cl.transferSpec(dolu));
+  assert("ARAÇ6.DOCX Word namespace", html.includes("schemas-microsoft-com:office:word"));
+  assert("ARAÇ6.DOCX TR karakter sağlam", html.includes("Öz Kapadokya") && html.includes("Şükrü Güneş"));
+  assert("ARAÇ6.DOCX araç tablosu", html.includes("50 AB 123"));
+  assert("ARAÇ6.DOCX masraf tablosu", html.includes("TAŞIYICI"));
+  assert("ARAÇ6.DOCX imza blokları", html.includes("Kaşe / İmza"));
+  assert("ARAÇ6.DOCX avukat notu + marka", html.includes("avukatınıza inceletin") && html.includes("turzzai.com/araclar"));
+}
+
 Deno.exit(fail === 0 ? 0 : 1);
