@@ -25,6 +25,161 @@
       "source": "/karsilastir/turzz-vs-manuel-whatsapp",
       "destination": "/blog/manuel-whatsapp-vs-ai-chatbot-karsilastirma",
       "permanent": true
+    },
+    {
+      "source": "/turzz-com-iletisim",
+      "destination": "/#contact",
+      "permanent": true
+    },
+    {
+      "source": "/acente-uyelik-paketleri",
+      "destination": "/#pricing",
+      "permanent": true
+    },
+    {
+      "source": "/gizlilik-sozlesmesi",
+      "destination": "/privacy-policy",
+      "permanent": true
+    },
+    {
+      "source": "/kullanim-sozlesmesi",
+      "destination": "/terms-of-service",
+      "permanent": true
+    },
+    {
+      "source": "/login",
+      "destination": "/auth",
+      "permanent": true
+    },
+    {
+      "source": "/kayit-ol",
+      "destination": "/auth?mode=signup",
+      "permanent": true
+    },
+    {
+      "source": "/15-tatil-nasil-verimli-gecirilir",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/albertina-muzesi",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/amerikan-dogu-tarihi-muzesi",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/en-guzel-tatil-sehirleri",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/leonardo-da-vinci-bilim-ve-teknoloji-muzesi",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/tatilde-erkekler-nasil-giyinmeli",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/turist-olarak-nasil-yurtdisina-gidebilirim",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/turkiyede-balon-turizmi",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/universiteler-tatile-ne-zaman-giriyor",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/acentelerimiz",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/cikisli-turlar",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/destinasyonlar",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/tum-turlar",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/tur-kalkis-noktalari",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/tour-api",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/tur/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/tour-tag/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/tour-category/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/tur-destinasyonlari/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/kalkis-noktasi/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/acentelerimiz/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/author/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/2016/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/2021/:path*",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/2023/:path*",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "rewrites": [

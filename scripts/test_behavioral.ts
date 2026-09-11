@@ -6789,4 +6789,103 @@ console.log("\n── ARAÇ-6 taşıma sözleşmesi ──");
   assert("ARAÇ6.DOCX avukat notu + marka", html.includes("avukatınıza inceletin") && html.includes("turzzai.com/araclar"));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+// SINIF-KORUMASI: TypeScript derleyici kapısı (2026-09-11)
+//
+// NEDEN: canlıda "SiteHeader is not defined" çöküşü yaşandı. NotFound.tsx
+// <SiteHeader /> yazıyordu ama import etmiyordu. Eski testimiz
+//   assert(..., /<SiteHeader />/.test(src))
+// substring testiydi ve GEÇİYORDU. Üstelik kök tsconfig.json'da "files": []
+// olduğu için `npx tsc --noEmit` HİÇBİR dosyayı denetlemiyordu — doğrusu
+// `npm run typecheck` (tsc -p tsconfig.app.json).
+//
+// Aynı kör nokta 4 araç sayfasının CTA'sını da canlıda BOŞ bırakmıştı
+// (cta.heading yerine cta.endTitle olmalıydı).
+//
+// Elle regex guard yazmak yerine GERÇEK derleyiciyi çağırıyoruz: tanımsız
+// bileşen, eksik import, yanlış alan adı — hepsini kesin yakalar, yanlış
+// pozitif üretmez. Panel/demo dosyalarındaki ÖNCEDEN var olan hatalar
+// kapsam dışıdır (taban: 72).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\n── SINIF-KORUMASI: TypeScript derleyici kapısı ──");
+{
+  // Ters-bölü/regex KULLANILMIYOR: bu dosyaya blok yazarken kaçışlar defalarca
+  // bozuldu. Düz string karşılaştırması hem güvenli hem okunur.
+  const KAPSAM = [
+    "src/pages",
+    "src/lib/tools",
+    "src/components/SiteHeader",
+    "src/components/Layout",
+    "src/components/MetaPixel",
+  ];
+  // Panel (Admin.tsx) kapsam DIŞI: oradaki hatalar bu oturumlardan önce vardı
+  // ve public yüzeyi etkilemiyor. Bu kapı public sayfa + araç kodunu korur.
+  const HARIC = ["src/pages/Admin.tsx"];
+  const kapsamda = (l: string) =>
+    KAPSAM.some((k) => l.startsWith(k)) && !HARIC.some((h) => l.startsWith(h));
+  let calisti = true;
+  let hatalar: string[] = [];
+  try {
+    const cmd = new Deno.Command("npx", {
+      args: ["tsc", "--noEmit", "-p", "tsconfig.app.json"],
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { stdout } = await cmd.output();
+    const metin = new TextDecoder().decode(stdout);
+    hatalar = metin
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.includes("error TS") && kapsamda(l));
+  } catch {
+    calisti = false;
+  }
+  if (calisti) {
+    assert(
+      "TS-KAPI public sayfa/araç kodunda tip hatası yok" +
+        (hatalar.length ? " — " + hatalar.slice(0, 4).join(" | ") : ""),
+      hatalar.length === 0,
+    );
+  } else {
+    console.log("  tsc çalıştırılamadı (izin/npx yok) — bu kapı atlandı");
+  }
+}
+
+// ── CTA alan adları: CtaTexts arayüzünde GERÇEKTEN var mı ──
+// (4 araç sayfası canlıda BOŞ CTA gösteriyordu: cta.heading/body/primary/secondary
+//  diye okunuyordu, doğrusu endTitle/endDesc/endBtn/endSecondary.)
+{
+  const anatomy = await Deno.readTextFile("src/lib/blog-anatomy.ts");
+  const arayuz = anatomy.split("export interface CtaTexts")[1]?.split("}")[0] ?? "";
+  const gecerli = new Set(
+    arayuz
+      .split(String.fromCharCode(10))
+      .map((l) => l.trim().split(":")[0].trim())
+      .filter((x) => x.length > 0 && /^[a-zA-Z]+$/.test(x)),
+  );
+  assert("CTA arayüzü okunabildi", gecerli.size >= 8);
+  const sayfalar = ["RehberSozlesmesi", "TurKarHesaplayici", "TurSatisSozlesmesi", "TurTeklifi", "TransferSozlesmesi"];
+  for (const s of sayfalar) {
+    const src = await Deno.readTextFile(`src/pages/tools/${s}.tsx`);
+    const kullanilan = [...src.matchAll(/cta.([a-zA-Z]+)/g)].map((m) => m[1]);
+    const hatali = kullanilan.filter((k) => !gecerli.has(k));
+    assert(`CTA.ALAN ${s} geçerli alan kullanıyor${hatali.length ? " — HATALI: " + [...new Set(hatali)].join(",") : ""}`,
+      hatali.length === 0);
+  }
+}
+
+// ── turzz.com yönlendirme bütünlüğü (2026-09-11) ──
+{
+  const v = JSON.parse(await Deno.readTextFile("vercel.json"));
+  const kaynaklar = new Set(v.redirects.map((r: any) => r.source));
+  assert("TURZZ.YÖNLENDİRME iletişim sayfası eşlendi", kaynaklar.has("/turzz-com-iletisim"));
+  assert("TURZZ.YÖNLENDİRME /tur/* önek kümesi", kaynaklar.has("/tur/:path*"));
+  assert("TURZZ.YÖNLENDİRME /kalkis-noktasi/* önek kümesi", kaynaklar.has("/kalkis-noktasi/:path*"));
+  assert("TURZZ.YÖNLENDİRME hepsi kalıcı (permanent)", v.redirects.every((r: any) => r.permanent === true));
+  const zincir = v.redirects.filter((r: any) => kaynaklar.has(r.destination.split("#")[0].split("?")[0]));
+  assert(`TURZZ.YÖNLENDİRME zincir yok${zincir.length ? " — " + zincir.map((r: any) => r.source).join(",") : ""}`,
+    zincir.length === 0);
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

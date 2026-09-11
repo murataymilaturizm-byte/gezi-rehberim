@@ -12,7 +12,9 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-sitemap": "node scripts/generate-sitemap.mjs"
+    "generate-sitemap": "node scripts/generate-sitemap.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "smoke": "node scripts/smoke_pages.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
