@@ -6883,6 +6883,10 @@ console.log("\n── SINIF-KORUMASI: TypeScript derleyici kapısı ──");
   assert("TURZZ.YÖNLENDİRME /tur/* önek kümesi", kaynaklar.has("/tur/:path*"));
   assert("TURZZ.YÖNLENDİRME /kalkis-noktasi/* önek kümesi", kaynaklar.has("/kalkis-noktasi/:path*"));
   assert("TURZZ.YÖNLENDİRME hepsi kalıcı (permanent)", v.redirects.every((r: any) => r.permanent === true));
+  // KRİTİK: eski turzz.com WordPress URL'lerinin 59/60'ı eğik çizgiyle biter
+  // (/turzz-com-iletisim/). trailingSlash:false olmadan yönlendirmeler bu
+  // gerçek trafiğin neredeyse hiçbirini yakalamaz — canlıda ölçüldü.
+  assert("TURZZ.YÖNLENDİRME sondaki eğik çizgi kanonikleşiyor", v.trailingSlash === false);
   const zincir = v.redirects.filter((r: any) => kaynaklar.has(r.destination.split("#")[0].split("?")[0]));
   assert(`TURZZ.YÖNLENDİRME zincir yok${zincir.length ? " — " + zincir.map((r: any) => r.source).join(",") : ""}`,
     zincir.length === 0);
