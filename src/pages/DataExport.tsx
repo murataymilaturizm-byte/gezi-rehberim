@@ -59,60 +59,65 @@ const DataExport = () => {
 
   if (exported) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <>
         <SiteHeader />
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-8 pb-8 space-y-4">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
-            <h2 className="text-xl font-semibold text-foreground">{t("legal.dataExport.successTitle")}</h2>
-            <p className="text-muted-foreground">{t("legal.dataExport.successDesc")}</p>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <Card className="w-full max-w-md text-center">
+            <CardContent className="pt-8 pb-8 space-y-4">
+              <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+              <h2 className="text-xl font-semibold text-foreground">{t("legal.dataExport.successTitle")}</h2>
+              <p className="text-muted-foreground">{t("legal.dataExport.successDesc")}</p>
+            </CardContent>
+          </Card>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2">
-            <FileJson className="h-10 w-10 text-primary" />
-          </div>
-          <CardTitle>{t("legal.dataExport.title")}</CardTitle>
-          <CardDescription>{t("legal.dataExport.description")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleExport} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">{t("legal.email")}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="example@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+    <>
+      <SiteHeader />
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-2">
+              <FileJson className="h-10 w-10 text-primary" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">{t("legal.phone")}</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+90 5XX XXX XX XX"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">{t("legal.dataExport.notice")}</p>
-            <Button type="submit" className="w-full" disabled={loading || (!email && !phone)}>
-              <Download className="h-4 w-4 me-2" />
-              {loading ? t("legal.sending") : t("legal.dataExport.button")}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+            <CardTitle>{t("legal.dataExport.title")}</CardTitle>
+            <CardDescription>{t("legal.dataExport.description")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleExport} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">{t("legal.email")}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="example@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">{t("legal.phone")}</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="+90 5XX XXX XX XX"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">{t("legal.dataExport.notice")}</p>
+              <Button type="submit" className="w-full" disabled={loading || (!email && !phone)}>
+                <Download className="h-4 w-4 me-2" />
+                {loading ? t("legal.sending") : t("legal.dataExport.button")}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 };
 
