@@ -20,6 +20,9 @@ export type PriceBasis = "kisi" | "toplam";
 // ki ARAÇ-4'ün mevcut import'ları kırılmasın.
 export { INCLUDED_SUGGESTIONS, EXCLUDED_SUGGESTIONS } from "../service-lists";
 export type { ServiceItem } from "../service-lists";
+// Aşağıdaki arayüz ServiceItem'i DEĞER olarak kullanır; re-export yerel kapsama
+// getirmez, ayrıca import edilmeli (tsc TS2304 verdi).
+import type { ServiceItem } from "../service-lists";
 
 /** İptal-iade merdiveni satırı */
 export interface RefundRow {

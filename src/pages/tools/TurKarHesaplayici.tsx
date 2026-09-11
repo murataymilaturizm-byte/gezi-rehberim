@@ -505,19 +505,19 @@ export default function TurKarHesaplayici() {
       {/* CTA */}
       <section className="py-12 bg-muted/30 no-print">
         <div className="container mx-auto px-4 max-w-3xl text-center">
-          <h2 className="text-xl font-bold mb-3">{cta.heading}</h2>
-          <p className="text-muted-foreground mb-5">{cta.body}</p>
+          <h2 className="text-xl font-bold mb-3">{cta.endTitle}</h2>
+          <p className="text-muted-foreground mb-5">{cta.endDesc}</p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
               <a href={DEMO_WA_URL} target="_blank" rel="noopener noreferrer"
                 onClick={() => trackToolEvent("cta", { tool: TOOL.id, target: "whatsapp" })}>
-                {cta.primary}
+                {cta.endBtn}
               </a>
             </Button>
             <Button asChild size="lg" variant="outline">
               <a href={SIGNUP_URL}
                 onClick={() => trackToolEvent("cta", { tool: TOOL.id, target: "signup" })}>
-                {cta.secondary}
+                {cta.endSecondary}
               </a>
             </Button>
           </div>

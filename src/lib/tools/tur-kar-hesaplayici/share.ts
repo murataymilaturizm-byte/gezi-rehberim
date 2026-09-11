@@ -88,7 +88,7 @@ export function decodeState(code: string): CalcInput | null {
   const out: CalcInput = { ...DEFAULT_INPUT, digerSabit: [], digerDegisken: [] };
   FIELD_ORDER.forEach((k, i) => {
     // Yalnız string alanlar bu döngüde
-    (out as Record<string, unknown>)[k as string] = parts[i] ?? "";
+    (out as unknown as Record<string, unknown>)[k as string] = parts[i] ?? "";
   });
   let i = FIELD_ORDER.length;
   const dol = parseFloat(parts[i++] ?? "");
