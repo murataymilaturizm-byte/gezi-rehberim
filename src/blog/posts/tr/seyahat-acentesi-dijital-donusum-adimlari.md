@@ -236,7 +236,7 @@ Bu rehberde anlatılan 7 adımdan üçüncüsü (WhatsApp Business API + AI chat
 
 Turzz AI bu adımı sıfır karmaşıklık ile sunuyor. WhatsApp Business API kurulumu, 7 dilde AI chatbot eğitimi, tur kataloğu entegrasyonu, otomasyon kuralları — hepsi 24 saatte hazır. IT ekibi gerektirmiyor, aylık abonelik modeliyle çalışıyor, ilk 14 gün ücretsiz.
 
-Acentenizin dijital dönüşümünde sağlam bir temel için **[Ücretsiz Demo](/demo)** talep edin. Ekibimiz size acentenize özel bir 12 aylık dijital dönüşüm yol haritası çıkarmaya yardımcı oluyor.
+Acentenizin dijital dönüşümünde sağlam bir temel için **[Ücretsiz Demo](/#demo)** talep edin. Ekibimiz size acentenize özel bir 12 aylık dijital dönüşüm yol haritası çıkarmaya yardımcı oluyor.
 
 ---
 

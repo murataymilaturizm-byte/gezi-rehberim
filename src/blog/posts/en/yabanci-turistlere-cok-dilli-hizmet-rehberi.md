@@ -160,7 +160,7 @@ It operates on WhatsApp Business API, setup completes in 24 hours, requires no I
 
 During the 14-day free trial, you can see firsthand how well the system fits your agency. During setup, our team loads your tour catalog, configures cultural adaptations, and teaches your staff the system.
 
-To take your incoming agency's international competitiveness to the next level, **[Request a Free Demo](/demo)**. Our team will walk you through an agency-specific setup and help you plan which languages to serve which markets with.
+To take your incoming agency's international competitiveness to the next level, **[Request a Free Demo](/#demo)**. Our team will walk you through an agency-specific setup and help you plan which languages to serve which markets with.
 
 ---
 

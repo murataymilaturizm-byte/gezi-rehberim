@@ -213,7 +213,7 @@ Nombre de ces tendances (IA, multilingue, automatisation, personnalisation, comm
 
 Fonctionne sur WhatsApp Business API, offre un service client IA en 7 langues (turc, anglais, allemand, russe, arabe, français, espagnol), apprend votre catalogue de circuits et fait des recommandations personnalisées, collecte systématiquement les données clients et fournit des rapports analytiques.
 
-Actif en 24 heures, 14 premiers jours gratuits, notre équipe vous accompagne dans la configuration en tête-à-tête. **[Démo Gratuite](/demo)** pour construire la stratégie 2026 de votre agence sur une base technologique solide.
+Actif en 24 heures, 14 premiers jours gratuits, notre équipe vous accompagne dans la configuration en tête-à-tête. **[Démo Gratuite](/#demo)** pour construire la stratégie 2026 de votre agence sur une base technologique solide.
 
 ---
 

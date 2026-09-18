@@ -138,7 +138,7 @@ The specific outcomes of this case depend on several factors:
 
 If at least two of these apply to your agency, this pattern is replicable.
 
-Turzz AI was designed for precisely these scenarios: 7-language support, AI conversation engine, travel-specific reservation flow — deployable in 24 hours. [Start a free demo →](/demo)
+Turzz AI was designed for precisely these scenarios: 7-language support, AI conversation engine, travel-specific reservation flow — deployable in 24 hours. [Start a free demo →](/#demo)
 
 ---
 

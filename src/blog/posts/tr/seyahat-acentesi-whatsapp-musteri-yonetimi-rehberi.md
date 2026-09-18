@@ -143,7 +143,7 @@ Turzz AI tam bu boşluğu doldurmak için tasarlandı. Türk seyahat acenteleri 
 
 Sistemimiz tur kataloğunuzu öğreniyor, müşteri sorularını anlıyor, rezervasyon alıyor, ödeme süreçlerini yönlendiriyor ve karmaşık durumlarda personelinize aktarıyor. Yani sizin için 7/24 çalışan, hiç hata yapmayan, aynı anda yüzlerce müşteriye yanıt verebilen bir dijital asistan.
 
-Çözümün size uygun olup olmadığını görmek için 14 gün ücretsiz deneyebilirsiniz. Kredi kartı bilgisi vermenize gerek yok, kurulumda ekibimiz birebir size eşlik ediyor. **[Ücretsiz Demo İste](/demo)** ve acentenizin WhatsApp müşteri yönetimini bir üst seviyeye taşıyın.
+Çözümün size uygun olup olmadığını görmek için 14 gün ücretsiz deneyebilirsiniz. Kredi kartı bilgisi vermenize gerek yok, kurulumda ekibimiz birebir size eşlik ediyor. **[Ücretsiz Demo İste](/#demo)** ve acentenizin WhatsApp müşteri yönetimini bir üst seviyeye taşıyın.
 
 ---
 

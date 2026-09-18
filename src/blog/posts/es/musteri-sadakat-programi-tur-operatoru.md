@@ -169,7 +169,7 @@ Un programa de fidelización de clientes no debe tratarse como una promoción a 
 
 Los clientes recurrentes hacen más que generar ingresos fiables. Recomiendan a sus amigos, soportan la presión competitiva de precios y proporcionan retroalimentación honesta que le ayuda a mejorar. El efecto acumulado de pequeños gestos consistentes —recordar el nombre de un cliente, hacer un seguimiento tras un viaje, celebrar su cumpleaños— es un cliente que no se plantea fácilmente irse a otra agencia.
 
-Si está listo para poner en práctica estas estrategias, las herramientas de automatización de WhatsApp y comunicación con clientes de Turzz AI pueden ayudarle a escalar estos puntos de contacto personales sin aumentar la carga de trabajo de su equipo. [Demo Gratis](/demo)
+Si está listo para poner en práctica estas estrategias, las herramientas de automatización de WhatsApp y comunicación con clientes de Turzz AI pueden ayudarle a escalar estos puntos de contacto personales sin aumentar la carga de trabajo de su equipo. [Demo Gratis](/#demo)
 
 ---
 

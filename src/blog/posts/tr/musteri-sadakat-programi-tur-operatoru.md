@@ -167,7 +167,7 @@ Müşteri sadakat programı bir kampanya gibi başlatılıp bitirilmez; bir kül
 
 Tekrar eden müşteriler sadece gelir sağlamaz; aynı zamanda sizi arkadaşlarına tavsiye eder, kriz dönemlerinde sizi terk etmez, daha az fiyat pazarlığı yapar. Bir acentenin en değerli varlığı, aktif müşteri listesidir.
 
-Bu yazıda anlattığımız stratejileri uygulamak istiyorsanız, Turzz AI'ın WhatsApp otomasyonu ve müşteri iletişim araçları iş yükünüzü azaltırken bu kişisel dokunuşları ölçeklenebilir kılmanıza yardımcı olabilir. [Ücretsiz demo için tıklayın →](/demo)
+Bu yazıda anlattığımız stratejileri uygulamak istiyorsanız, Turzz AI'ın WhatsApp otomasyonu ve müşteri iletişim araçları iş yükünüzü azaltırken bu kişisel dokunuşları ölçeklenebilir kılmanıza yardımcı olabilir. [Ücretsiz demo için tıklayın →](/#demo)
 
 ---
 

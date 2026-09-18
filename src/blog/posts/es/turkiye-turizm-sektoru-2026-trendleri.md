@@ -213,7 +213,7 @@ Muchas de estas tendencias (IA, multilingüe, automatización operadora turísti
 
 Funciona con WhatsApp Business API, ofrece servicio al cliente impulsado por IA en 7 idiomas (turco, inglés, alemán, ruso, árabe, francés, español), aprende su catálogo de tours y hace recomendaciones personalizadas, recopila sistemáticamente datos de clientes y proporciona informes analíticos.
 
-Activo en 24 horas, primeros 14 días gratis, nuestro equipo le acompaña en la configuración de forma personalizada. **[Solicite una Demo Gratis](/demo)** para construir la estrategia 2026 de su agencia sobre una base tecnológica sólida.
+Activo en 24 horas, primeros 14 días gratis, nuestro equipo le acompaña en la configuración de forma personalizada. **[Solicite una Demo Gratis](/#demo)** para construir la estrategia 2026 de su agencia sobre una base tecnológica sólida.
 
 ---
 

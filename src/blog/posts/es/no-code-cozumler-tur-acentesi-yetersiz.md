@@ -124,7 +124,7 @@ La respuesta es el **software SaaS específico del sector** diseñado para el se
 - Reciben actualizaciones y mejoras del proveedor, no de Usted
 - Cuestan una fracción del desarrollo personalizado con la misma o mayor capacidad
 
-Turzz AI fue desarrollado específicamente para este caso de uso en el sector turístico: 7 idiomas, motor de conversación impulsado por IA, gestión de cupos en tiempo real y despliegue en 24 horas. Ofrece lo que meses de experimentación sin código no pueden lograr. [Demo Gratis](/demo)
+Turzz AI fue desarrollado específicamente para este caso de uso en el sector turístico: 7 idiomas, motor de conversación impulsado por IA, gestión de cupos en tiempo real y despliegue en 24 horas. Ofrece lo que meses de experimentación sin código no pueden lograr. [Demo Gratis](/#demo)
 
 ## Resumen: Lo que el Sin Código Puede y No Puede Hacer
 

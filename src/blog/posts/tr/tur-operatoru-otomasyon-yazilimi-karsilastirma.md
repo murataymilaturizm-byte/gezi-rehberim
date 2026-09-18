@@ -210,7 +210,7 @@ Bu rehberde anlatılan üç kategoriden "AI destekli yeni nesil platform" katego
 
 Eğer acentenizin önceliği WhatsApp üzerinden müşteri kazanmak, hızlı yanıt vermek, çok dilli pazarlara açılmak ve operasyonel verimliliği artırmaksa Turzz AI sizin için ideal seçim olabilir. Klasik ERP modüllerine ihtiyacınız varsa (geniş muhasebe, B2B alt acente paneli, XML otel entegrasyonu) bunları üçüncü taraf çözümlerle entegre ediyoruz.
 
-24 saatte aktif olabilir, ilk 14 gün ücretsiz deneyebilir, kurulumda ekibimiz size birebir eşlik eder. **[Ücretsiz Demo](/demo)** talep edin, acentenizin yapısına uygun olup olmadığını birlikte değerlendirelim.
+24 saatte aktif olabilir, ilk 14 gün ücretsiz deneyebilir, kurulumda ekibimiz size birebir eşlik eder. **[Ücretsiz Demo](/#demo)** talep edin, acentenizin yapısına uygun olup olmadığını birlikte değerlendirelim.
 
 ---
 

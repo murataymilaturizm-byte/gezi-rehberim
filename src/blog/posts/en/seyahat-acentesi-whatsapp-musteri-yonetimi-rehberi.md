@@ -141,7 +141,7 @@ Turzz AI was designed specifically to fill this gap. It's an AI chatbot platform
 
 Our system learns your tour catalog, understands customer questions, takes reservations, guides payment processes, and escalates complex situations to your staff. A 24/7 digital assistant that never makes errors and can reply to hundreds of customers simultaneously.
 
-Try it free for 14 days with no credit card required — our team guides you through setup one-on-one. **[Request a Free Demo](/demo)** and take your agency's WhatsApp customer management to the next level.
+Try it free for 14 days with no credit card required — our team guides you through setup one-on-one. **[Request a Free Demo](/#demo)** and take your agency's WhatsApp customer management to the next level.
 
 ---
 

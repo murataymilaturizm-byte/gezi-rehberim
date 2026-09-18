@@ -141,7 +141,7 @@ Turzz AI wurde speziell für diese Lücke entwickelt. Es ist eine KI-Chatbot-Pla
 
 Unser System lernt Ihren Tourkatalog, versteht Kundenfragen, nimmt Buchungen an, führt durch Zahlungsprozesse und eskaliert komplexe Situationen an Ihre Mitarbeiter. Ein digitaler Assistent rund um die Uhr, der keine Fehler macht und gleichzeitig hunderten von Kunden antworten kann.
 
-Testen Sie es 14 Tage kostenlos ohne Kreditkarte — unser Team begleitet Sie persönlich durch die Einrichtung. **[Kostenlose Demo anfragen](/demo)** und bringen Sie das WhatsApp-Kundenmanagement Ihres Reisebüros auf das nächste Level.
+Testen Sie es 14 Tage kostenlos ohne Kreditkarte — unser Team begleitet Sie persönlich durch die Einrichtung. **[Kostenlose Demo anfragen](/#demo)** und bringen Sie das WhatsApp-Kundenmanagement Ihres Reisebüros auf das nächste Level.
 
 ---
 

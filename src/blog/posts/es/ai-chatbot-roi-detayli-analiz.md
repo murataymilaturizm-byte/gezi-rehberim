@@ -216,7 +216,7 @@ Cuando evalúa la inversión en un chatbot de IA como "cuánto pagaré al mes", 
 
 Día 30: Se capturan las primeras reservas adicionales. Día 60: La eficiencia del personal mejora de forma medible. Día 90: El sistema funciona a plena capacidad y se ha pagado varias veces.
 
-Iniciar este proceso para su agencia es posible con una demo gratuita. [Demo Gratis](/demo)
+Iniciar este proceso para su agencia es posible con una demo gratuita. [Demo Gratis](/#demo)
 
 ---
 

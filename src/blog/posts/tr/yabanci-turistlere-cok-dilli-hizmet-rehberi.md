@@ -182,7 +182,7 @@ WhatsApp Business API üzerinde çalışıyor, kurulumu 24 saatte tamamlanıyor,
 
 14 gün ücretsiz deneme süresinde sistemin acentenize ne kadar uygun olduğunu birebir görebilirsiniz. Kurulumda ekibimiz sizinle birlikte tur kataloğunuzu sisteme yüklüyor, kültürel adaptasyonları ayarlıyor, personelinize sistemi öğretiyor.
 
-İncoming acentenizin uluslararası rekabet gücünü bir üst seviyeye taşımak için **[Ücretsiz Demo](/demo)** talep edin. Ekibimiz size acentenize özel kurulumu birebir gösterecek ve hangi dillerde hangi pazarlara nasıl hizmet verebileceğinizi planlayalım.
+İncoming acentenizin uluslararası rekabet gücünü bir üst seviyeye taşımak için **[Ücretsiz Demo](/#demo)** talep edin. Ekibimiz size acentenize özel kurulumu birebir gösterecek ve hangi dillerde hangi pazarlara nasıl hizmet verebileceğinizi planlayalım.
 
 ---
 

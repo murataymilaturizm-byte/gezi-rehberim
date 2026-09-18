@@ -145,4 +145,4 @@ The patterns visible in your first 100 clients will define your growth strategy 
 
 Your first 100 clients is a journey, not a goal you hit in one move. Each client builds on the last: the first 10 deliver social proof, the first 30 mature your operations, the first 100 establish your growth platform.
 
-To manage this journey more efficiently, Turzz AI's WhatsApp automation system helps you respond quickly to new inquiries, automate follow-up sequences, and keep client data organized — so you can focus on the actual business of planning great trips. [Start a free demo →](/demo)
+To manage this journey more efficiently, Turzz AI's WhatsApp automation system helps you respond quickly to new inquiries, automate follow-up sequences, and keep client data organized — so you can focus on the actual business of planning great trips. [Start a free demo →](/#demo)

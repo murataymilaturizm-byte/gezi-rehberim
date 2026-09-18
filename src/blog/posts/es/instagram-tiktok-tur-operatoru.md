@@ -175,4 +175,4 @@ Sin presupuesto de agencia. Sin equipo de producción profesional. Una cámara d
 
 El activo de marketing más valioso de una agencia de viajes fue en otro tiempo una ubicación privilegiada en la calle principal o un anuncio en el periódico. Ese activo es ahora un canal de contenido en redes sociales. Instagram Reels y TikTok dan a las operadoras turísticas acceso a su mayor audiencia posible al menor coste de marketing de la historia, si deciden aparecer.
 
-Construir una estrategia de contenido en vídeo es la mitad de la ecuación. Convertir las consultas resultantes rápidamente en reservas es la otra mitad. La automatización de WhatsApp de Turzz AI captura el interés de las redes sociales de inmediato, iniciando la conversación que convierte a un espectador en un viajero confirmado. [Demo Gratis](/demo)
+Construir una estrategia de contenido en vídeo es la mitad de la ecuación. Convertir las consultas resultantes rápidamente en reservas es la otra mitad. La automatización de WhatsApp de Turzz AI captura el interés de las redes sociales de inmediato, iniciando la conversación que convierte a un espectador en un viajero confirmado. [Demo Gratis](/#demo)

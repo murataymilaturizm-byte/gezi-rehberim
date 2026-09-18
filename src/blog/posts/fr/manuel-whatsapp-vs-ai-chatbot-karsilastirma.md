@@ -213,7 +213,7 @@ Turzz AI, conçu pour les agences de voyage, prend en charge exactement ce modè
 
 Vous pouvez être actif en 24 heures, essayer les 14 premiers jours gratuitement et voir la différence pratique entre les approches manuelle et IA avec de vrais clients dans votre propre agence. Notre équipe vous accompagne tout au long du pilote, et nous définissons ensemble les critères de succès.
 
-Demandez une **[Démo Gratuite](/demo)** — voyons la différence entre manuel et IA en chiffres concrets. Après la première semaine, vous pourrez clairement décider quelle approche convient le mieux à votre agence.
+Demandez une **[Démo Gratuite](/#demo)** — voyons la différence entre manuel et IA en chiffres concrets. Après la première semaine, vous pourrez clairement décider quelle approche convient le mieux à votre agence.
 
 ---
 

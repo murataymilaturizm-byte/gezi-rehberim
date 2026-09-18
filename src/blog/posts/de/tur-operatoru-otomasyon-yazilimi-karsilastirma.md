@@ -172,7 +172,7 @@ In den drei in diesem Leitfaden beschriebenen Kategorien ist Turzz AI eine Platt
 
 Wenn die Priorität Ihrer Agentur darin besteht, Kunden über WhatsApp zu gewinnen, schnell zu antworten, mehrsprachige Märkte zu erschließen und die operative Effizienz zu verbessern – könnte Turzz AI Ihre ideale Wahl sein. Wenn Sie klassische ERP-Module brauchen (umfangreiche Buchhaltung, B2B-Sub-Agenten-Panel, XML-Hotel-Integrationen), verbinden wir diese über Drittanbieter-Integrationen.
 
-In 24 Stunden aktiv, erste 14 Tage kostenlos, unser Team begleitet Sie während der Einrichtung persönlich. **[Fordern Sie eine kostenlose Demo an](/demo)** und lassen Sie uns gemeinsam bewerten, ob es zur Struktur Ihrer Agentur passt.
+In 24 Stunden aktiv, erste 14 Tage kostenlos, unser Team begleitet Sie während der Einrichtung persönlich. **[Fordern Sie eine kostenlose Demo an](/#demo)** und lassen Sie uns gemeinsam bewerten, ob es zur Struktur Ihrer Agentur passt.
 
 ---
 

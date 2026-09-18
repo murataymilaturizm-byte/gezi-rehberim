@@ -124,7 +124,7 @@ Die Antwort ist **zweckgebundene SaaS-Software**, die speziell für den Reise- u
 - Updates und Verbesserungen vom Anbieter, nicht von Ihnen
 - Einen Bruchteil der Kosten individueller Entwicklung bei gleicher oder größerer Leistungsfähigkeit
 
-Turzz AI wurde speziell für diesen Anwendungsfall im Reisesektor entwickelt: 7 Sprachen, KI-gestützte Konversations-Engine, Echtzeit-Kontingentverwaltung und 24-Stunden-Deployment. Es liefert, was Monate von No-Code-Experimenten nicht können. [Kostenlose Demo starten →](/demo)
+Turzz AI wurde speziell für diesen Anwendungsfall im Reisesektor entwickelt: 7 Sprachen, KI-gestützte Konversations-Engine, Echtzeit-Kontingentverwaltung und 24-Stunden-Deployment. Es liefert, was Monate von No-Code-Experimenten nicht können. [Kostenlose Demo starten →](/#demo)
 
 ## Zusammenfassung: Was No-Code kann und was nicht
 

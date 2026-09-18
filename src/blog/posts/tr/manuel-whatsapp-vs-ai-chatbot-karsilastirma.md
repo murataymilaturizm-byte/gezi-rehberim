@@ -254,7 +254,7 @@ Türk seyahat acenteleri için tasarlanan Turzz AI tam olarak bu hibrit modeli d
 
 24 saatte aktif olabilir, ilk 14 gün ücretsiz deneyebilir, manuel ve AI yaklaşımının pratik karşılaştırmasını kendi acentenizdeki gerçek müşteriler üzerinden görebilirsiniz. Ekibimiz pilot süreçte size birebir eşlik ediyor, başarı kriterlerini birlikte tanımlıyoruz.
 
-**[Ücretsiz Demo](/demo)** talep edin, manuel ve AI arasındaki farkı somut sayılarla görelim. İlk hafta sonunda hangi yaklaşımın acentenize daha uygun olduğunu netlikle kararlaştırabileceksiniz.
+**[Ücretsiz Demo](/#demo)** talep edin, manuel ve AI arasındaki farkı somut sayılarla görelim. İlk hafta sonunda hangi yaklaşımın acentenize daha uygun olduğunu netlikle kararlaştırabileceksiniz.
 
 ---
 

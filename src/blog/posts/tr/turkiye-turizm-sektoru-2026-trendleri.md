@@ -275,7 +275,7 @@ Bu trendlerin pek çoğu (AI, çoklu dil, otomasyon, kişiselleştirme, modern m
 
 WhatsApp Business API üzerinde çalışıyor, 7 dilde AI destekli müşteri hizmeti sunuyor (Türkçe, İngilizce, Almanca, Rusça, Arapça, Fransızca, İspanyolca), tur kataloğunuzu öğreniyor ve kişiselleştirilmiş öneriler yapıyor, müşteri verilerini sistemli toplayıp analitik raporlama yapıyor.
 
-24 saatte aktif olabilir, ilk 14 gün ücretsiz deneyebilir, kurulumda ekibimiz size birebir eşlik eder. Acentenizin 2026 stratejisini güçlü bir teknoloji altyapısı üzerine kurmak için **[Ücretsiz Demo](/demo)** talep edin. Ekibimiz size hangi trendlerin sizin acentenize en uygun fırsatlar sunduğunu birlikte değerlendirelim.
+24 saatte aktif olabilir, ilk 14 gün ücretsiz deneyebilir, kurulumda ekibimiz size birebir eşlik eder. Acentenizin 2026 stratejisini güçlü bir teknoloji altyapısı üzerine kurmak için **[Ücretsiz Demo](/#demo)** talep edin. Ekibimiz size hangi trendlerin sizin acentenize en uygun fırsatlar sunduğunu birlikte değerlendirelim.
 
 ---
 

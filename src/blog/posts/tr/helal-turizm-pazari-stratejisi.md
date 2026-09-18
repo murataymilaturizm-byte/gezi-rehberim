@@ -155,7 +155,7 @@ Antalya merkezli küçük bir tur acentesi, 2022 yılında Körfez turistlerine 
 
 Helal turizm segmenti hızlı büyüyor ve bu segmentte uzmanlaşan acenteler güçlü rekabet avantajı elde ediyor. Ancak bu pazara girmek salt "helal sertifika almak" değildir; müşterinin bütünsel deneyimini dini ve kültürel değerlere saygıyla tasarlamaktır.
 
-Bu stratejiyi hayata geçirmek, çok dilli müşteri iletişimi, WhatsApp otomasyonu ve kişiselleştirilmiş takip gibi operasyonel yetkinlikler gerektirir. Turzz AI'ın çok dilli chatbot ve WhatsApp yönetim sistemi, helal turizm segmentinde büyümek isteyen acenteler için özellikle değerlidir — Arapça dahil 7 dilde müşteri iletişimi sağlayabilir. [Ücretsiz demo için tıklayın →](/demo)
+Bu stratejiyi hayata geçirmek, çok dilli müşteri iletişimi, WhatsApp otomasyonu ve kişiselleştirilmiş takip gibi operasyonel yetkinlikler gerektirir. Turzz AI'ın çok dilli chatbot ve WhatsApp yönetim sistemi, helal turizm segmentinde büyümek isteyen acenteler için özellikle değerlidir — Arapça dahil 7 dilde müşteri iletişimi sağlayabilir. [Ücretsiz demo için tıklayın →](/#demo)
 
 ---
 

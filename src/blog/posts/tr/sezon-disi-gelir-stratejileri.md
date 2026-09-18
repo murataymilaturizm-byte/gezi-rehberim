@@ -128,4 +128,4 @@ Gelir stratejisi kadar önemli bir diğer konu: kış boyunca müşteri tabanın
 
 En başarılı seyahat acenteleri kış aylarını "atlatılması gereken dönem" olarak değil, "bir sonraki yaz için altyapı kurulan dönem" olarak görür. Yeni ürünler geliştirmek, eski müşterilerle ilişkileri pekiştirmek, dijital görünürlüğü artırmak ve yeni ortaklıklar kurmak için en elverişli zaman kış aylarıdır.
 
-Bu stratejileri hayata geçirmek için Turzz AI'ın otomasyonu size zaman kazandırır: müşteri segmentlerine otomatik mesajlar, erken rezervasyon hatırlatmaları ve yıl boyu aktif müşteri iletişimi — kış aylarında bile yorulmadan. [Ücretsiz demo için tıklayın →](/demo)
+Bu stratejileri hayata geçirmek için Turzz AI'ın otomasyonu size zaman kazandırır: müşteri segmentlerine otomatik mesajlar, erken rezervasyon hatırlatmaları ve yıl boyu aktif müşteri iletişimi — kış aylarında bile yorulmadan. [Ücretsiz demo için tıklayın →](/#demo)

@@ -213,7 +213,7 @@ Viele dieser Trends (KI, Mehrsprachigkeit, Tourenautomatisierung, Personalisieru
 
 Die Plattform basiert auf der WhatsApp Business API, bietet KI-gestützten Kundenservice in 7 Sprachen (Türkisch, Englisch, Deutsch, Russisch, Arabisch, Französisch, Spanisch) als echten mehrsprachigen Kundenservice, lernt Ihren Tourenkatalog und gibt personalisierte Empfehlungen, sammelt systematisch Kundendaten und erstellt Analyseberichte.
 
-Aktiv in 24 Stunden, erste 14 Tage kostenlos, unser Team begleitet Sie bei der Einrichtung persönlich. **[Demo anfordern](/demo)**, um die 2026-Strategie Ihrer Agentur auf ein solides Technologiefundament zu stellen.
+Aktiv in 24 Stunden, erste 14 Tage kostenlos, unser Team begleitet Sie bei der Einrichtung persönlich. **[Demo anfordern](/#demo)**, um die 2026-Strategie Ihrer Agentur auf ein solides Technologiefundament zu stellen.
 
 ---
 

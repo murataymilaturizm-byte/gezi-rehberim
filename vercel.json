@@ -101,95 +101,15 @@
       "source": "/universiteler-tatile-ne-zaman-giriyor",
       "destination": "/blog",
       "permanent": true
-    },
-    {
-      "source": "/acentelerimiz",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/cikisli-turlar",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/destinasyonlar",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/tum-turlar",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/tur-kalkis-noktalari",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/tour-api",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/tur/:path*",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/tour-tag/:path*",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/tour-category/:path*",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/tur-destinasyonlari/:path*",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/kalkis-noktasi/:path*",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/acentelerimiz/:path*",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/author/:path*",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/2016/:path*",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/2021/:path*",
-      "destination": "/",
-      "permanent": true
-    },
-    {
-      "source": "/2023/:path*",
-      "destination": "/",
-      "permanent": true
     }
   ],
   "rewrites": [
     {
-      "source": "/admin/:path*",
+      "source": "/admin",
       "destination": "/spa-fallback"
     },
     {
-      "source": "/admin",
+      "source": "/admin/:path*",
       "destination": "/spa-fallback"
     },
     {
@@ -201,8 +121,92 @@
       "destination": "/spa-fallback"
     },
     {
-      "source": "/(.*)",
+      "source": "/en/tools",
       "destination": "/spa-fallback"
+    },
+    {
+      "source": "/en/tools/:path*",
+      "destination": "/spa-fallback"
+    },
+    {
+      "source": "/de/tools",
+      "destination": "/spa-fallback"
+    },
+    {
+      "source": "/de/tools/:path*",
+      "destination": "/spa-fallback"
+    },
+    {
+      "source": "/ru/blog",
+      "destination": "/spa-fallback"
+    },
+    {
+      "source": "/ar/blog",
+      "destination": "/spa-fallback"
+    },
+    {
+      "source": "/acentelerimiz",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/cikisli-turlar",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/destinasyonlar",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/tum-turlar",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/tur-kalkis-noktalari",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/tour-api",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/tur/:path*",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/tour-tag/:path*",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/tour-category/:path*",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/tur-destinasyonlari/:path*",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/kalkis-noktasi/:path*",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/acentelerimiz/:path*",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/author/:path*",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/2016/:path*",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/2021/:path*",
+      "destination": "/api/gone"
+    },
+    {
+      "source": "/2023/:path*",
+      "destination": "/api/gone"
     }
   ]
 }

@@ -138,7 +138,7 @@ Die spezifischen Ergebnisse dieses Falls hängen von mehreren Faktoren ab:
 
 Wenn mindestens zwei davon auf Ihre Agentur zutreffen, ist dieses Muster reproduzierbar.
 
-Turzz AI wurde genau für diese Szenarien entwickelt: 7-Sprachen-Unterstützung, KI-Konversations-Engine, reisespezifischer Reservierungsflow — in 24 Stunden einsetzbar. [Kostenlose Demo starten →](/demo)
+Turzz AI wurde genau für diese Szenarien entwickelt: 7-Sprachen-Unterstützung, KI-Konversations-Engine, reisespezifischer Reservierungsflow — in 24 Stunden einsetzbar. [Kostenlose Demo starten →](/#demo)
 
 ---
 

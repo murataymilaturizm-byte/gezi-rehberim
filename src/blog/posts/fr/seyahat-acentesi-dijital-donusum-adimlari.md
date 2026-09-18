@@ -180,7 +180,7 @@ Parmi les 7 étapes décrites dans ce guide, l'Étape 3 (WhatsApp Business API +
 
 Turzz AI délivre cette étape sans aucune complexité. Configuration WhatsApp Business API, formation chatbot IA en 7 langues, intégration du catalogue de voyages, règles d'automatisation — tout prêt en 24 heures. Aucune équipe informatique requise, modèle d'abonnement mensuel, 14 premiers jours gratuits.
 
-Pour une base solide dans la transformation numérique de votre agence, **[Démo Gratuite](/demo)**. Notre équipe vous aidera à construire une feuille de route de transformation numérique personnalisée sur 12 mois pour votre agence.
+Pour une base solide dans la transformation numérique de votre agence, **[Démo Gratuite](/#demo)**. Notre équipe vous aidera à construire une feuille de route de transformation numérique personnalisée sur 12 mois pour votre agence.
 
 ---
 

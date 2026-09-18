@@ -216,7 +216,7 @@ AI chatbot yatırımını "aylık şu kadar öderim" üzerinden değerlendirdiğ
 
 30. günde ilk ekstra rezervasyonları görürsünüz. 60. günde personel verimliliği somutlaşır. 90. günde sistem tam kapasite çalışıyor ve yatırım kendini defalarca geri ödemiştir.
 
-Turzz AI ile bu süreci kendi acenteniz için başlatmak, ücretsiz bir demo görüşmesiyle mümkün. [Ücretsiz demo için tıklayın →](/demo)
+Turzz AI ile bu süreci kendi acenteniz için başlatmak, ücretsiz bir demo görüşmesiyle mümkün. [Ücretsiz demo için tıklayın →](/#demo)
 
 ---
 

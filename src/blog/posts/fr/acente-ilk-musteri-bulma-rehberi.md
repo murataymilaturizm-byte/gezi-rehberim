@@ -145,4 +145,4 @@ Les patterns visibles dans vos 100 premiers clients définiront votre stratégie
 
 Vos 100 premiers clients sont un voyage, pas un objectif qu'on atteint en un seul mouvement. Chaque client s'appuie sur le précédent : les 10 premiers apportent la preuve sociale, les 30 premiers maturent vos opérations, les 100 premiers établissent votre plateforme de croissance.
 
-Pour gérer ce voyage plus efficacement, le système d'automatisation WhatsApp de Turzz AI vous aide à répondre rapidement aux nouvelles demandes, à automatiser les séquences de suivi et à garder les données clients organisées — pour que Vous puissiez vous concentrer sur le vrai métier : planifier d'excellents voyages. [Démo Gratuite](/demo)
+Pour gérer ce voyage plus efficacement, le système d'automatisation WhatsApp de Turzz AI vous aide à répondre rapidement aux nouvelles demandes, à automatiser les séquences de suivi et à garder les données clients organisées — pour que Vous puissiez vous concentrer sur le vrai métier : planifier d'excellents voyages. [Démo Gratuite](/#demo)

@@ -216,7 +216,7 @@ Wenn Sie eine KI-Chatbot-Investition als „wie viel ich pro Monat zahlen werde"
 
 Tag 30: Erste zusätzliche Buchungen erfasst. Tag 60: Mitarbeitereffizienz messbar verbessert. Tag 90: Das System läuft mit voller Kapazität und hat sich mehrfach amortisiert.
 
-Diesen Prozess für Ihre Agentur zu starten, ist mit einer kostenlosen Demo möglich. [Kostenlose Demo starten →](/demo)
+Diesen Prozess für Ihre Agentur zu starten, ist mit einer kostenlosen Demo möglich. [Kostenlose Demo starten →](/#demo)
 
 ---
 

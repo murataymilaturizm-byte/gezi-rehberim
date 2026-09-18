@@ -6880,8 +6880,10 @@ console.log("\n── SINIF-KORUMASI: TypeScript derleyici kapısı ──");
   const v = JSON.parse(await Deno.readTextFile("vercel.json"));
   const kaynaklar = new Set(v.redirects.map((r: any) => r.source));
   assert("TURZZ.YÖNLENDİRME iletişim sayfası eşlendi", kaynaklar.has("/turzz-com-iletisim"));
-  assert("TURZZ.YÖNLENDİRME /tur/* önek kümesi", kaynaklar.has("/tur/:path*"));
-  assert("TURZZ.YÖNLENDİRME /kalkis-noktasi/* önek kümesi", kaynaklar.has("/kalkis-noktasi/:path*"));
+  // 2026-09-18 DEĞİŞTİ: bu önekler artık "/" ye 301 DEĞİL, 410 Gone.
+  // Gerekçe: turzz.com ölçüldü — tüm path'leri (uydurma dahil) turzzai.com'a
+  // geri atıyor, eski içerik hiçbir yerde yok. Alakasız hedefe 301 = soft-404.
+  // Kontrolleri 410 bloğu yapıyor (bkz. "410.* WP oneki").
   assert("TURZZ.YÖNLENDİRME hepsi kalıcı (permanent)", v.redirects.every((r: any) => r.permanent === true));
   // KRİTİK: eski turzz.com WordPress URL'lerinin 59/60'ı eğik çizgiyle biter
   // (/turzz-com-iletisim/). trailingSlash:false olmadan yönlendirmeler bu
@@ -6890,6 +6892,104 @@ console.log("\n── SINIF-KORUMASI: TypeScript derleyici kapısı ──");
   const zincir = v.redirects.filter((r: any) => kaynaklar.has(r.destination.split("#")[0].split("?")[0]));
   assert(`TURZZ.YÖNLENDİRME zincir yok${zincir.length ? " — " + zincir.map((r: any) => r.source).join(",") : ""}`,
     zincir.length === 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// İNDEKSLEME DALGA-1 MUHAFIZI (2026-09-18) — KALICI
+//
+// KÖK: her bilinmeyen/prerender'sız URL HTTP 200 + ANA SAYFA canonical'ı
+// dönüyordu. spa-fallback.html, dist/index.html'in kopyasıydı ve yalnız #root
+// boşaltılıyordu — <head> (canonical, og:url, title, FAQ şeması) aynen kalıyordu.
+// Ölçüm: /bu-path-yok → 200, canonical=https://turzzai.com/
+//   → GSC "Duplicate, Google chose different canonical" (22)
+//   → GSC "Discovered - currently not indexed" (91)
+// İkinci kök: Blog.tsx çevirisi olmayan dilde de link üretiyordu → 62 ölü URL.
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\nINDEKSLEME-1 soft-404 ve canonical muhafizi");
+{
+  const fb = await Deno.readTextFile("dist/spa-fallback.html").catch(() => "");
+  const nf = await Deno.readTextFile("dist/404.html").catch(() => "");
+  const idx = await Deno.readTextFile("dist/index.html").catch(() => "");
+
+  if (!fb || !nf || !idx) {
+    console.log("  dist yok - bu blok atlandi (build sonrasi kosulmali)");
+  } else {
+    const kafa = (h: string) => (h.match(/<head>[\s\S]*?<\/head>/) || [""])[0];
+
+    // 1) Kabuklar ana sayfanin kimligini TASIMAMALI
+    for (const [ad, h] of [["spa-fallback", fb], ["404", nf]] as const) {
+      assert(`SOFT404.${ad} canonical YOK`, !kafa(h).includes('rel="canonical"'));
+      assert(`SOFT404.${ad} og:url YOK`, !kafa(h).includes('og:url'));
+      assert(`SOFT404.${ad} og:title YOK`, !kafa(h).includes('og:title'));
+      assert(`SOFT404.${ad} twitter YOK`, !kafa(h).includes('twitter:'));
+      assert(`SOFT404.${ad} ana sayfa description YOK`, !kafa(h).includes('name="description"'));
+      assert(`SOFT404.${ad} JSON-LD YOK`, !kafa(h).includes("application/ld+json"));
+      assert(`SOFT404.${ad} noindex VAR`, kafa(h).includes('content="noindex, nofollow"'));
+    }
+    // 2) Head'ler ana sayfadan FARKLI olmali (esas regresyon testi)
+    assert("SOFT404.kabuk head'i ana sayfadan farkli", kafa(fb) !== kafa(idx));
+    assert("SOFT404.404 head'i ana sayfadan farkli", kafa(nf) !== kafa(idx));
+    // 3) Basliklar
+    assert("SOFT404.404 basligi Sayfa Bulunamadi", nf.includes("<title>Sayfa Bulunamadı | Turzz AI</title>"));
+    assert("SOFT404.kabuk basligi notr (404 DEGIL)", fb.includes("<title>Turzz AI</title>"));
+  }
+}
+
+console.log("\nINDEKSLEME-1 catch-all ve 410 muhafizi");
+{
+  const v = JSON.parse(await Deno.readTextFile("vercel.json"));
+  const kaynaklar = v.rewrites.map((r: any) => r.source);
+  assert("CATCHALL.kaldirildi", !kaynaklar.includes("/(.*)"));
+  // Gercek istemci rotalari kabuga gitmeye devam etmeli (admin/auth kirilmasin)
+  for (const s of ["/admin", "/admin/:path*", "/auth", "/reset-password"])
+    assert(`CATCHALL.${s} kabuga yonleniyor`, kaynaklar.includes(s));
+  // 410: kapatilmis WP bolumleri
+  const gone = v.rewrites.filter((r: any) => r.destination === "/api/gone").map((r: any) => r.source);
+  assert(`410.en az 16 WP oneki (${gone.length})`, gone.length >= 16);
+  for (const s of ["/tur/:path*", "/tour-tag/:path*", "/kalkis-noktasi/:path*", "/2021/:path*"])
+    assert(`410.${s}`, gone.includes(s));
+  // Hicbir yonlendirme artik "/" ye gitmemeli (soft-404 uretirdi)
+  const anaSayfa = v.redirects.filter((r: any) => r.destination === "/");
+  assert(`410.ana sayfaya giden yonlendirme kalmadi (${anaSayfa.length})`, anaSayfa.length === 0);
+  // Anlamli 301'ler KORUNMALI
+  const kaynak301 = v.redirects.map((r: any) => r.source);
+  for (const s of ["/gizlilik-sozlesmesi", "/turzz-com-iletisim", "/login"])
+    assert(`301.${s} korundu`, kaynak301.includes(s));
+}
+
+console.log("\nINDEKSLEME-1 blog dil-mevcudiyeti tek kaynak");
+{
+  const bl = await import("../scripts/blog-langs.mjs");
+  const kok = Deno.cwd();
+  // ru/ar'da kendi yazisi YOK -> sitemap'te index'i olmamali
+  assert("BLOG.ru kendi yazisi yok", !bl.hasOwnPosts(kok, "ru"));
+  assert("BLOG.ar kendi yazisi yok", !bl.hasOwnPosts(kok, "ar"));
+  const diller = bl.langsWithPosts(kok);
+  assert(`BLOG.yazisi olan diller tr,en,de,fr,es (${diller.join(",")})`,
+    diller.join(",") === "tr,en,de,fr,es");
+
+  const sm = await Deno.readTextFile("public/sitemap.xml");
+  assert("BLOG./ru/blog sitemap'te YOK", !sm.includes("<loc>https://turzzai.com/ru/blog</loc>"));
+  assert("BLOG./ar/blog sitemap'te YOK", !sm.includes("<loc>https://turzzai.com/ar/blog</loc>"));
+  assert("BLOG./en/blog sitemap'te VAR", sm.includes("<loc>https://turzzai.com/en/blog</loc>"));
+  assert("BLOG.hicbir /ru/blog/ yazisi sitemap'te yok", !sm.includes("turzzai.com/ru/blog/"));
+  assert("BLOG.hicbir /ar/blog/ yazisi sitemap'te yok", !sm.includes("turzzai.com/ar/blog/"));
+
+  // Blog.tsx artik cevirisi olmayan dile link URETMEMELI
+  const blogTsx = await Deno.readTextFile("src/pages/Blog.tsx");
+  assert("BLOG.kart linki postHref kullaniyor", blogTsx.includes("postHref(post.slug, lang)"));
+  assert("BLOG.eski buildBlogUrl(lang, slug) kalmadi", !blogTsx.includes("buildBlogUrl(lang, post.slug)"));
+  assert("BLOG.ozgun icerigi olmayan dil noindex", blogTsx.includes("noindex={!hasOwnPosts(lang)}"));
+  const libBlog = await Deno.readTextFile("src/lib/blog.ts");
+  assert("BLOG.postHref tek kaynak", libBlog.includes("export function postHref"));
+  assert("BLOG.sitemap ortak yardimciyi kullaniyor",
+    (await Deno.readTextFile("scripts/generate-sitemap.mjs")).includes("availableLangsForFile(ROOT, file)"));
+
+  // Demo sayfalari noindex (2026-09-18 karari: erisilebilir kalsin)
+  for (const f of ["turzz-demo.html", "turzz-demo-en.html", "turzz-demo-de.html"]) {
+    const h = await Deno.readTextFile(`public/${f}`);
+    assert(`DEMO.${f} noindex`, h.includes('content="noindex, nofollow"'));
+  }
 }
 
 Deno.exit(fail === 0 ? 0 : 1);

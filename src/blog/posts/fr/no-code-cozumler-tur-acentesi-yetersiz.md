@@ -124,7 +124,7 @@ La réponse est un **logiciel SaaS spécialement conçu** pour le secteur du voy
 - Reçoivent des mises à jour et des améliorations du fournisseur, pas de vous
 - Coûtent une fraction du développement personnalisé pour une capacité égale ou supérieure
 
-Turzz AI a été développé spécifiquement pour ce cas d'usage dans le secteur du voyage : 7 langues, moteur de conversation IA, gestion des quotas en temps réel et déploiement en 24 heures. Il délivre ce que des mois d'expérimentation no-code ne peuvent pas. [Démo Gratuite](/demo)
+Turzz AI a été développé spécifiquement pour ce cas d'usage dans le secteur du voyage : 7 langues, moteur de conversation IA, gestion des quotas en temps réel et déploiement en 24 heures. Il délivre ce que des mois d'expérimentation no-code ne peuvent pas. [Démo Gratuite](/#demo)
 
 ## Résumé : Ce que le No-Code Peut et Ne Peut Pas Faire
 

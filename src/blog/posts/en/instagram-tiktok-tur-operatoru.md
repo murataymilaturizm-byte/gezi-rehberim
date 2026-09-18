@@ -175,4 +175,4 @@ No agency budget. No professional production team. A phone camera, the right top
 
 A travel agency's most valuable marketing asset was once a prime storefront location or a newspaper advertisement. That asset is now a social media content channel. Instagram Reels and TikTok give tour operators access to their widest possible audience at the lowest cost in marketing history — if they choose to show up.
 
-Building a video content strategy is one half of the equation. Converting the resulting inquiries quickly into bookings is the other. Turzz AI's WhatsApp automation captures interest from social media immediately, initiating the conversation that turns a viewer into a confirmed traveler. [Start a free demo →](/demo)
+Building a video content strategy is one half of the equation. Converting the resulting inquiries quickly into bookings is the other. Turzz AI's WhatsApp automation captures interest from social media immediately, initiating the conversation that turns a viewer into a confirmed traveler. [Start a free demo →](/#demo)

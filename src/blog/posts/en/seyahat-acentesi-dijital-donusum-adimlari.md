@@ -180,7 +180,7 @@ Of the 7 steps described in this guide, Step 3 (WhatsApp Business API + AI chatb
 
 Turzz AI delivers this step with zero complexity. WhatsApp Business API setup, 7-language AI chatbot training, tour catalog integration, automation rules — all ready in 24 hours. No IT team needed, monthly subscription model, first 14 days free.
 
-For a solid foundation in your agency's digital transformation, **[Request a Free Demo](/demo)**. Our team will help you build a custom 12-month digital transformation roadmap for your agency.
+For a solid foundation in your agency's digital transformation, **[Request a Free Demo](/#demo)**. Our team will help you build a custom 12-month digital transformation roadmap for your agency.
 
 ---
 

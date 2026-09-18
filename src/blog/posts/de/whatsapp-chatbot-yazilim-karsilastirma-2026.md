@@ -201,7 +201,7 @@ Wenn diese Bedingungen zutreffen, werden No-Code-Workflows oder allgemeine Chatb
 
 Die meisten Agentureigentümer entscheiden sich, „einen Chatbot einzurichten", und verbringen dann Monate in Plattformvergleichen. Die eigentliche Frage ist nicht welches Tool — sondern welche Lösung: **Welches System kann meine Kunden, in ihrer Sprache, mit meinem spezifischen Tourinventar, 24 Stunden am Tag bedienen?**
 
-Die Antwort auf diese Frage bestimmt die richtige Wahl. Wenn die Antwort lautet „mehrsprachig, KI-gestützt, fähig den vollständigen Tourbuchungsflow von Anfang bis Ende zu verwalten" — Turzz AI liefert diese Fähigkeit innerhalb von 24–48 Stunden, ohne ein technisches Team zu benötigen. [Kostenlose Demo starten →](/demo)
+Die Antwort auf diese Frage bestimmt die richtige Wahl. Wenn die Antwort lautet „mehrsprachig, KI-gestützt, fähig den vollständigen Tourbuchungsflow von Anfang bis Ende zu verwalten" — Turzz AI liefert diese Fähigkeit innerhalb von 24–48 Stunden, ohne ein technisches Team zu benötigen. [Kostenlose Demo starten →](/#demo)
 
 ---
 

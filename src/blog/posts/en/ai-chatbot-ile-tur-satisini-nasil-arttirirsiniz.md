@@ -178,7 +178,7 @@ Turzz AI, designed for the travel sector, delivers all the advantages described 
 
 Setup takes 24 hours. Monthly subscription model — starting from $90/month. No IT team required. During the 14-day free trial, you can see exactly how well the system fits your agency.
 
-Request a **[Free Demo](/demo)** to unlock your agency's sales potential. Our team will walk you through a setup tailored to your agency and build a first-30-day revenue projection together.
+Request a **[Free Demo](/#demo)** to unlock your agency's sales potential. Our team will walk you through a setup tailored to your agency and build a first-30-day revenue projection together.
 
 ---
 

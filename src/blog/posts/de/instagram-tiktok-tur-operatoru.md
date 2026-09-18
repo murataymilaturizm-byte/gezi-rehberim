@@ -175,4 +175,4 @@ Kein Agenturbudget. Kein professionelles Produktionsteam. Eine Handykamera, die 
 
 Das wertvollste Marketingasset einer Reiseagentur war einst eine erstklassige Ladenlokalität oder eine Zeitungsanzeige. Dieses Asset ist heute ein Social-Media-Content-Kanal. Instagram Reels und TikTok geben Reiseveranstaltern Zugang zu ihrem größtmöglichen Publikum zu den niedrigsten Kosten in der Marketinggeschichte — wenn sie die Chance ergreifen.
 
-Eine Video-Content-Strategie aufzubauen, ist eine Hälfte der Gleichung. Die daraus entstehenden Anfragen schnell in Buchungen umzuwandeln, ist die andere. Die WhatsApp-Automatisierung von Turzz AI erfasst Social-Media-Interesse sofort, initiiert das Gespräch und verwandelt einen Zuschauer in einen bestätigten Reisenden. [Kostenlose Demo starten →](/demo)
+Eine Video-Content-Strategie aufzubauen, ist eine Hälfte der Gleichung. Die daraus entstehenden Anfragen schnell in Buchungen umzuwandeln, ist die andere. Die WhatsApp-Automatisierung von Turzz AI erfasst Social-Media-Interesse sofort, initiiert das Gespräch und verwandelt einen Zuschauer in einen bestätigten Reisenden. [Kostenlose Demo starten →](/#demo)

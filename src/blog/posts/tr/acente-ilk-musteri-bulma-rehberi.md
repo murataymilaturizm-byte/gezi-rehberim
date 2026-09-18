@@ -143,4 +143,4 @@ Bu ortaklıkların büyük bölümü tavsiye karşılığı komisyon ya da karş
 
 İlk 100 müşteri bir hedef değil, bir yolculuktur. Her biri bir öncekinin üstüne inşa edilir: ilk 10 sosyal kanıtı getirir, ilk 30 sürecinizi olgunlaştırır, ilk 100 büyüme platformunu oluşturur.
 
-Bu yolculuğu daha verimli yönetmek için Turzz AI'ın WhatsApp otomasyon sistemi, yeni müşteri sorularına hızlı yanıt vermenizi, takip süreçlerini otomatikleştirmenizi ve müşteri verilerini düzenli tutmanızı sağlar — siz tur planlamaya odaklanırken. [Ücretsiz demo için tıklayın →](/demo)
+Bu yolculuğu daha verimli yönetmek için Turzz AI'ın WhatsApp otomasyon sistemi, yeni müşteri sorularına hızlı yanıt vermenizi, takip süreçlerini otomatikleştirmenizi ve müşteri verilerini düzenli tutmanızı sağlar — siz tur planlamaya odaklanırken. [Ücretsiz demo için tıklayın →](/#demo)

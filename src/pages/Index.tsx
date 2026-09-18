@@ -127,7 +127,7 @@ const Index = () => {
       <section ref={(el) => {
         sectionsRef.current[3] = el;
         if (el) demoRef.current = el as HTMLDivElement;
-      }} className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700">
+      }} id="demo" className="py-16 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-0 translate-y-8 transition-all duration-700 scroll-mt-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/50 border border-border mb-3">

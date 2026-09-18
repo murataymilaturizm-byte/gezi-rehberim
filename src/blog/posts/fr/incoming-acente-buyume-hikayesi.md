@@ -138,7 +138,7 @@ Les résultats spécifiques de cette étude de cas dépendent de plusieurs facte
 
 Si au moins deux de ces éléments s'appliquent à votre agence, ce modèle est reproductible.
 
-Turzz AI a été conçu précisément pour ces scénarios : support en 7 langues, moteur de conversation IA, flux de réservation spécifique au voyage — déployable en 24 heures. [Démo Gratuite](/demo)
+Turzz AI a été conçu précisément pour ces scénarios : support en 7 langues, moteur de conversation IA, flux de réservation spécifique au voyage — déployable en 24 heures. [Démo Gratuite](/#demo)
 
 ---
 

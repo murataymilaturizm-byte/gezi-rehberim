@@ -141,7 +141,7 @@ Turzz AI a été conçu spécifiquement pour combler ce manque. C'est une platef
 
 Notre système apprend votre catalogue de voyages, comprend les questions des clients, prend les réservations, guide les processus de paiement et escalade les situations complexes vers vos collaborateurs. Un assistant numérique disponible 24h/24 qui ne fait jamais d'erreurs et peut répondre à des centaines de clients simultanément.
 
-Essayez-le gratuitement pendant 14 jours sans carte de crédit requise — notre équipe vous accompagne dans la configuration en tête-à-tête. **[Démo Gratuite](/demo)** et faites passer la gestion client WhatsApp de votre agence au niveau supérieur.
+Essayez-le gratuitement pendant 14 jours sans carte de crédit requise — notre équipe vous accompagne dans la configuration en tête-à-tête. **[Démo Gratuite](/#demo)** et faites passer la gestion client WhatsApp de votre agence au niveau supérieur.
 
 ---
 

@@ -178,7 +178,7 @@ Turzz AI, diseñado para el sector turístico, ofrece todas las ventajas descrit
 
 La configuración tarda 24 horas. Modelo de suscripción mensual —a partir de 90 €/mes. No se requiere equipo de TI. Durante los 14 días de prueba gratuita, puede ver exactamente qué tan bien se adapta el sistema a su agencia.
 
-Solicite una **[Demo Gratis](/demo)** para desbloquear el potencial de ventas de su agencia. Nuestro equipo le guiará a través de una configuración adaptada a su agencia y elaborará juntos una proyección de ingresos para los primeros 30 días.
+Solicite una **[Demo Gratis](/#demo)** para desbloquear el potencial de ventas de su agencia. Nuestro equipo le guiará a través de una configuración adaptada a su agencia y elaborará juntos una proyección de ingresos para los primeros 30 días.
 
 ---
 

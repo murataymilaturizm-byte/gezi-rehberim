@@ -169,7 +169,7 @@ A customer loyalty program should not be treated as a short-term promotion. It i
 
 Repeat clients do more than generate reliable revenue. They refer friends, withstand competitive pricing pressure, and provide honest feedback that helps you improve. The cumulative effect of small, consistent gestures — remembering a client's name, following up after a trip, celebrating their birthday — is a client who doesn't easily consider going elsewhere.
 
-If you're ready to put these strategies into practice, Turzz AI's WhatsApp automation and client communication tools can help you scale these personal touchpoints without adding to your team's workload. [Start a free demo →](/demo)
+If you're ready to put these strategies into practice, Turzz AI's WhatsApp automation and client communication tools can help you scale these personal touchpoints without adding to your team's workload. [Start a free demo →](/#demo)
 
 ---
 

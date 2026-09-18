@@ -213,7 +213,7 @@ Many of these trends (AI, multilingual, automation, personalization, modern cust
 
 Operates on WhatsApp Business API, offers 7-language AI-powered customer service (Turkish, English, German, Russian, Arabic, French, Spanish), learns your tour catalog and makes personalized recommendations, systematically collects customer data and provides analytics reporting.
 
-Active in 24 hours, first 14 days free, our team accompanies setup one-on-one. **[Request a Free Demo](/demo)** to build your agency's 2026 strategy on a solid technology foundation.
+Active in 24 hours, first 14 days free, our team accompanies setup one-on-one. **[Request a Free Demo](/#demo)** to build your agency's 2026 strategy on a solid technology foundation.
 
 ---
 

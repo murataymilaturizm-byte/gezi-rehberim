@@ -145,4 +145,4 @@ Die in Ihren ersten 100 Kunden sichtbaren Muster werden Ihre Wachstumsstrategie 
 
 Ihre ersten 100 Kunden sind eine Reise, kein Ziel, das Sie in einem Schritt erreichen. Jeder Kunde baut auf dem vorherigen auf: Die ersten 10 liefern Social Proof, die ersten 30 reifen Ihre Abläufe, die ersten 100 etablieren Ihre Wachstumsplattform.
 
-Um diese Reise effizienter zu gestalten, hilft das WhatsApp-Automatisierungssystem von Turzz AI dabei, schnell auf neue Anfragen zu antworten, Follow-up-Sequenzen zu automatisieren und Kundendaten organisiert zu halten — damit Sie sich auf das eigentliche Geschäft konzentrieren können: die Planung großartiger Reisen. [Kostenlose Demo starten →](/demo)
+Um diese Reise effizienter zu gestalten, hilft das WhatsApp-Automatisierungssystem von Turzz AI dabei, schnell auf neue Anfragen zu antworten, Follow-up-Sequenzen zu automatisieren und Kundendaten organisiert zu halten — damit Sie sich auf das eigentliche Geschäft konzentrieren können: die Planung großartiger Reisen. [Kostenlose Demo starten →](/#demo)

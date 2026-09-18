@@ -138,7 +138,7 @@ Los resultados específicos de este caso dependen de varios factores:
 
 Si al menos dos de estas condiciones se aplican a su agencia, este patrón es replicable.
 
-Turzz AI fue diseñado precisamente para estos escenarios: soporte en 7 idiomas, motor de conversación de IA, flujo de reservas específico para viajes, desplegable en 24 horas. [Demo Gratis](/demo)
+Turzz AI fue diseñado precisamente para estos escenarios: soporte en 7 idiomas, motor de conversación de IA, flujo de reservas específico para viajes, desplegable en 24 horas. [Demo Gratis](/#demo)
 
 ---
 

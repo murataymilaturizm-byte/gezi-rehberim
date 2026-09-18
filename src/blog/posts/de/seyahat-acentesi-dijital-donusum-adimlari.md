@@ -180,7 +180,7 @@ Von den in diesem Leitfaden beschriebenen 7 Schritten ist Schritt 3 (WhatsApp Bu
 
 Turzz AI liefert diesen Schritt mit null Komplexität. WhatsApp Business API-Setup, 7-Sprachen-KI-Chatbot-Training, Tourkatalog-Integration, Tourenautomatisierung-Regeln – alles in 24 Stunden bereit. Kein IT-Team erforderlich, monatliches Abonnementmodell, erste 14 Tage kostenlos.
 
-Für ein solides Fundament in der digitalen Transformation Ihrer Agentur **[fordern Sie eine kostenlose Demo an](/demo)**. Unser Team hilft Ihnen, eine individuelle 12-Monats-Roadmap für die digitale Transformation Ihrer Agentur aufzubauen.
+Für ein solides Fundament in der digitalen Transformation Ihrer Agentur **[fordern Sie eine kostenlose Demo an](/#demo)**. Unser Team hilft Ihnen, eine individuelle 12-Monats-Roadmap für die digitale Transformation Ihrer Agentur aufzubauen.
 
 ---
 

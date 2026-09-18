@@ -201,7 +201,7 @@ Bu koşullar gerçekse, no-code ya da genel chatbot çözümleri sorunu çözmez
 
 Çoğu acente sahibi bir "chatbot kurayım" kararı verir ve ardından aylarca araç karşılaştırmasında kaybolur. Asıl soru araç değil, çözümdür: **Hangi sistem benim müşterime, benim dilimde, benim tur senaryomla 7/24 yardım edebilir?**
 
-Bu soruya vereceğiniz cevap, seçiminizi netleştirir. Eğer cevap "çok dilli, AI destekli, tur rezervasyonunu baştan sona yönetebilen" ise, Turzz AI bu ihtiyacı 24-48 saatte, teknik ekip gerektirmeden karşılar. [Ücretsiz demo için tıklayın →](/demo)
+Bu soruya vereceğiniz cevap, seçiminizi netleştirir. Eğer cevap "çok dilli, AI destekli, tur rezervasyonunu baştan sona yönetebilen" ise, Turzz AI bu ihtiyacı 24-48 saatte, teknik ekip gerektirmeden karşılar. [Ücretsiz demo için tıklayın →](/#demo)
 
 ---
 

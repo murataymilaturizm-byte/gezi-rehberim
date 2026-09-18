@@ -177,7 +177,7 @@ Bu rehberde anlatılan tüm süreçleri tek tek yönetmek, doğru sağlayıcıy�
 
 Turzz AI tam bu boşluğu doldurmak için tasarlandı. WhatsApp Business API resmi onaylı altyapısı üzerine kurulu, Türk seyahat acenteleri için 7 dilde AI destekli müşteri hizmeti sunan bir platform. Meta hesap doğrulamadan tur kataloğu yüklemeye, otomatik şablonlardan personel eğitimine kadar tüm süreçler için ekibimiz size birebir eşlik ediyor.
 
-24 saatte aktif olabilir, ilk 14 gün ücretsiz kullanabilir, kredi kartı bilgisi vermek zorunda kalmadan kendi acentenizdeki dönüşümü canlı görebilirsiniz. **[Ücretsiz Demo](/demo)** talep edin, ekibimiz size acentenize özel kurulumu birebir gösterecek.
+24 saatte aktif olabilir, ilk 14 gün ücretsiz kullanabilir, kredi kartı bilgisi vermek zorunda kalmadan kendi acentenizdeki dönüşümü canlı görebilirsiniz. **[Ücretsiz Demo](/#demo)** talep edin, ekibimiz size acentenize özel kurulumu birebir gösterecek.
 
 ---
 

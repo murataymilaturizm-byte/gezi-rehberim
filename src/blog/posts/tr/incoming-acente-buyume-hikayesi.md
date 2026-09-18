@@ -136,7 +136,7 @@ Bu hikayenin bütünlüğü birkaç faktöre bağlı:
 
 Bu üç sorudan en az ikisine "evet" cevabı veriyorsanız, bu hikaye size de uygulanabilir.
 
-Turzz AI, tam da bu senaryolar için tasarlandı. 7 dil desteği, AI konuşma motoru ve sektöre özel rezervasyon akışı — 24 saatte devreye alınır. [Ücretsiz demo için tıklayın →](/demo)
+Turzz AI, tam da bu senaryolar için tasarlandı. 7 dil desteği, AI konuşma motoru ve sektöre özel rezervasyon akışı — 24 saatte devreye alınır. [Ücretsiz demo için tıklayın →](/#demo)
 
 ---
 

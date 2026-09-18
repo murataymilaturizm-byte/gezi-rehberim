@@ -178,7 +178,7 @@ Turzz AI, speziell für die Reisebranche entwickelt, liefert alle in diesem Arti
 
 Die Einrichtung dauert 24 Stunden. Monatliches Abonnementmodell – ab 90 $/Monat. Kein IT-Team erforderlich. Während der 14-tägigen kostenlosen Testphase können Sie genau sehen, wie gut das System zu Ihrer Agentur passt.
 
-Fordern Sie eine **[kostenlose Demo](/demo)** an, um das Vertriebspotenzial Ihrer Agentur freizuschalten. Unser Team führt Sie durch eine auf Ihre Agentur zugeschnittene Einrichtung und erstellt gemeinsam mit Ihnen eine Umsatzprognose für die ersten 30 Tage.
+Fordern Sie eine **[kostenlose Demo](/#demo)** an, um das Vertriebspotenzial Ihrer Agentur freizuschalten. Unser Team führt Sie durch eine auf Ihre Agentur zugeschnittene Einrichtung und erstellt gemeinsam mit Ihnen eine Umsatzprognose für die ersten 30 Tage.
 
 ---
 

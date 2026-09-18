@@ -170,7 +170,7 @@ Gérer tous les processus décrits dans ce guide un par un, trouver le bon fourn
 
 Turzz AI a été conçu pour combler exactement ce manque. Une plateforme construite sur une infrastructure WhatsApp Business API officiellement approuvée, offrant un service client propulsé par l'IA en 7 langues pour les agences de voyage. De la vérification du compte Meta au téléchargement du catalogue de circuits, des modèles automatisés à la formation du personnel — notre équipe vous accompagne dans chaque processus en tête-à-tête.
 
-Actif en 24 heures, gratuit à utiliser pour les 14 premiers jours, vous pouvez voir la transformation dans votre propre agence en temps réel sans fournir d'informations de carte de crédit. **[Démo Gratuite](/demo)** — notre équipe vous guidera à travers une configuration adaptée spécifiquement à votre agence.
+Actif en 24 heures, gratuit à utiliser pour les 14 premiers jours, vous pouvez voir la transformation dans votre propre agence en temps réel sans fournir d'informations de carte de crédit. **[Démo Gratuite](/#demo)** — notre équipe vous guidera à travers une configuration adaptée spécifiquement à votre agence.
 
 ---
 

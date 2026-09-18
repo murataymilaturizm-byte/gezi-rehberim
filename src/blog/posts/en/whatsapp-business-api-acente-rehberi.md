@@ -170,7 +170,7 @@ Managing all the processes described in this guide one by one, finding the right
 
 Turzz AI was designed to fill exactly this gap. A platform built on officially approved WhatsApp Business API infrastructure, offering AI-powered customer service in 7 languages for travel agencies. From Meta account verification to tour catalog upload, from automated templates to staff training — our team accompanies you through every process one-on-one.
 
-Active in 24 hours, free to use for the first 14 days, you can see the transformation in your own agency in real time without providing credit card information. **[Request a Free Demo](/demo)** — our team will walk you through a setup tailored specifically to your agency.
+Active in 24 hours, free to use for the first 14 days, you can see the transformation in your own agency in real time without providing credit card information. **[Request a Free Demo](/#demo)** — our team will walk you through a setup tailored specifically to your agency.
 
 ---
 

@@ -169,7 +169,7 @@ Un programme de fidélisation client ne doit pas être traité comme une promoti
 
 Les clients fidèles font plus que générer des revenus fiables. Ils recommandent à leurs amis, résistent à la pression concurrentielle sur les prix et fournissent des retours honnêtes qui vous aident à vous améliorer. L'effet cumulatif des petits gestes constants — se souvenir du nom d'un client, faire un suivi après un voyage, célébrer son anniversaire — est un client qui n'envisage pas facilement d'aller ailleurs.
 
-Si Vous êtes prêt à mettre ces stratégies en pratique, les outils d'automatisation WhatsApp et de communication client de Turzz AI peuvent Vous aider à scaler ces points de contact personnels sans alourdir la charge de travail de votre équipe. [Démo Gratuite](/demo)
+Si Vous êtes prêt à mettre ces stratégies en pratique, les outils d'automatisation WhatsApp et de communication client de Turzz AI peuvent Vous aider à scaler ces points de contact personnels sans alourdir la charge de travail de votre équipe. [Démo Gratuite](/#demo)
 
 ---
 

@@ -124,7 +124,7 @@ Sorunun cevabı, **tur sektörüne özel** geliştirilen hazır SaaS çözümler
 - Yazılım güncellemelerini siz değil provider yapar
 - Başlangıç maliyeti birkaç yüz dolar, custom geliştirme değil
 
-Turzz AI bu kategoride Türkiye pazarı için özel geliştirilmiştir: 7 dil, AI konuşma motoru, gerçek zamanlı kontenjan kontrolü ve 24 saatte kurulum. No-code araçların aylar içinde yapamadığını bir günde yapar. [Ücretsiz demo için tıklayın →](/demo)
+Turzz AI bu kategoride Türkiye pazarı için özel geliştirilmiştir: 7 dil, AI konuşma motoru, gerçek zamanlı kontenjan kontrolü ve 24 saatte kurulum. No-code araçların aylar içinde yapamadığını bir günde yapar. [Ücretsiz demo için tıklayın →](/#demo)
 
 ## Özet: No-Code Neyi Yapabilir, Neyi Yapamaz?
 

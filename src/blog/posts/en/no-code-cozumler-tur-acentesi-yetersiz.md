@@ -124,7 +124,7 @@ The answer is **purpose-built SaaS software** designed specifically for the trav
 - Receive updates and improvements from the provider, not from you
 - Cost a fraction of custom development at the same or greater capability
 
-Turzz AI was developed specifically for this use case in the travel sector: 7 languages, AI-powered conversation engine, real-time quota management, and 24-hour deployment. It delivers what months of no-code experimentation cannot. [Start a free demo →](/demo)
+Turzz AI was developed specifically for this use case in the travel sector: 7 languages, AI-powered conversation engine, real-time quota management, and 24-hour deployment. It delivers what months of no-code experimentation cannot. [Start a free demo →](/#demo)
 
 ## Summary: What No-Code Can and Can't Do
 

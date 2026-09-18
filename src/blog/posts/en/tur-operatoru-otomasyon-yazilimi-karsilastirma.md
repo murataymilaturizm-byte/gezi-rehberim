@@ -172,7 +172,7 @@ In the three categories described in this guide, Turzz AI is a platform in the "
 
 If your agency's priority is winning customers via WhatsApp, responding fast, expanding to multilingual markets, and improving operational efficiency — Turzz AI may be your ideal choice. If you need classic ERP modules (extensive accounting, B2B sub-agent panel, XML hotel integrations), we connect those via third-party integrations.
 
-Active in 24 hours, first 14 days free, our team accompanies you through setup one-on-one. **[Request a Free Demo](/demo)** and let's evaluate together whether it fits your agency's structure.
+Active in 24 hours, first 14 days free, our team accompanies you through setup one-on-one. **[Request a Free Demo](/#demo)** and let's evaluate together whether it fits your agency's structure.
 
 ---
 

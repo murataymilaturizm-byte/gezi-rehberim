@@ -10,6 +10,10 @@
 import { readFileSync, readdirSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+// 2026-09-18: dil-mevcudiyeti kuralı TEK KAYNAK (bkz. scripts/blog-langs.mjs).
+// Eskiden bu dosya kendi existsSync kontrolünü yapıyordu; Blog.tsx ise hiç
+// kontrol etmeden TR-fallback linki üretiyordu → 60 ölü /ru,/ar URL'i.
+import { availableLangsForFile, langsWithPosts } from './blog-langs.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -91,10 +95,8 @@ function getBlogPosts() {
       continue;
     }
 
-    // Hangi dillerde bu yazı mevcut?
-    const availableLangs = ALL_LANGS.filter(lang =>
-      existsSync(join(ROOT, `src/blog/posts/${lang}/${file}`))
-    );
+    // Hangi dillerde bu yazı mevcut? (TEK KAYNAK — blog-langs.mjs)
+    const availableLangs = availableLangsForFile(ROOT, file);
 
     posts.push({
       slug:           fm.slug,
@@ -137,8 +139,14 @@ function generateSitemap() {
   }
 
   // ── Blog index sayfaları (her dil için) ──
-  xml += `\n  <!-- Blog index sayfaları (7 dil) -->\n`;
-  for (const lang of ALL_LANGS) {
+  // 2026-09-18: yalnız KENDİ yazısı olan diller. ru/ar'da hiç .md yok →
+  // liste tamamen TR-fallback; indekslenecek özgün içerik olmadığı için
+  // sitemap'e girmez (Blog.tsx de o sayfalara noindex basar).
+  const indexLangs = langsWithPosts(ROOT);
+  xml += `
+  <!-- Blog index sayfaları (${indexLangs.length} dil) -->
+`;
+  for (const lang of indexLangs) {
     xml += urlEntry({
       loc:        buildLangUrl(lang),
       lastmod:    TODAY,
@@ -185,7 +193,7 @@ function generateSitemap() {
 
   const langStats = ALL_LANGS.map(l => `${l}:${posts.filter(p => p.availableLangs.includes(l)).length}`).join(' ');
   console.log(`✅ Sitemap oluşturuldu:`);
-  console.log(`   ${STATIC_PAGES.length} statik + ${ALL_LANGS.length} blog-index + ${totalEntries} blog URL girişi`);
+  console.log(`   ${STATIC_PAGES.length} statik + ${indexLangs.length} blog-index + ${totalEntries} blog URL girişi`);
   console.log(`   Dil dağılımı: ${langStats}`);
   console.log(`   → ${outPath}`);
 }

@@ -178,7 +178,7 @@ Türk seyahat sektörü için tasarlanan Turzz AI, bu yazıda anlatılan tüm av
 
 Kurulum 24 saat sürüyor. Aylık abonelik modeliyle çalışıyor — başlangıç paketi 3.999 TL/ay. IT ekibi gerektirmiyor. 14 gün ücretsiz deneme süresinde sistemin acentenize ne kadar uygun olduğunu birebir görebilirsiniz.
 
-Acentenizin satış potansiyelini bir üst seviyeye taşımak için **[Ücretsiz Demo](/demo)** talep edin. Ekibimiz size acentenize özel kurulumu birebir gösterecek ve ilk 30 günlük getiri projeksiyonunu birlikte çıkaracak.
+Acentenizin satış potansiyelini bir üst seviyeye taşımak için **[Ücretsiz Demo](/#demo)** talep edin. Ekibimiz size acentenize özel kurulumu birebir gösterecek ve ilk 30 günlük getiri projeksiyonunu birlikte çıkaracak.
 
 ---
 

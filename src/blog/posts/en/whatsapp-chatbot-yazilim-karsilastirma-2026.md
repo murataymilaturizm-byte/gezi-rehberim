@@ -201,7 +201,7 @@ If these conditions are true, no-code workflows or general-purpose chatbot platf
 
 Most agency owners decide to "set up a chatbot" and then spend months lost in platform comparisons. The real question is not which tool — it is which solution: **Which system can serve my customers, in their language, with my specific tour inventory, 24 hours a day?**
 
-The answer to that question determines the right choice. If that answer is "multilingual, AI-powered, capable of managing the full tour booking flow end-to-end" — Turzz AI delivers this capability within 24–48 hours, without requiring a technical team. [Start a free demo →](/demo)
+The answer to that question determines the right choice. If that answer is "multilingual, AI-powered, capable of managing the full tour booking flow end-to-end" — Turzz AI delivers this capability within 24–48 hours, without requiring a technical team. [Start a free demo →](/#demo)
 
 ---
 

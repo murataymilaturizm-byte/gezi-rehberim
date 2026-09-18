@@ -175,4 +175,4 @@ Bu sonuç büyük bütçe ya da profesyonel ekip gerektirmedi. Telefon kamerası
 
 Eskiden bir turizm acentesinin en değerli pazarlama varlığı vitrin görünürlüğü ya da gazete ilanıydı. Bugün bu varlığın yerini sosyal medya içerik kanalı almıştır. Instagram Reels ve TikTok, seyahat acentelerinin en geniş kitleye en düşük maliyetle ulaşmasını sağlayan platformlardır.
 
-Video içerik stratejisini oluşturmanın yanı sıra, gelen sorguları hızla karşılamak ve müşteriyi rezervasyona taşımak da kritik. Turzz AI'ın WhatsApp otomasyonu, sosyal medyadan gelen potansiyel müşterileri anında karşılayarak konuşmayı satışa dönüştürmenizi sağlar. [Ücretsiz demo için tıklayın →](/demo)
+Video içerik stratejisini oluşturmanın yanı sıra, gelen sorguları hızla karşılamak ve müşteriyi rezervasyona taşımak da kritik. Turzz AI'ın WhatsApp otomasyonu, sosyal medyadan gelen potansiyel müşterileri anında karşılayarak konuşmayı satışa dönüştürmenizi sağlar. [Ücretsiz demo için tıklayın →](/#demo)

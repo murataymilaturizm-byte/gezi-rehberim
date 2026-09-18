@@ -155,7 +155,7 @@ Une agence boutique basée à Antalya a décidé en 2022 de se concentrer spéci
 
 Le segment du tourisme halal croît plus vite que le marché du voyage global, et les agences qui établissent aujourd'hui une véritable expertise dans cet espace construisent des avantages concurrentiels durables. Mais entrer sur ce marché ne consiste pas simplement à obtenir un certificat — cela exige de concevoir l'expérience client complète avec un respect authentique des valeurs religieuses et culturelles.
 
-Exécuter cette stratégie nécessite une communication client multilingue, une **automatisation tour-opérateur** via WhatsApp et un suivi personnalisé à grande échelle. Le chatbot multilingue et le système de gestion WhatsApp de Turzz AI — supportant l'arabe parmi 7 langues — est particulièrement adapté aux agences poursuivant une croissance dans le segment du tourisme halal. [Démo Gratuite](/demo)
+Exécuter cette stratégie nécessite une communication client multilingue, une **automatisation tour-opérateur** via WhatsApp et un suivi personnalisé à grande échelle. Le chatbot multilingue et le système de gestion WhatsApp de Turzz AI — supportant l'arabe parmi 7 langues — est particulièrement adapté aux agences poursuivant une croissance dans le segment du tourisme halal. [Démo Gratuite](/#demo)
 
 ---
 

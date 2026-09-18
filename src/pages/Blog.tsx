@@ -6,7 +6,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, AlertCircle, ArrowRight, BookOpen } from "lucide-react";
-import { getAllPosts, getAllCategories, type BlogPost } from "@/lib/blog";
+import { getAllPosts, getAllCategories, postHref, hasOwnPosts, type BlogPost } from "@/lib/blog";
 import { BlogCoverImage } from "@/components/BlogCoverImage";
 
 const schema = {
@@ -111,7 +111,7 @@ function BlogCard({ post, lang }: { post: BlogPost; lang: string }) {
 
   return (
     <Link
-      to={buildBlogUrl(lang, post.slug)}
+      to={postHref(post.slug, lang)}
       aria-label={post.title}
       className="block group h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-lg"
     >
@@ -144,7 +144,7 @@ function FeaturedCard({ post, lang }: { post: BlogPost; lang: string }) {
 
   return (
     <Link
-      to={buildBlogUrl(lang, post.slug)}
+      to={postHref(post.slug, lang)}
       aria-label={post.title}
       className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-xl"
     >
@@ -180,7 +180,7 @@ function CompactCard({ post, lang }: { post: BlogPost; lang: string }) {
 
   return (
     <Link
-      to={buildBlogUrl(lang, post.slug)}
+      to={postHref(post.slug, lang)}
       aria-label={post.title}
       className="block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-lg"
     >
@@ -205,7 +205,7 @@ function SeriesBand({ lang }: { lang: string }) {
   const txt = SERIES_BAND[lang] || SERIES_BAND.tr;
   return (
     <Link
-      to={buildBlogUrl(lang, SERIES_START_SLUG)}
+      to={postHref(SERIES_START_SLUG, lang)}
       aria-label={txt.title}
       className="block group mb-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded-xl"
     >
@@ -271,6 +271,9 @@ export default function Blog() {
         description="Seyahat acenteleri için WhatsApp chatbot rehberleri, AI turizm teknolojisi, dijital dönüşüm ipuçları. Turzz AI Blog."
         keywords="whatsapp chatbot blog, turizm teknolojisi, seyahat acentesi dijital dönüşüm, tur yazılımı rehber"
         canonical={buildBlogUrl(lang)}
+        // 2026-09-18: bu dilde HİÇ kendi yazısı yoksa (ru/ar) liste tamamen
+        // TR-fallback'tir — indekslenecek özgün içerik yok.
+        noindex={!hasOwnPosts(lang)}
         schema={schema}
       />
 

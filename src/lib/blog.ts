@@ -214,6 +214,32 @@ export function getAllCategories(lang = "tr"): string[] {
 }
 
 /** Returns all langs that have a post for the given slug */
+/**
+ * TEK KAYNAK — bir yazının HANGİ DİLDEKİ URL'ine link verilmeli.
+ *
+ * KÖK (2026-09-18, GSC teşhisi): blog listesi ru/ar gibi çevirisi OLMAYAN
+ * dillerde TR-fallback ile 30 yazıyı listeliyor ve her birine /ru/blog/{slug}
+ * linki veriyordu. O 60 URL prerender EDİLMİYOR, sitemap'te YOK → canlıda
+ * HTTP 200 + ana sayfa canonical'ı dönüyordu (soft 404 + duplicate canonical).
+ *
+ * Kural: link YALNIZ .md dosyası GERÇEKTEN var olan dile verilir. Çeviri yoksa
+ * yazının kendi dilindeki (TR) URL'ine düşülür — kullanıcı çalışan sayfaya iner,
+ * Google ölü URL görmez. Aynı kuralın sitemap karşılığı:
+ * scripts/generate-sitemap.mjs (availableLangs) — ikisi scripts/blog-langs.mjs
+ * ile aynı dizin gerçeğini okur; test_behavioral.ts ikisinin aynı kaldığını kilitler.
+ */
+export function postHref(slug: string, uiLang: string): string {
+  const mevcut = getAvailableLangsForSlug(slug);
+  const hedef = mevcut.includes(uiLang) ? uiLang : (mevcut.includes("tr") ? "tr" : mevcut[0]);
+  if (!hedef) return "/blog";
+  return hedef === "tr" ? `/blog/${slug}` : `/${hedef}/blog/${slug}`;
+}
+
+/** Bu dilde HİÇ kendi yazısı var mı (yoksa liste tamamen TR-fallback demektir). */
+export function hasOwnPosts(lang: string): boolean {
+  return Object.keys(LANG_MODULES[lang] ?? {}).length > 0;
+}
+
 export function getAvailableLangsForSlug(slug: string): string[] {
   return Object.keys(LANG_MODULES).filter((lang) => {
     const key = `../blog/posts/${lang}/${slug}.md`;

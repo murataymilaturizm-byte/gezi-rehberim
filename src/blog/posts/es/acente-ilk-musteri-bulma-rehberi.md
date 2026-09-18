@@ -145,4 +145,4 @@ Los patrones visibles en sus primeros 100 clientes definirán su estrategia de c
 
 Sus primeros 100 clientes son un viaje, no un objetivo que se alcanza de un solo movimiento. Cada cliente se construye sobre el anterior: los primeros 10 aportan prueba social, los primeros 30 maduran sus operaciones, los primeros 100 establecen su plataforma de crecimiento.
 
-Para gestionar este viaje de forma más eficiente, el sistema de automatización de WhatsApp de Turzz AI le ayuda a responder rápidamente a las nuevas consultas, automatizar las secuencias de seguimiento y mantener los datos de los clientes organizados, para que pueda centrarse en el verdadero negocio de planificar grandes viajes. [Demo Gratis](/demo)
+Para gestionar este viaje de forma más eficiente, el sistema de automatización de WhatsApp de Turzz AI le ayuda a responder rápidamente a las nuevas consultas, automatizar las secuencias de seguimiento y mantener los datos de los clientes organizados, para que pueda centrarse en el verdadero negocio de planificar grandes viajes. [Demo Gratis](/#demo)

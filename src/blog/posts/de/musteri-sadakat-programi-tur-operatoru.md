@@ -169,7 +169,7 @@ Ein Kundenbindungsprogramm sollte nicht als kurzfristige Promotion betrachtet we
 
 Stammkunden tun mehr als zuverlässige Einnahmen zu generieren. Sie empfehlen Freunde, widerstehen Wettbewerbspreisdruck und geben ehrliches Feedback, das Ihnen bei der Verbesserung hilft. Die kumulative Wirkung kleiner, konsequenter Gesten – den Namen eines Kunden erinnern, nach einer Reise nachfassen, seinen Geburtstag feiern – führt zu einem Kunden, der nicht leicht in Erwägung zieht, woanders zu buchen.
 
-Wenn Sie bereit sind, diese Strategien in die Praxis umzusetzen, helfen Ihnen die WhatsApp-Automatisierungs- und Kundenkommunikations-Tools von Turzz AI, diese persönlichen Touchpoints zu skalieren, ohne das manuelle Arbeitsvolumen Ihres Teams zu erhöhen. [Kostenlose Demo starten →](/demo)
+Wenn Sie bereit sind, diese Strategien in die Praxis umzusetzen, helfen Ihnen die WhatsApp-Automatisierungs- und Kundenkommunikations-Tools von Turzz AI, diese persönlichen Touchpoints zu skalieren, ohne das manuelle Arbeitsvolumen Ihres Teams zu erhöhen. [Kostenlose Demo starten →](/#demo)
 
 ---
 

@@ -213,7 +213,7 @@ Turzz AI, designed for travel agencies, supports exactly this hybrid model. AI r
 
 You can be active in 24 hours, try the first 14 days free, and see the practical difference between manual and AI approaches with real customers in your own agency. Our team accompanies you through the pilot, and we define success criteria together.
 
-Request a **[Free Demo](/demo)** — let's see the difference between manual and AI in concrete numbers. After the first week, you'll be able to clearly decide which approach fits your agency best.
+Request a **[Free Demo](/#demo)** — let's see the difference between manual and AI in concrete numbers. After the first week, you'll be able to clearly decide which approach fits your agency best.
 
 ---
 

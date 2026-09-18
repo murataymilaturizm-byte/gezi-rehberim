@@ -160,7 +160,7 @@ Es läuft auf WhatsApp Business API als vollständige Tour Operator Software, di
 
 Während der 14-tägigen kostenlosen Testphase können Sie aus erster Hand sehen, wie gut das System zu Ihrer Agentur passt. Während der Einrichtung lädt unser Team Ihren Tourkatalog, konfiguriert kulturelle Anpassungen und lehrt Ihren Mitarbeitern das System.
 
-Um die internationale Wettbewerbsfähigkeit Ihrer Incoming-Agentur auf die nächste Stufe zu heben, **[fordern Sie eine kostenlose Demo an](/demo)**. Unser Team führt Sie durch eine agenturspezifische Einrichtung und hilft Ihnen zu planen, welche Sprachen Sie für welche Märkte bedienen wollen.
+Um die internationale Wettbewerbsfähigkeit Ihrer Incoming-Agentur auf die nächste Stufe zu heben, **[fordern Sie eine kostenlose Demo an](/#demo)**. Unser Team führt Sie durch eine agenturspezifische Einrichtung und hilft Ihnen zu planen, welche Sprachen Sie für welche Märkte bedienen wollen.
 
 ---
 

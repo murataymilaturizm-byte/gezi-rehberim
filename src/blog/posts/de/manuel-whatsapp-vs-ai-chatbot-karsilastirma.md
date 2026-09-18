@@ -213,7 +213,7 @@ Turzz AI, entwickelt für Reisebüros, unterstützt genau dieses hybride Modell.
 
 Sie können in 24 Stunden aktiv sein, die ersten 14 Tage kostenlos testen und den praktischen Unterschied zwischen manuellem und KI-Ansatz mit echten Kunden in Ihrer eigenen Agentur erleben. Unser Team begleitet Sie durch den Pilot, und wir definieren gemeinsam Erfolgskriterien.
 
-Fordern Sie eine **[kostenlose Demo](/demo)** an – lassen Sie uns den Unterschied zwischen manuell und KI in konkreten Zahlen betrachten. Nach der ersten Woche können Sie klar entscheiden, welcher Ansatz am besten zu Ihrer Agentur passt.
+Fordern Sie eine **[kostenlose Demo](/#demo)** an – lassen Sie uns den Unterschied zwischen manuell und KI in konkreten Zahlen betrachten. Nach der ersten Woche können Sie klar entscheiden, welcher Ansatz am besten zu Ihrer Agentur passt.
 
 ---
 

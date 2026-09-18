@@ -170,7 +170,7 @@ Alle in diesem Leitfaden beschriebenen Prozesse einzeln zu verwalten, den richti
 
 Turzz AI wurde entwickelt, um genau diese Lücke zu füllen. Eine Plattform, die auf offiziell zugelassener WhatsApp Business API-Infrastruktur aufgebaut ist und KI-gestützten **mehrsprachigen Kundenservice** in 7 Sprachen für Reisebüros bietet. Von der Meta-Kontoverifizierung bis zum Tourenkatalog-Upload, von automatisierten Templates bis zur Mitarbeiterschulung – unser Team begleitet Sie durch jeden Prozess persönlich.
 
-Aktiv in 24 Stunden, erste 14 Tage kostenlos, ohne Angabe von Kreditkarteninformationen können Sie die Transformation in Ihrer eigenen Agentur in Echtzeit erleben. **[Demo anfordern](/demo)** – unser Team führt Sie durch eine speziell auf Ihre Agentur zugeschnittene Einrichtung.
+Aktiv in 24 Stunden, erste 14 Tage kostenlos, ohne Angabe von Kreditkarteninformationen können Sie die Transformation in Ihrer eigenen Agentur in Echtzeit erleben. **[Demo anfordern](/#demo)** – unser Team führt Sie durch eine speziell auf Ihre Agentur zugeschnittene Einrichtung.
 
 ---
 

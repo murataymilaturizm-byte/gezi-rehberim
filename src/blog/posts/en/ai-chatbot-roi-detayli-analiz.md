@@ -216,7 +216,7 @@ When you evaluate an AI chatbot investment as "how much I'll pay per month," the
 
 Day 30: First extra bookings captured. Day 60: Staff efficiency measurably improves. Day 90: The system runs at full capacity and has paid for itself multiple times over.
 
-Starting this process for your agency is possible with a free demo. [Start a free demo →](/demo)
+Starting this process for your agency is possible with a free demo. [Start a free demo →](/#demo)
 
 ---
 

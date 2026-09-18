@@ -160,7 +160,7 @@ Funciona con WhatsApp Business API, la configuración se completa en 24 horas y 
 
 Durante los 14 días de prueba gratuita, puede ver de primera mano qué tan bien se adapta el sistema a su agencia. Durante la configuración, nuestro equipo carga su catálogo de tours, configura las adaptaciones culturales y enseña el sistema a su personal.
 
-Para llevar la competitividad internacional de su agencia receptiva al siguiente nivel, **[Solicite una Demo Gratis](/demo)**. Nuestro equipo le guiará a través de una configuración específica para su agencia y le ayudará a planificar con qué idiomas atender a qué mercados.
+Para llevar la competitividad internacional de su agencia receptiva al siguiente nivel, **[Solicite una Demo Gratis](/#demo)**. Nuestro equipo le guiará a través de una configuración específica para su agencia y le ayudará a planificar con qué idiomas atender a qué mercados.
 
 ---
 
