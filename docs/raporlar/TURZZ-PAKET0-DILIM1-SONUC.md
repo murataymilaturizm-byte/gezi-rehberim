@@ -247,8 +247,36 @@ Koşum özeti: önce `FAILED | 0 passed | 8 failed` → sonra `ok | 20 passed | 
 ```
 
 ### Push / deploy
-- **Push: yapılmadı.** Yerel commit'ler: `f4036d2` (Dilim-1) + son-kapı commit'i (= bu raporu içeren commit; hash için `git log -1` — raporun içine kendi hash'i yazılamaz). `main` origin'in 2 commit önünde; uzak dalda bu commit'ler YOK.
-- **Deploy: yapılmadı** (`demo-chat` ve `whatsapp-webhook` deploy edilmedi; canlı bu değişiklikleri içermiyor).
+- **Push: yapıldı** (ürün sahibi onayı, 2026-10-07): `f4036d2` + `5e53408` → origin/main. Detay §5c.
+- **Deploy: yapıldı** — demo-chat v271, whatsapp-webhook v292 (§5c).
+
+## 5c. Deploy (2026-10-07, ürün sahibi onayı sonrası)
+
+**Ön koşul — `npm test` (push öncesi tekrar):**
+```
+━━━ Katman-1 suite ━━━  1506 ✓ / 0 ✗        ━━━ Katman-2 harness ━━━  ok | 20 passed | 0 failed
+━━━ SONUÇ ━━━  suite=✓  harness=✓            EXIT=0
+```
+
+**Push (origin/main):** `02f0981..5e53408`
+- `f4036d2` — fix(bot): PAKET-0 Dilim-1 — tarih listesi TEK primitif (A1-A4) + Katman-2 harness (H1)
+- `5e53408` — fix(bot): PAKET-0 Dilim-1 son kapı — listedDateIds/pendingPax tur-değişimi, iptal ve yeni-rezervasyon reset'inde temizlenir
+
+**Deploy (`supabase functions deploy`, proje `yaxjygtjtjmzslajuctk`, CLI v2.98.1):**
+| Fonksiyon | Sonuç | Versiyon | UPDATED_AT (UTC) |
+|---|---|---|---|
+| `demo-chat` | `Deployed Functions on project yaxjygtjtjmzslajuctk: demo-chat` | **271** | 2026-10-07 14:11:44 |
+| `whatsapp-webhook` | `Deployed Functions on project yaxjygtjtjmzslajuctk: whatsapp-webhook` | **292** | 2026-10-07 14:11:49 |
+
+(`supabase functions list` → ikisi de `ACTIVE`.)
+
+**Canlı duman testi — demo-chat, TR tek mesaj "merhaba"** (rezervasyon YOK, DB'ye test kaydı YOK; yeni `sessionId`, anon key):
+```
+HTTP 200 (12147 ms) session=smoke-d1-1791382349932
+response: "Merhaba! 😊 \n\nSizi Demo Turizm'de görmekten mutluluk duyuyorum! ✨\n\nSize hangi konuda yardımcı olabilirim? İsterseniz turlarımıza göz atabilir, isterseniz merak ettiğiniz bir şeyi sorabilirsiniz."
+state: stage=BROWSING step=undefined lang=tr dateId=undefined listed=undefined pendingPax=undefined
+```
+Sonuç: 200 + normal karşılama; yeni alanlar (`listedDateIds`/`pendingPax`) boş; bundle'da `date-list.ts`/`tour-dates.ts` import'ları çözüldü (aksi hâlde 500 olurdu). `whatsapp-webhook` için canlı mesaj gönderilmedi (gerçek WhatsApp numarası gerekir); aynı shared kodu bundle'lıyor, deploy `ACTIVE`.
 
 ## 6. Ürün sahibine sade özet
 Kontenjan dolunca ya da kişi sayısı sığmayınca bot'un bastığı tarih listesinden "2" diyen müşteriye artık **listedeki** tarih seçiliyor (eskiden yanlış tarihle rezervasyon veya sonsuz döngü vardı); bu dört dilde gerçek bot koduyla önce kırmızı, sonra yeşil kanıtlandı. Tarih listeleri yedi yerde ayrı ayrı elle yazılırken tek bir yere indirildi, tarih/para birimi her dilde doğru formatlanıyor ve "ilk tarih" varsayımı veritabanı sırasına bağlı olmaktan çıktı. Ayrıca bot'un ana işleyicisini gerçekten çalıştıran bir test düzeneği repoya girdi ve `npm test` tek komutla her şeyi koşuyor — Deno yoksa sessizce geçmek yerine hata veriyor.
