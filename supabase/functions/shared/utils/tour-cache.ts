@@ -13,6 +13,8 @@
 // TODO (AŞAMA 3): Redis distributed cache — 50+ acente / yüksek trafik için.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// A4 (2026-10-07): tarih sıralaması TEK yerde — _refreshQuota çıkışı.
+import { sortTourDates } from "./tour-dates.ts";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -116,7 +118,7 @@ async function _refreshQuota(supabase: any, tours: any[]): Promise<any[]> {
   if (tours.length === 0) return tours;
 
   const allDateIds = tours.flatMap((t: any) => (t.dates || []).map((d: any) => d.id));
-  if (allDateIds.length === 0) return tours;
+  if (allDateIds.length === 0) return sortTourDates(tours);
 
   const { data: regData } = await supabase
     .from("registrations")
@@ -129,7 +131,9 @@ async function _refreshQuota(supabase: any, tours: any[]): Promise<any[]> {
     soldMap[r.tour_date_id] = (soldMap[r.tour_date_id] || 0) + r.pax;
   }
 
-  return tours.map((tour: any) => ({
+  // A4: PostgREST embed sırası tanımsız → departure_date ASC TEK yerde (sortTourDates).
+  // Tüm tüketiciler (liste basımı, representativeDate, Blok 8 global fallback) bu sıraya güvenir.
+  return sortTourDates(tours.map((tour: any) => ({
     ...tour,
     dates: (tour.dates || []).map((d: any) => ({
       ...d,
@@ -139,7 +143,7 @@ async function _refreshQuota(supabase: any, tours: any[]): Promise<any[]> {
       // olarak müşteriye sızıyordu. 0'a clamp = DOLU semantiği (H-β/H-α doğru işler).
       remaining_quota: Math.max(0, d.quota - (soldMap[d.id] || 0)),
     })),
-  }));
+  })));
 }
 
 // ─── Invalidation ─────────────────────────────────────────────────────────────

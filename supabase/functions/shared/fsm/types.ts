@@ -135,6 +135,15 @@ export interface ConversationContext {
   // set edilebilir → pendingCancelConfirm (COMPLETED) ile stage-ayrımıyla mutually-exclusive.
   pendingFieldUpdateConfirm?: { field: string; value: any; selectedDate?: string };
 
+  // 2026-10-07 PAKET-0 Dilim-1 (A1/A2): en son basılan tarih listesinin id sırası.
+  // buildDateList yazar, info-extractor Blok 8 numara-seçimini ÖNCE buradan çözer
+  // (liste yokken kronolojik global sıra). dateId yazılınca handler temizler.
+  listedDateIds?: string[];
+  // H-pax: kişi sayısı seçili tarihin kontenjanını aşınca tarih sıfırlanır, adım
+  // waiting_for_date'e çekilir; pax NİYETİ burada bekler, uygun tarih seçilince
+  // reservationInfo.paxAdult'a uygulanır (kullanıcı pax'ı yeniden yazmaz).
+  pendingPax?: number;
+
   // 2026-07-26 CİLA-3: dil-yazma audit ring'i (son 12). context.language'a yazan HER
   // nokta "<mc>:<kaynak>:<eski>><yeni>:<L|0>" kaydı düşer (_traceLang). Non-deterministik
   // dil-flip teşhisi + kalıcı gözlemlenebilirlik. Davranışa etkisi YOK.

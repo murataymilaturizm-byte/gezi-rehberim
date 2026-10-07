@@ -9,6 +9,7 @@ import { findTourById } from "../fsm/tour-matcher.ts";
 import { getNextExpectedInput } from "../fsm/state-machine.ts";
 import { isNluFullNameNegationLeak, isNluFullNameTourLeak, isNluFullNameGiveUpLeak } from "./nlu-validation.ts";
 import { hasQuotaForPax, getQuotaRemaining } from "./quota-check.ts";
+import { resolveListedDate } from "./date-list.ts";
 import { isValidPax } from "../utils/validation.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 import { AVAILABILITY_RE } from "../constants/availability-words.ts";
@@ -574,12 +575,15 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   // yazıldı → kullanıcı yanlış tarihle onayladı. Blok 6 pax'ta aynı fix
   // 2026-06-19'da yapılmıştı; tarih tarafı atlanmıştı. Artık SADECE mesajın
   // TAMAMI rakamsa liste seçimi sayılır ("1" ✓, "1 kişi" ✗).
+  // 2026-10-07 PAKET-0 Dilim-1 (A1): numara ÖNCE basılan listeye (context.listedDateIds)
+  // göre çözülür; liste yoksa kronolojik global sıra. Eski hâl yalnız global
+  // `tour.dates[n-1]` biliyordu → filtrelenmiş listeden "2" yanlış tarihi seçiyordu.
   if (!extractedInfo.dateId && context.currentTour && (expectedInput === "date" || expectedInput === "date_selection") && /^\d+$/.test(message.trim())) {
     const n = parseInt(message.trim());
     if (!isNaN(n) && n >= 1) {
       const tour = findTourById(context.currentTour.id, tours);
-      if (tour?.dates && n <= tour.dates.length) {
-        const candidate = tour.dates[n - 1];
+      const candidate: any = tour?.dates ? resolveListedDate(n, tour.dates as any[], context.listedDateIds) : undefined;
+      if (candidate) {
         if (hasQuotaForPax(candidate, 1)) {
           extractedInfo.selectedDate = candidate.departure_date;
           extractedInfo.dateId = candidate.id;

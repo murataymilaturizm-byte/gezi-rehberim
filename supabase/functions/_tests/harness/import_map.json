@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "../../shared/fsm/nlu.ts": "./stubs/nlu.ts",
+    "../../shared/services/ai.ts": "./stubs/ai.ts",
+    "../../_shared/error-sink.ts": "./stubs/error-sink.ts"
+  }
+}

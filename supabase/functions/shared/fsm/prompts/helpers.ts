@@ -1,6 +1,8 @@
 // Helper functions for formatting prompts - TONE-AWARE VERSION
 import { formatDateForLanguage } from "../localization.ts";
 import { formatPriceSync } from "../../utils/currency-display.ts";
+// A4 (2026-10-07): "ilk tarih" = kronolojik ilk kontenjanlı+fiyatlı tarih (tek kaynak).
+import { representativeDate } from "../../utils/tour-dates.ts";
 
 export function formatDateHeader(language: string): string {
   const now = new Date();
@@ -50,7 +52,7 @@ function formatToursListStandard(tours: any[], language: string): string {
 
   return tours
     .map((tour, idx) => {
-      const firstDate = tour.dates?.[0];
+      const firstDate = representativeDate(tour);
       const price = firstDate?.price_adult;
       const rawDate = firstDate?.departure_date;
       const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
@@ -81,7 +83,7 @@ function formatToursListCorporate(tours: any[], language: string): string {
 
   return tours
     .map((tour, idx) => {
-      const firstDate = tour.dates?.[0];
+      const firstDate = representativeDate(tour);
       const price = firstDate?.price_adult;
       const rawDate = firstDate?.departure_date;
       const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
@@ -101,7 +103,7 @@ function formatToursListDynamic(tours: any[], language: string): string {
 
   return tours
     .map((tour, idx) => {
-      const firstDate = tour.dates?.[0];
+      const firstDate = representativeDate(tour);
       const price = firstDate?.price_adult;
       const rawDate = firstDate?.departure_date;
       const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
@@ -124,7 +126,7 @@ function formatToursListPremium(tours: any[], language: string): string {
 
   return tours
     .map((tour) => {
-      const firstDate = tour.dates?.[0];
+      const firstDate = representativeDate(tour);
       const price = firstDate?.price_adult;
       const rawDate = firstDate?.departure_date;
       const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
@@ -210,7 +212,7 @@ export function formatTourDetails(
   // 05:00, vb.) ama prompt'a girmediği için LLM saat uyduruyor + tutarsız
   // davranıyordu. Artık deterministik veri prompt'ta → halüsinasyon kapısı kapalı.
   const _today = new Date().toISOString().slice(0, 10);
-  const firstDate = (tour.dates || []).filter((d: any) => !d?.departure_date || d.departure_date >= _today)[0];
+  const firstDate = representativeDate({ dates: (tour.dates || []).filter((d: any) => !d?.departure_date || d.departure_date >= _today) });
   const price = firstDate?.price_adult;
   const meetTime = formatTime(tour.toplanma_saati);
 

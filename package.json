@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "generate-sitemap": "node scripts/generate-sitemap.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "smoke": "node scripts/smoke_pages.cjs"
+    "smoke": "node scripts/smoke_pages.cjs",
+    "test": "node scripts/test_all.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

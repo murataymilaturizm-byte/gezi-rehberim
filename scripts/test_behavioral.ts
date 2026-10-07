@@ -6992,4 +6992,64 @@ console.log("\nINDEKSLEME-1 blog dil-mevcudiyeti tek kaynak");
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// PAKET-0 Dilim-1 (2026-10-07) — TARİH LİSTESİ TEK PRİMİTİF muhafızı (A1/A2/A3/A4)
+// Denetim TURZZ-FABLE-DENETIM.md §8 Grup A: handler'da 7 yer kendi listesini
+// 3 farklı indeks semantiğiyle basıyordu; seçim (Blok 8) yalnız global biliyordu.
+// (a) STATİK: handler'da elle `.map((d, i) => … departure_date` liste şablonu KALMADI.
+// (b) STATİK: 7 üretici buildDateList'e bağlı.
+// (c) DAVRANIŞSAL: resolveListedDate / sortTourDates / representativeDate gerçek kod.
+// Uçtan-uca (handler) kanıtı: supabase/functions/_tests/harness/date_list_test.ts (npm test).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\nPAKET-0 D1 tarih-listesi tek-primitif muhafizi");
+{
+  const _pm = await Deno.readTextFile("supabase/functions/shared/handlers/process-message.ts");
+  const _handList = /\.map\(\(\s*d\s*:\s*any\s*,\s*(?:i|idx)\s*:\s*number\s*\)\s*=>[\s\S]{0,400}?departure_date/;
+  assert("A1.STATIK handler'da elle tarih-liste sablonu yok", !_handList.test(_pm));
+  const _calls = (_pm.match(/buildDateList\(/g) || []).length;
+  assert(`A1.STATIK buildDateList cagri sayisi >= 7 (bulunan ${_calls})`, _calls >= 7);
+  assert("A4.STATIK handler'da dates[0] temsili-fiyat varsayimi yok",
+    !/dates\?\.\[0\]\??\.|dates\[0\]\./.test(_pm));
+  assert("A4.STATIK tour-cache cikisi sortTourDates'ten geciyor",
+    /return sortTourDates\(tours\.map/.test(await Deno.readTextFile("supabase/functions/shared/utils/tour-cache.ts")));
+
+  const { resolveListedDate, buildDateList } = await import("../supabase/functions/shared/services/date-list.ts");
+  const { sortTourDates, representativeDate } = await import("../supabase/functions/shared/utils/tour-dates.ts");
+  const D = (id: string, departure_date: string, remaining_quota: number, price_adult: number | null = 1000) =>
+    ({ id, departure_date, remaining_quota, quota: 10, price_adult });
+  const dates = [D("d1", "2026-12-10", 1), D("d2", "2026-12-20", 10), D("d3", "2026-12-25", 2), D("d4", "2027-01-05", 10)];
+
+  // (c) seçim sözleşmesi
+  assert("A1.resolve listeli '2' → listedeki 2. (d4), global 2. (d2) DEGIL", resolveListedDate(2, dates, ["d2", "d4"])?.id === "d4");
+  assert("A1.resolve liste yok → kronolojik global (d2)", resolveListedDate(2, dates, undefined)?.id === "d2");
+  assert("A1.resolve liste disi numara → undefined (global'e DUSMEZ)", resolveListedDate(3, dates, ["d2", "d4"]) === undefined);
+  assert("A1.resolve 0/negatif → undefined", resolveListedDate(0, dates, undefined) === undefined);
+
+  // (c) liste basımı listedDateIds yazar, 7 dilde lokalize tarih, para birimi formatPriceSync
+  for (const lang of ["tr", "en", "de", "fr", "es", "ru", "ar"]) {
+    const ctx: any = {};
+    const txt = buildDateList({ currency: "TRY" }, [dates[1], dates[3]], ctx, { lang, quota: true, price: { ex: {}, showDual: true, languageCurrencies: null } });
+    assert(`A3.[${lang}] listedDateIds basilan sira`, JSON.stringify(ctx.listedDateIds) === '["d2","d4"]');
+    assert(`A3.[${lang}] ham ISO yok`, !/\d{4}-\d{2}-\d{2}/.test(txt));
+    assert(`A3.[${lang}] 'TRY' kodu yok, ₺ var`, !/ TRY\b/.test(txt) && txt.includes("₺"));
+    assert(`A3.[${lang}] 2 satir, 1) ve 2) ile`, txt.startsWith("1) ") && txt.includes("\n2) "));
+  }
+  {
+    const ctx: any = { listedDateIds: ["x"] };
+    assert("A3.bos liste → '' ve listedDateIds temiz", buildDateList(null, [], ctx, { lang: "tr" }) === "" && ctx.listedDateIds === undefined);
+    const ctx2: any = {};
+    buildDateList(null, dates, ctx2, { lang: "tr", max: 2 });
+    assert("A3.max=2 → yalniz 2 id", JSON.stringify(ctx2.listedDateIds) === '["d1","d2"]');
+  }
+
+  // (c) A4 sıralama + temsilî tarih
+  const shuffled = [{ id: "t", dates: [dates[3], dates[0], dates[2], dates[1]] }];
+  const sorted = sortTourDates(shuffled);
+  assert("A4.sortTourDates departure_date ASC", sorted[0].dates.map((d: any) => d.id).join() === "d1,d2,d3,d4");
+  assert("A4.sortTourDates girdiyi degistirmez", shuffled[0].dates[0].id === "d4");
+  assert("A4.representativeDate kronolojik ilk kontenjanli+fiyatli", representativeDate({ dates: [D("a", "2026-12-20", 0), D("b", "2026-12-25", 5, null), D("c", "2026-12-30", 5)] })?.id === "c");
+  assert("A4.representativeDate hicbiri uygun degilse kronolojik ilk", representativeDate({ dates: [D("b", "2026-12-25", 0, null), D("a", "2026-12-20", 0, null)] })?.id === "a");
+  assert("A4.representativeDate bos → undefined", representativeDate({ dates: [] }) === undefined);
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

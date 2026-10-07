@@ -54,6 +54,9 @@ import { findMatchingTours, TOUR_CHANGE_PHRASE_RE } from "../services/tour-match
 import { isNluFullNameTourLeak, isNluFullNameNegationLeak, isNluFullNameGiveUpLeak } from "../services/nlu-validation.ts";
 import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck, shouldTriggerManualDateAck, shouldTriggerSummaryReask } from "../services/bypass-gates.ts";
 import { hasQuotaForPax, getQuotaRemaining, hasAnyAvailableDate } from "../services/quota-check.ts";
+// PAKET-0 Dilim-1 (2026-10-07): tarih listesi TEK primitif (A1/A2/A3) + temsilî tarih (A4).
+import { buildDateList } from "../services/date-list.ts";
+import { representativeDate } from "../utils/tour-dates.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
@@ -633,20 +636,6 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         tourId: context.reservationInfo.tourId, dateId: context.reservationInfo.dateId,
       });
 
-      // Alternatif tarihleri topla (sadece geçmemiş + kontenjanı olan)
-      const _alts = (_resTour?.dates || [])
-        .filter((d: any) => d.id !== context.reservationInfo!.dateId
-          && d.departure_date >= _today
-          && (d.remaining_quota ?? d.quota ?? 1) > 0)
-        .slice(0, 5);
-      const _altList = _alts.length > 0
-        ? "\n\n" + _alts.map((d: any, i: number) => {
-            const _dt = d.departure_date;
-            const _pr = d.price_adult ? ` – ${d.price_adult.toLocaleString("tr-TR")} ${(_resTour as any).currency || "TRY"}` : "";
-            return `${i + 1}) ${_dt}${_pr}`;
-          }).join("\n")
-        : "";
-
       // reservationInfo'daki tarihi temizle — kullanıcı yeni tarih seçecek
       // Tur kalsın (kullanıcı aynı tura ilgileniyor olabilir)
       context.reservationInfo = {
@@ -659,14 +648,24 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       context.reservationConfirmed = false;
 
       const _revLang = context.language || "tr";
+      // A3 (2026-10-07): liste TEK primitiften — lokalize tarih + formatPriceSync +
+      // listedDateIds (eski hâl ham ISO + tr-TR sayı + para KODU basıyordu, 7 dilde).
+      const _alts = (_resTour?.dates || [])
+        .filter((d: any) => d.id !== _resDate?.id && d.departure_date >= _today && (d.remaining_quota ?? d.quota ?? 1) > 0);
+      const _altLines = buildDateList(_resTour, _alts, context, {
+        lang: _revLang, quota: true,
+        price: { ex: await getExchangeRatesOnce().catch(() => ({})), showDual: agency.show_multi_currency !== false, languageCurrencies },
+      });
+      const _altList = _altLines ? "\n\n" + _altLines : "";
+      const _revTitle = _resTour ? getLocalizedTourTitle(_resTour.title || "", _revLang) : "";
       const _revalMsgs: Record<string, string> = {
-        tr: `Seçtiğiniz tarih artık mevcut değil veya kontenjan dolmuş. ${_resTour ? `*${_resTour.title}* için` : ""} müsait tarihler:${_altList || "\n\nŞu anda başka müsait tarih bulunmuyor. Lütfen başka bir tur seçer misiniz?"}`,
-        en: `The date you selected is no longer available or fully booked. Available dates ${_resTour ? `for *${_resTour.title}*` : ""}:${_altList || "\n\nNo other dates available right now. Could you pick another tour?"}`,
-        de: `Das gewählte Datum ist nicht mehr verfügbar oder ausgebucht. Verfügbare Termine ${_resTour ? `für *${_resTour.title}*` : ""}:${_altList || "\n\nAktuell keine weiteren Termine verfügbar. Bitte wählen Sie eine andere Tour."}`,
-        ru: `Выбранная дата больше недоступна или полностью забронирована. Доступные даты ${_resTour ? `для *${_resTour.title}*` : ""}:${_altList || "\n\nДругих доступных дат нет. Выберите другой тур, пожалуйста."}`,
-        ar: `التاريخ المحدد لم يعد متاحاً أو محجوزاً بالكامل. التواريخ المتاحة ${_resTour ? `لـ *${_resTour.title}*` : ""}:${_altList || "\n\nلا توجد تواريخ متاحة أخرى حالياً. يرجى اختيار جولة أخرى."}`,
-        fr: `La date sélectionnée n'est plus disponible ou complète. Dates disponibles ${_resTour ? `pour *${_resTour.title}*` : ""}:${_altList || "\n\nAucune autre date disponible. Veuillez choisir un autre circuit."}`,
-        es: `La fecha seleccionada ya no está disponible o está completa. Fechas disponibles ${_resTour ? `para *${_resTour.title}*` : ""}:${_altList || "\n\nNo hay otras fechas disponibles. Por favor elija otro tour."}`,
+        tr: `Seçtiğiniz tarih artık mevcut değil veya kontenjan dolmuş. ${_resTour ? `*${_revTitle}* için` : ""} müsait tarihler:${_altList || "\n\nŞu anda başka müsait tarih bulunmuyor. Lütfen başka bir tur seçer misiniz?"}`,
+        en: `The date you selected is no longer available or fully booked. Available dates ${_resTour ? `for *${_revTitle}*` : ""}:${_altList || "\n\nNo other dates available right now. Could you pick another tour?"}`,
+        de: `Das gewählte Datum ist nicht mehr verfügbar oder ausgebucht. Verfügbare Termine ${_resTour ? `für *${_revTitle}*` : ""}:${_altList || "\n\nAktuell keine weiteren Termine verfügbar. Bitte wählen Sie eine andere Tour."}`,
+        ru: `Выбранная дата больше недоступна или полностью забронирована. Доступные даты ${_resTour ? `для *${_revTitle}*` : ""}:${_altList || "\n\nДругих доступных дат нет. Выберите другой тур, пожалуйста."}`,
+        ar: `التاريخ المحدد لم يعد متاحاً أو محجوزاً بالكامل. التواريخ المتاحة ${_resTour ? `لـ *${_revTitle}*` : ""}:${_altList || "\n\nلا توجد تواريخ متاحة أخرى حالياً. يرجى اختيار جولة أخرى."}`,
+        fr: `La date sélectionnée n'est plus disponible ou complète. Dates disponibles ${_resTour ? `pour *${_revTitle}*` : ""}:${_altList || "\n\nAucune autre date disponible. Veuillez choisir un autre circuit."}`,
+        es: `La fecha seleccionada ya no está disponible o está completa. Fechas disponibles ${_resTour ? `para *${_revTitle}*` : ""}:${_altList || "\n\nNo hay otras fechas disponibles. Por favor elija otro tour."}`,
       };
       const _revalReply = _revalMsgs[_revLang] || _revalMsgs.tr;
       await _save(_revalReply, context);
@@ -1438,7 +1437,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
   if (_priceMatched) {
     const _priced = tours
-      .map((t: any) => ({ tour: t, price: t.dates?.[0]?.price_adult }))
+      .map((t: any) => ({ tour: t, price: Number(representativeDate(t)?.price_adult ?? 0) }))
       .filter((x: any) => typeof x.price === "number" && x.price > 0);
     const _filtered = _priced.filter((x: any) => {
       if (_priceLower !== null && x.price < _priceLower) return false;
@@ -1569,7 +1568,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (_filtered.length === 0) {
       // O type'ta tur yok → mevcut tüm turları öner (UNKNOWN_TOUR'a düşürme)
       const _allTours = tours.slice(0, 8).map((t: any, i: number) => {
-        const _firstDate = t.dates?.[0];
+        const _firstDate = representativeDate(t);
         const _priceText = _firstDate?.price_adult
           ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", _langDur, _exRatesDur, _showDualDur, languageCurrencies)}`
           : "";
@@ -1593,7 +1592,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
     // Filtreli liste (type eşleşen turlar)
     const _filteredList = _filtered.slice(0, 8).map((t: any, i: number) => {
-      const _firstDate = t.dates?.[0];
+      const _firstDate = representativeDate(t);
       const _priceText = _firstDate?.price_adult
         ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", _langDur, _exRatesDur, _showDualDur, languageCurrencies)}`
         : "";
@@ -1647,7 +1646,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _exR2 = await getExchangeRatesOnce().catch(() => ({}));
       const _showD2 = agency.show_multi_currency !== false;
       const _fmtLine = (t: any, i: number) => {
-        const _fd = t.dates?.[0];
+        const _fd = representativeDate(t);
         const _pt = _fd?.price_adult ? ` — ${formatPriceSync(_fd.price_adult, t.currency || "TRY", _langD2, _exR2, _showD2, languageCurrencies)}` : "";
         return `${i + 1}) ${getLocalizedTourTitle(t.title, _langD2)}${_pt}`;
       };
@@ -1735,12 +1734,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
             return _lblP[_langA] ?? _lblP.en;
           }
           case "single_price": {
-            const d = t.dates?.[0];
+            const d = representativeDate(t);
             if (!d?.price_single) return null;
             return formatPriceSync(d.price_single, t.currency || "TRY", _langA, _exRatesA, _showDualA, languageCurrencies);
           }
           case "child_price": {
-            const d = t.dates?.[0];
+            const d = representativeDate(t);
             if (!d?.price_child) return null;
             const _cur = t.currency || "TRY";
             const _lbl = _pick(ATTR_CHILD_LABELS);
@@ -1811,7 +1810,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _showDualBT = agency.show_multi_currency !== false;
     const _langBT = context.language || "tr";
     const _tourListBT = tours.slice(0, 8).map((t: any, i: number) => {
-      const _firstDate = t.dates?.[0];
+      const _firstDate = representativeDate(t);
       const _priceText = _firstDate?.price_adult
         ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", _langBT, _exRatesBT, _showDualBT, languageCurrencies)}`
         : "";
@@ -2525,28 +2524,22 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // remaining_quota tour-cache._refreshQuota tarafından her sorguda taze hazır,
   // ek DB çağrısı YOK.
 
-  // Inline helper: müsait tarih listesi metni (TR + EN şimdi, diğer 5 dil
-  // çok-dil eşitleme fazına). β + pax bypass'larda ortak — DRY.
+  // Inline helper: neededPax'i taşıyan tarihlerin listesi — β + pax bypass'larda
+  // ortak. A2 (2026-10-07): TEK primitif (buildDateList) → listedDateIds yazılır,
+  // Blok 8 "2"yi BU listeye göre çözer (eski yerel-indeks/global-indeks uyumsuzluğu
+  // kapandı). `ctx` = listenin yazılacağı (kaydedilecek) context.
   async function _buildAvailableDatesText(
     tour: any,
     neededPax: number,
     lang: string,
+    ctx: ConversationContext,
   ): Promise<string> {
     if (!tour?.dates?.length) return "";
     const _eR = await getExchangeRatesOnce().catch(() => ({}));
-    const _sD = agency.show_multi_currency !== false;
-    const lines = tour.dates
-      .filter((d: any) => hasQuotaForPax(d, neededPax))
-      .map((d: any, i: number) => {
-        const dt = formatDateForLanguage(d.departure_date, lang);
-        const pr = d.price_adult
-          ? ` - ${formatPriceSync(d.price_adult, tour.currency || "TRY", lang, _eR, _sD, languageCurrencies)}`
-          : "";
-        const remaining = getQuotaRemaining(d);
-        return `${i + 1}) ${dt}${pr}${quotaLabel(remaining, false, lang)}`;
-      })
-      .join("\n");
-    return lines;
+    return buildDateList(tour, tour.dates.filter((d: any) => hasQuotaForPax(d, neededPax)), ctx, {
+      lang, quota: true,
+      price: { ex: _eR, showDual: agency.show_multi_currency !== false, languageCurrencies },
+    });
   }
 
   // β KATMANI — tarih dolu reddi (extractedInfo.dateRejectedFull flag set)
@@ -2556,7 +2549,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _rejDateLabel = formatDateForLanguage(_rej.departureDate, _lang);
     const _curTour = context.currentTour ? findTourById(context.currentTour.id, tours) : null;
     const _altText = _curTour
-      ? await _buildAvailableDatesText(_curTour, 1, _lang)
+      ? await _buildAvailableDatesText(_curTour, 1, _lang, context)
       : "";
     const _hasAlt = _altText.trim().length > 0;
 
@@ -2598,7 +2591,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // pax KATMANI — pax atama yeterli kontenjan yok
   // Senaryo: tarihte 2 yer, kullanıcı "5 kişi" dedi. Tarih state'te dolu, pax
   // bu turn'de extract edildi → state-machine'den ÖNCE kontrol et.
-  const _paxPending = (extractedInfo as any)?.paxAdult;
+  // A2 (2026-10-07): bekleyen pax niyeti (context.pendingPax) de hesaba katılır —
+  // kullanıcı listeden tarih seçtiğinde ("2") bu turn'de pax extract edilmez ama
+  // 5 kişilik niyet yaşıyor; yeni tarih de taşımıyorsa yine burası cevaplar.
+  const _paxPending = (extractedInfo as any)?.paxAdult ?? context.pendingPax;
   const _activeTourFull = context.currentTour ? findTourById(context.currentTour.id, tours) : null;
   const _activeDateId = (extractedInfo as any)?.dateId ?? context.reservationInfo?.dateId;
   const _activeDate = _activeTourFull?.dates?.find((d: any) => d.id === _activeDateId);
@@ -2606,15 +2602,23 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _lang = context.language || "tr";
     const _remaining = getQuotaRemaining(_activeDate);
     const _dateLabel = formatDateForLanguage(_activeDate.departure_date, _lang);
-    // pax niyetini koru, dateId silinecek (state'e geri çekilecek waiting_for_date'e)
-    // Burada SADECE mesaj atıyoruz — state-machine extractedInfo.dateId'yi state'e yazmadı,
-    // dateRejectedFull flag de yok, state.reservationInfo aynen kalır. Bu turn sonrası
-    // state.dateId hâlâ eski dolu olan; kullanıcı bir sonraki turn yeni tarih derse OK.
-    // Bu fix β'nın doğal devamı, kullanıcı pax niyetini sonraki tarih seçiminde kullanır.
+    // A2 KÖK (harness S1 kanıtı): eski hâl state'i DOKUNMADAN bırakıyordu (step
+    // waiting_for_pax + dolu dateId) → listeden "2" yazan müşteri pax=2 sanılıyor,
+    // aynı liste tekrar basılıyordu (çıkmaz döngü). Şimdi: dolu tarih sıfırlanır,
+    // adım TARİHE çekilir, pax niyeti pendingPax'ta bekler; uygun tarih seçilince
+    // FSM-sonrası tek noktada (aşağıda "PENDING-PAX UYGULA") paxAdult'a yazılır.
+    // Alternatif tarih YOKSA eski davranış (state dokunulmaz: "daha az kişi" denemesi
+    // dolu tarihle devam edebilmeli — merge pax'ı yalnız tarih varken yazar).
     const _altText = _activeTourFull
-      ? await _buildAvailableDatesText(_activeTourFull, _paxPending, _lang)
+      ? await _buildAvailableDatesText(_activeTourFull, _paxPending, _lang, context)
       : "";
     const _hasAlt = _altText.trim().length > 0;
+    if (_hasAlt) {
+      context.reservationInfo = { ...context.reservationInfo, dateId: undefined, selectedDate: undefined };
+      context.stage = "COLLECTING_INFO";
+      context.collectionStep = "waiting_for_date";
+      context.pendingPax = _paxPending;
+    }
     const _msgs: Record<string, string> = _hasAlt
       ? {
           tr: `*${_paxPending} kişi* için *${_dateLabel}* tarihinde sadece *${_remaining} yer* var. 😔\n\nMüsait tarihler:\n${_altText}\n\nBaşka tarih seçer misiniz?`,
@@ -3279,6 +3283,45 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     console.log(`[process-message] F-E1 gönüllü-email uygulandı (stage=${newContext.stage})`);
   }
 
+  // === PENDING-PAX UYGULA (A2, 2026-10-07) — FSM-sonrası TEK nokta ===
+  // H-pax tarihi sıfırlayıp pax niyetini pendingPax'a koydu; bu turn'de dateId
+  // çözüldüyse (Blok 8 listeden / Blok 9 yazıyla) ve yeni tarih niyeti taşıyorsa
+  // paxAdult yazılır, adım yeniden hesaplanır (tümü doluysa CONFIRMING → :13 özeti).
+  // Kullanıcı bu turn'de pax'ı YENİDEN yazdıysa (merge yazdı) o kazanır.
+  // listedDateIds: tarih seçilince bayat liste temizlenir (sonraki "2" eski listeyi görmesin).
+  let _pendingPaxAck = "";
+  {
+    const _ppDateId = (newContext.reservationInfo as any)?.dateId;
+    if (_ppDateId && _ppDateId !== (context.reservationInfo as any)?.dateId) newContext.listedDateIds = undefined;
+    if (newContext.pendingPax && _ppDateId) {
+      const _ppTour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
+      const _ppDate = _ppTour?.dates?.find((d: any) => d.id === _ppDateId);
+      if (_ppDate && hasQuotaForPax(_ppDate, newContext.pendingPax)) {
+        if (!(newContext.reservationInfo as any).paxAdult) {
+          newContext.reservationInfo = { ...newContext.reservationInfo, paxAdult: newContext.pendingPax } as any;
+        }
+        const _ppStep = determineCollectionStep(newContext.reservationInfo, newContext.collectEmail);
+        newContext.collectionStep = _ppStep;
+        if (_ppStep === "ready_for_confirmation" && newContext.stage === "COLLECTING_INFO") newContext.stage = "CONFIRMING";
+        const _ppLang = newContext.language || "tr";
+        const _ppDt = formatDateForLanguage(_ppDate.departure_date, _ppLang);
+        const _ppN = (newContext.reservationInfo as any).paxAdult;
+        const _ppAck: Record<string, string> = {
+          tr: `*${_ppDt}* için *${_ppN} kişi* olarak aldım ✨ `,
+          en: `Noted *${_ppN} people* for *${_ppDt}* ✨ `,
+          de: `*${_ppN} Personen* für den *${_ppDt}* notiert ✨ `,
+          fr: `*${_ppN} personnes* pour le *${_ppDt}* notées ✨ `,
+          es: `Anotado *${_ppN} personas* para el *${_ppDt}* ✨ `,
+          ru: `Записал *${_ppN} чел.* на *${_ppDt}* ✨ `,
+          ar: `سجّلت *${_ppN} أشخاص* ليوم *${_ppDt}* ✨ `,
+        };
+        _pendingPaxAck = _ppAck[_ppLang] || _ppAck.en;
+        console.log(`[process-message] PENDING-PAX uygulandı: pax=${_ppN}, date=${_ppDate.departure_date}, step=${_ppStep}`);
+      }
+      newContext.pendingPax = undefined;
+    }
+  }
+
   // FIX: Geçersiz tarih cleanup — dateId yoksa selectedDate her zaman invalid (BUG 1)
   // extractedInfo da kontrol edilir: TOUR_SELECTED'da FSM geçmeden gelen tarih de yakalanır
   const _invalidDateForPreamble =
@@ -3368,9 +3411,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         return { success: true, response: _r, newContext };
       }
       // Çözülemedi → anlaşıldı-ack + kısa liste + telefona dönüş (invalid_phone YOK).
-      const _pdList = _pdDates.slice(0, 4)
-        .map((d: any, i: number) => `${i + 1}) ${formatDateForLanguage(d.departure_date, _pdLang)}`)
-        .join("\n");
+      // 2026-10-07 A1: TEK primitif (max 4, listedDateIds yazılır — telefon adımında
+      // "2" telefon değil liste-seçimi olarak çözülebilsin diye adım tarihe çekilir).
+      const _pdList = buildDateList(_pdTour, _pdDates, newContext, { lang: _pdLang, max: 4 });
+      newContext.collectionStep = "waiting_for_date";
       const _pdSoftMsgs: Record<string, string> = {
         tr: `Tarih değişikliği talebinizi anladım 👍 Bu tarihle birebir eşleşme bulamadım. Müsait tarihler:\n${_pdList}\n\nHangi tarihi istersiniz? (Sonrasında telefon numaranızla devam edelim 📱)`,
         en: `I understood your date-change request 👍 I couldn't find an exact match. Available dates:\n${_pdList}\n\nWhich date would you like? (Then we'll continue with your phone number 📱)`,
@@ -3581,7 +3625,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _exRatesB2 = await getExchangeRatesOnce().catch(() => ({}));
     const _showDualB2 = agency.show_multi_currency !== false;
     const _tourListLines = tours.slice(0, 8).map((t: any, i: number) => {
-      const _firstDate = t.dates?.[0];
+      const _firstDate = representativeDate(t);
       const _priceText = _firstDate?.price_adult
         ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", newContext.language, _exRatesB2, _showDualB2, languageCurrencies)}`
         : "";
@@ -3637,7 +3681,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _exRatesU = await getExchangeRatesOnce().catch(() => ({}));
     const _showDualU = agency.show_multi_currency !== false;
     const _tourListLinesU = tours.slice(0, 8).map((t: any, i: number) => {
-      const _firstDate = t.dates?.[0];
+      const _firstDate = representativeDate(t);
       const _priceText = _firstDate?.price_adult
         ? ` — ${formatPriceSync(_firstDate.price_adult, t.currency || "TRY", context.language, _exRatesU, _showDualU, languageCurrencies)}`
         : "";
@@ -3906,18 +3950,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     if (_ambDay && newContext.currentTour) {
       const _ambTour = findTourById(newContext.currentTour.id, tours);
       const _ambLang = newContext.language || "tr";
-      const _ambLines = (_ambTour?.dates || [])
-        .map((d: any, i: number) => ({ d, i }))
-        .filter(({ d }: any) => {
-          const p = d.departure_date?.match(/\d{4}-\d{2}-(\d{2})/);
-          return p && parseInt(p[1]) === _ambDay;
-        })
-        .map(({ d, i }: any) => {
-          const _w = getWeekdayName(d.departure_date, _ambLang);
-          // GLOBAL indeks (i+1) — Blok 8 tour.dates[n-1] ile birebir
-          return `${i + 1}) ${formatDateForLanguage(d.departure_date, _ambLang)}${_w ? ` (${_w})` : ""}`;
-        })
-        .join("\n");
+      // 2026-10-07 A1: eski hâl GLOBAL indeks basıyordu ("2) … 4) …" — Blok 8 ile
+      // uyum için). Artık liste yerel numaralı, seçim listedDateIds'ten çözülür.
+      const _ambLines = buildDateList(_ambTour, (_ambTour?.dates || []).filter((d: any) => {
+        const p = d.departure_date?.match(/\d{4}-\d{2}-(\d{2})/);
+        return p && parseInt(p[1]) === _ambDay;
+      }), newContext, { lang: _ambLang });
       const _ambMsgs: Record<string, string> = {
         tr: `Ayın ${_ambDay}'i birden fazla turumuzda var:\n${_ambLines}\n\nHangisini tercih edersiniz? (numara veya tarih yazın)`,
         en: `The ${_ambDay}th appears in more than one tour:\n${_ambLines}\n\nWhich one do you prefer? (type the number or date)`,
@@ -4094,29 +4132,12 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       newContext.language,
     );
     if (tourForDates?.dates?.length) {
-      const _exRates = await getExchangeRatesOnce().catch(() => ({}));
-      const _tourCurrency = tourForDates.currency || "TRY";
-      const _showDual = agency.show_multi_currency !== false;
-      const dateLines = tourForDates.dates
-        .map((d: any, idx: number) => {
-          // 2026-07-03 P4: gün adı KODDAN (Intl, Europe/Istanbul) — LLM
-          // 12.12.2026'ya "Cuma" diyordu (gerçek: Cumartesi). Liste history'de
-          // göründüğü için LLM sorulduğunda buradaki doğru günü kopyalar.
-          const _wd = getWeekdayName(d.departure_date, newContext.language);
-          const dateText = formatDateForLanguage(d.departure_date, newContext.language) + (_wd ? ` (${_wd})` : "");
-          const priceText = d.price_adult
-            ? ` - ${formatPriceSync(d.price_adult, _tourCurrency, newContext.language, _exRates, _showDual, languageCurrencies)}`
-            : "";
-          // 2026-06-22 Sorun H α katmanı: dolu tarih ETİKETLE (gizleme değil).
-          // Şeffaflık — kullanıcı tarihin var ama dolu olduğunu görür.
-          // getQuotaRemaining tek-kaynak (quota-check.ts).
-          const remaining = getQuotaRemaining(d);
-          const isFull = remaining <= 0;
-          // 2026-07-09 FAZ4-P3: tek-kaynak quota-labels.ts (kopya-liste DRY).
-          const quotaText = quotaLabel(remaining, isFull, newContext.language);
-          return `${idx + 1}) ${dateText}${priceText}${quotaText}`;
-        })
-        .join("\n");
+      // 2026-07-03 P4 gün adı KODDAN; 2026-06-22 Sorun H α dolu tarih ETİKETLE;
+      // 2026-10-07 A1: TEK primitif (buildDateList) — tam liste, listedDateIds yazılır.
+      const dateLines = buildDateList(tourForDates, tourForDates.dates, newContext, {
+        lang: newContext.language, quota: true,
+        price: { ex: await getExchangeRatesOnce().catch(() => ({})), showDual: agency.show_multi_currency !== false, languageCurrencies },
+      });
 
       const _displayTitle = getLocalizedTourTitle(tourForDates.title, newContext.language);
       const dateSelMsgs: Record<string, string> = {
@@ -4255,7 +4276,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // Fiyat hesaplama — try/catch içinde, başarısızsa _priceText="" kalır
     let _priceText = "";
     try {
-      const _firstDateA = _tourA?.dates?.[0];
+      const _firstDateA = _tourA?.dates?.find((d: any) => d.id === (newContext.reservationInfo as any)?.dateId) || representativeDate(_tourA);
       if (_firstDateA?.price_adult) {
         const _exRatesAck = await getExchangeRatesOnce().catch(() => ({}));
         const _showDualAck = agency.show_multi_currency !== false;
@@ -4352,7 +4373,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     let _priceTextM = "";
     try {
       const _selDateObj = _tourM?.dates?.find((d: any) => d.id === (newContext.reservationInfo as any)?.dateId)
-        || _tourM?.dates?.[0];
+        || representativeDate(_tourM);
       if (_selDateObj?.price_adult) {
         const _exRatesAckM = await getExchangeRatesOnce().catch(() => ({}));
         const _showDualAckM = agency.show_multi_currency !== false;
@@ -4430,7 +4451,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       try {
         const _a2Tour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
         const _a2Date = _a2Tour?.dates?.find((d: any) => d.id === (newContext.reservationInfo as any)?.dateId)
-          || _a2Tour?.dates?.[0];
+          || representativeDate(_a2Tour);
         const _a2Pax = (newContext.reservationInfo as any)?.paxAdult;
         const _a2Child = (newContext.reservationInfo as any)?.paxChild;
         if (_a2Date?.price_adult && _a2Pax && _a2Pax >= 1) {
@@ -4477,7 +4498,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       fr: "Merci ! 😊 Puis-je avoir votre nom complet ?",
       es: "¡Gracias! 😊 ¿Puede darme su nombre completo?",
     };
-    const askReply = _pricePrefix + (_msgs[_lang] || _msgs.tr);
+    const askReply = _pendingPaxAck + _pricePrefix + (_msgs[_lang] || _msgs.tr);
     await _save(askReply, newContext);
     await adapter.sendResponse(askReply);
     return { success: true, response: askReply, newContext };
@@ -4593,7 +4614,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         ? `¡Gracias, ${_firstName}! 📱 ¿Me puede dar su número de teléfono?`
         : "¡Gracias! 📱 ¿Me puede dar su número de teléfono?",
     };
-    const askReply = _msgs[_lang] || _msgs.tr;
+    const askReply = _pendingPaxAck + (_msgs[_lang] || _msgs.tr);
     await _save(askReply, newContext);
     await adapter.sendResponse(askReply);
     return { success: true, response: askReply, newContext };
@@ -4965,19 +4986,14 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         const _quotaTour = tours.find((t: any) => t.id === tourId);
         let _altDates = "";
         if (_quotaTour?.dates && _quotaTour.dates.length > 1) {
-          const _qRates = await getExchangeRatesOnce().catch(() => ({}));
-          const _qDual = agency.show_multi_currency !== false;
-          // 2026-06-22 Sorun H DRY: inline filter → hasQuotaForPax helper (Murat A ilkesi)
-          _altDates = "\n\n" + _quotaTour.dates
-            .filter((d: any) => d.id !== dateId && hasQuotaForPax(d, 1))
-            .map((d: any, i: number) => {
-              const dt = formatDateForLanguage(d.departure_date, lang);
-              const pr = d.price_adult
-                ? ` - ${formatPriceSync(d.price_adult, _quotaTour.currency || "TRY", lang, _qRates, _qDual, languageCurrencies)}`
-                : "";
-              return `${i + 1}) ${dt}${pr}`;
-            })
-            .join("\n");
+          // 2026-06-22 Sorun H DRY: hasQuotaForPax. 2026-10-07 A1 KÖK (harness S6):
+          // bu liste dolu tarihi dışlayıp YEREL numara basıyor, Blok 8 GLOBAL çözüyordu
+          // → "2" yanlış tarihi seçiyordu. TEK primitif + listedDateIds.
+          const _qLines = buildDateList(_quotaTour, _quotaTour.dates.filter((d: any) => d.id !== dateId && hasQuotaForPax(d, totalPax || 1)), newContext, {
+            lang, quota: true,
+            price: { ex: await getExchangeRatesOnce().catch(() => ({})), showDual: agency.show_multi_currency !== false, languageCurrencies },
+          });
+          _altDates = _qLines ? "\n\n" + _qLines : "";
         }
         const _msgs: Record<string, string> = {
           tr: `Üzgünüm, seçtiğiniz tarih için kontenjan dolmuş. 😔 Başka bir tarih seçer misiniz?${_altDates}`,
@@ -5695,14 +5711,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       };
       _bvReplacement = _sumr + (_confirmQ[_bvLang] || _confirmQ.en);
     } else if (_bvTour?.dates?.length) {
-      const _bvLines = _bvTour.dates
-        .map((d: any, i: number) => {
-          const _w = getWeekdayName(d.departure_date, _bvLang);
-          const _dt = formatDateForLanguage(d.departure_date, _bvLang) + (_w ? ` (${_w})` : "");
-          const _pr = d.price_adult ? ` - ${d.price_adult}₺` : "";
-          return `${i + 1}) ${_dt}${_pr}`;
-        })
-        .join("\n");
+      // 2026-10-07 A1/C2: TEK primitif — eski hâl `${price}₺` ile para birimini yok sayıyordu.
+      const _bvLines = buildDateList(_bvTour, _bvTour.dates, newContext, {
+        lang: _bvLang, quota: true,
+        price: { ex: await getExchangeRatesOnce().catch(() => ({})), showDual: agency.show_multi_currency !== false, languageCurrencies },
+      });
       const _bvTitle = getLocalizedTourTitle(_bvTour.title || "", _bvLang);
       // 2026-07-09 Faz 5 B: tr+en → 7-dil.
       const _bvMsgs: Record<string, string> = {
