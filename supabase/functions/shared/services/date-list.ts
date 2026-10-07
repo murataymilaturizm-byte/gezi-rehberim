@@ -21,6 +21,15 @@ import { formatPriceSync } from "../utils/currency-display.ts";
 import { getQuotaRemaining } from "./quota-check.ts";
 import { quotaLabel } from "../constants/quota-labels.ts";
 
+/**
+ * "Son kapı" temizliği — tarih-seçim bağlamı bir TUR/REZERVASYON'a aittir; tur
+ * değişince, iptalde ve yeni-rezervasyon reset'inde spread edilir:
+ *   tour-change.ts produceTourChangeContext · state-machine.ts iptal ×3 + resetForNewReservation.
+ * (stale-reset createInitialContext ile zaten temiz; dateId yazılınca handler
+ * listedDateIds'i, PENDING-PAX UYGULA pendingPax'ı temizler.)
+ */
+export const DATE_SELECTION_CLEAR = { listedDateIds: undefined, pendingPax: undefined } as const;
+
 export interface DateListPriceCtx {
   ex: Record<string, number>;
   showDual: boolean;

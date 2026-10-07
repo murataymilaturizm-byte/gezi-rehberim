@@ -16,6 +16,7 @@
 // Sadece tur değişimi sebebiyle geçersiz olan dateId/selectedDate temizlenir.
 
 import type { ConversationContext, InfoCollectionStep } from "../fsm/types.ts";
+import { DATE_SELECTION_CLEAR } from "./date-list.ts";
 
 /**
  * Tour-change transformasyonunun deterministik core'u.
@@ -44,6 +45,7 @@ export function produceTourChangeContext(
       selectedDate: undefined,
     },
     collectionStep: "waiting_for_date" as InfoCollectionStep,
+    ...DATE_SELECTION_CLEAR,                       // Son kapı: eski turun listesi/pax niyeti yeni tura taşınmaz
   };
 }
 

@@ -183,5 +183,72 @@ Regresyon: `npm run typecheck` (frontend) 72 hata — **değişmedi** (önceden 
 
 ---
 
+## 5b. Son kapı — `listedDateIds` / `pendingPax` temizlik noktaları
+
+İlk commit (`f4036d2`) bu iki alanı yalnız "tarih seçilince" temizliyordu; **tur değişimi, iptal ve yeni-rezervasyon reset'i spread ile taşıyordu** (harness ile kırmızı kanıtlandı, aşağıda). Tek sabit `DATE_SELECTION_CLEAR = { listedDateIds: undefined, pendingPax: undefined }` (`services/date-list.ts`) beş noktada spread ediliyor.
+
+| Olay | Dosya:satır | Mekanizma | Durum |
+|---|---|---|---|
+| Tarih seçildi (bu turn'de dateId değişti) | `process-message.ts:3295` | `newContext.listedDateIds = undefined` (FSM-sonrası tek nokta) | önceki commit |
+| Pending pax uygulandı / uygulanamadı | `process-message.ts:3321` | `newContext.pendingPax = undefined` | önceki commit |
+| **Tur değişimi** (G5 erken değişim, 7b-0 netleştirme, FSM T10/T11 — hepsi aynı helper) | `services/tour-change.ts:48` `produceTourChangeContext` | `...DATE_SELECTION_CLEAR` | **bu ek** |
+| **İptal** TOUR_SELECTED/COLLECTING_INFO/CONFIRMING → BROWSING | `fsm/state-machine.ts:489, 503, 517` | `...DATE_SELECTION_CLEAR` | **bu ek** |
+| **Rezervasyon tamamlandı → yeni rezervasyon / iptal** (COMPLETED→BROWSING ×5, COMPLETED→TOUR_SELECTED ×2: hepsi `resetForNewReservation`) | `fsm/state-machine.ts:473` | `...DATE_SELECTION_CLEAR` | **bu ek** |
+| CONFIRMING → COMPLETED | `fsm/state-machine.ts:841` | temizlik gerekmez: dateId yazıldığı turn'de liste zaten temizlenmiş, pendingPax uygulanmış; sonraki rezervasyon `resetForNewReservation`'dan geçer | — |
+| Stale-reset (TTL) | `process-message.ts:490` `createInitialContext` | taze context — alanlar yok | zaten temiz |
+| H-pax (set noktası) | `process-message.ts:2620` | `context.pendingPax = pax` + liste `buildDateList` | önceki commit |
+
+### Harness senaryoları (`supabase/functions/_tests/harness/date_list_cleanup_test.ts`, 4 dil)
+
+**(a) liste → tur değişimi → "2".** Turn 1: Pamukkale için gerçek :11 listesi (`listed=[d1..d4]`). Turn 2: keşif (TOUR_SELECTED) + "Kapadokya" → FSM T10 tur değişimi (bu yolda liste yeniden **basılmaz**). Turn 3: "2".
+```
+ÖNCE (f4036d2):
+### SK-a2 [tr] "Kapadokya"
+STATE_OUT: stage=TOUR_SELECTED … currentTour=t-kap … listed=["d1","d2","d3","d4"]        ← Pamukkale listesi yeni tura taşındı
+AssertionError: tur değişiminde bayat liste TEMİZLENMELİ   (tr/en/ru/ar ×4)
+(bayat id'ler Kapadokya'da bulunamaz → "2" YUTULUR, dateId=undefined, LLM fallback)
+
+SONRA:
+### SK-a2 [tr] "Kapadokya"   STATE_OUT: stage=TOUR_SELECTED … listed=undefined
+### SK-a3 [tr] "2"
+BOT      : *22.12.2026* tarihinde *Kapadokya Balon Turu* için rezervasyon başlatıyorum. (Kişi başı 1.500₺) ✨ ⏎ Kaç kişi katılacaksınız? 👥
+STATE_OUT: stage=COLLECTING_INFO step=waiting_for_pax dateId=k2 selectedDate=2026-12-22 listed=undefined
+### SK-a3 [en] "2" → "Starting reservation for *Cappadocia Balloon Tour* on *Dec 22, 2026*…" dateId=k2
+### SK-a3 [ru] "2" → "Начинаю бронирование *Полёт на воздушном шаре в Каппадокии* на *22 дек 2026*…" dateId=k2
+### SK-a3 [ar] "2" → "أبدأ حجز *جولة بالون في كابادوكيا* في *22 ديسمبر 2026*…" dateId=k2
+```
+(Not: COLLECTING_INFO'daki tur değişimi (G5) zaten :11 ile yeni listeyi basıp `listedDateIds`'i üzerine yazıyordu; açık olan yol T10/TOUR_SELECTED idi.)
+
+**(b) H-pax → iptal → yeni rezervasyonda pax sızmıyor.** Turn 1: d1 (1 yer) seçili, "5 kişi" → H-pax, `pendingPax=5`. Turn 2: "vazgeçtim/cancel/отмена/إلغاء" → BROWSING. Turn 3: "Pamukkale 20 aralık" (tur+tarih tek mesaj).
+```
+ÖNCE (f4036d2):
+### SK-b2 [tr] "vazgeçtim"
+BOT      : Tamam, sorun değil! 😊 Başka bir konuda yardımcı olabilirim. Hangi tur ilginizi çeker?
+STATE_OUT: stage=BROWSING … pendingPax=5 listed=["d2","d4"]                              ← iptal sonrası pax niyeti ve liste hayatta
+AssertionError: iptalde pendingPax TEMİZLENMELİ   (tr/en/ru/ar ×4)
+(Turn 3'te 20.12 seçilince PENDING-PAX UYGULA 5 kişiyi yeni rezervasyona YAZARDI)
+
+SONRA:
+### SK-b2 [tr] "vazgeçtim"   STATE_OUT: stage=BROWSING … pendingPax=undefined listed=undefined
+### SK-b3 [tr] "Pamukkale 20 aralık"
+BOT      : *20.12.2026* tarihinde *Pamukkale Turu* için rezervasyon başlatıyorum. (Kişi başı 1.000₺) ✨ ⏎ Kaç kişi katılacaksınız? 👥
+STATE_OUT: stage=COLLECTING_INFO step=waiting_for_pax dateId=d2 pax=undefined pendingPax=undefined
+### SK-b3 [en] → "…*Pamukkale Tour* on *Dec 20, 2026*… How many people? 👥" pax=undefined
+### SK-b3 [ru] → "…*Тур в Памуккале* на *20 дек 2026*… Сколько человек? 👥" pax=undefined
+### SK-b3 [ar] → "…*جولة باموكالي* في *20 ديسمبر 2026*… كم شخصاً؟ 👥" pax=undefined
+```
+Koşum özeti: önce `FAILED | 0 passed | 8 failed` → sonra `ok | 20 passed | 0 failed` (12 Grup-A + 8 Son-kapı).
+
+### Suite + harness toplam
+```
+━━━ Katman-1 suite: scripts/test_behavioral.ts ━━━   1506 ✓ / 0 ✗
+━━━ Katman-2 harness ━━━                               ok | 20 passed | 0 failed
+━━━ SONUÇ ━━━  suite=✓  harness=✓
+```
+
+### Push / deploy
+- **Push: yapılmadı.** Yerel commit'ler: `f4036d2` (Dilim-1) + son-kapı commit'i (= bu raporu içeren commit; hash için `git log -1` — raporun içine kendi hash'i yazılamaz). `main` origin'in 2 commit önünde; uzak dalda bu commit'ler YOK.
+- **Deploy: yapılmadı** (`demo-chat` ve `whatsapp-webhook` deploy edilmedi; canlı bu değişiklikleri içermiyor).
+
 ## 6. Ürün sahibine sade özet
 Kontenjan dolunca ya da kişi sayısı sığmayınca bot'un bastığı tarih listesinden "2" diyen müşteriye artık **listedeki** tarih seçiliyor (eskiden yanlış tarihle rezervasyon veya sonsuz döngü vardı); bu dört dilde gerçek bot koduyla önce kırmızı, sonra yeşil kanıtlandı. Tarih listeleri yedi yerde ayrı ayrı elle yazılırken tek bir yere indirildi, tarih/para birimi her dilde doğru formatlanıyor ve "ilk tarih" varsayımı veritabanı sırasına bağlı olmaktan çıktı. Ayrıca bot'un ana işleyicisini gerçekten çalıştıran bir test düzeneği repoya girdi ve `npm test` tek komutla her şeyi koşuyor — Deno yoksa sessizce geçmek yerine hata veriyor.

@@ -12,6 +12,7 @@ import { produceTourChangeContext, hasReservationSignal } from "../services/tour
 import { isValidPax, isValidPhone } from "../utils/validation.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 import { CONFIRM_POSITIVE, CONFIRM_NEGATIVE, CLEAR_POSITIVE_RE } from "../constants/confirmation-words.ts";
+import { DATE_SELECTION_CLEAR } from "../services/date-list.ts";
 
 export function createInitialContext(
   language: string = "tr",
@@ -469,6 +470,7 @@ function resetForNewReservation(ctx: ConversationContext): Partial<ConversationC
     collectionStep: undefined,
     viewedTours: [],
     isNewReservation: true,
+    ...DATE_SELECTION_CLEAR,                       // Son kapı: COMPLETED→yeni rezervasyon
   };
 }
 
@@ -484,6 +486,7 @@ const transitions: StateTransition[] = [
       currentTour: null,
       reservationInfo: {},
       collectionStep: undefined,
+      ...DATE_SELECTION_CLEAR,                       // Son kapı
       justCancelled: true,
     }),
   },
@@ -497,6 +500,7 @@ const transitions: StateTransition[] = [
       reservationInfo: {},
       reservationConfirmed: false,
       collectionStep: undefined,
+      ...DATE_SELECTION_CLEAR,                       // Son kapı
       justCancelled: true,
     }),
   },
@@ -510,6 +514,7 @@ const transitions: StateTransition[] = [
       reservationInfo: {},
       reservationConfirmed: false,
       collectionStep: undefined,
+      ...DATE_SELECTION_CLEAR,                       // Son kapı
       justCancelled: true,
     }),
   },
