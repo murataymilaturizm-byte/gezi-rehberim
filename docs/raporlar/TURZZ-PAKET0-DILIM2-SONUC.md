@@ -198,5 +198,41 @@ Tip denetimi: `deno check` (handler + 2 giriş noktası grafiği) HEAD'de 13 hat
 
 ---
 
+## 7b. Kararlar (ürün sahibi, 2026-10-08)
+- §1 K1/K2/K3 **onaylandı** (uygulanan hâliyle).
+- §7 Gözlem 2 (vize notu çevirisi) ve Gözlem 1 (`createTourRef` kopyası): bu dilimde **dokunulmadı** (talimat).
+
+## 7c. Son düzeltme — tarih adımında dolu tarih sorusu → müsait liste (Gözlem 3)
+
+**Bulgu:** tarih adımında dolu tarih iki yoldan gelebiliyor. Düz seçim ("20'si" → Blok 8.5 → H-β) zaten "dolu + numaralı müsait liste" veriyordu; **müsaitlik sorusu** ("20'si müsait mi?" → :10e) yalnız "dolu" deyip bırakıyordu (liste yok, `listedDateIds` yok → "2" yazılsa global sıraya düşerdi).
+
+**Düzeltme (yeni dal/metin YOK):**
+- H-β'nın mevcut 7-dil "Müsait tarihler: … / Hangi tarihi tercih edersiniz?" metinleri **birebir** tek kaynağa (`_AVAIL_DATES_TXT` + `_availDatesBlock`) taşındı; H-β artık onu çağırıyor (çıktısı değişmedi — DOLU-c/DOLU-e "seçim" testleri önce ve sonra yeşil).
+- :10e: `waiting_for_date` adımında sorulan gün müsait değilse (dolu ya da yok) aynı blok eklenir; liste mevcut `_buildAvailableDatesText` → `buildDateList` (lokalize tarih, yalnız müsait, `listedDateIds` yazılır). Müsait tarih yoksa mevcut cevap aynen. Diğer adımlarda (ör. pax adımında "20'si de müsait mi") davranış değişmedi.
+
+**Harness — ÖNCE (`--filter DOLU-e`):**
+```
+DOLU-e [tr|en|ru|ar] tarih adımı "seçim": dolu 20'si → "dolu" + numaralı müsait liste → "2" ... ok ×4     ← H-β zaten doğru
+DOLU-e [tr|en|ru|ar] tarih adımı "soru":  dolu 20'si → "dolu" + numaralı müsait liste → "2" ... FAILED ×4
+FAILED | 4 passed | 4 failed
+### DOLU-e1 [tr] soru "20'si müsait mi?"   BOT: Maalesef 20.12.2026 (Pazar) (DOLU) — bu tarihte yer kalmadı. 😔                 listed=undefined
+### DOLU-e1 [en] soru "is the 20 available?" BOT: Sorry, Dec 20, 2026 (Sunday) (FULL) — this date is fully booked. 😔          listed=undefined
+### DOLU-e1 [ru] / [ar] — aynı: liste yok, listed=undefined
+```
+**Harness — SONRA:**
+```
+### DOLU-e1 [tr] soru "20'si müsait mi?"
+BOT      : Maalesef 20.12.2026 (Pazar) (DOLU) — bu tarihte yer kalmadı. 😔 ⏎ Müsait tarihler: ⏎ 1) 10.12.2026 (Perşembe) - 1.000₺ (10 kişilik yer) ⏎ 2) 25.12.2026 (Cuma) - 1.000₺ (8 kişilik yer) ⏎ Hangi tarihi tercih edersiniz?
+STATE_OUT: step=waiting_for_date dateId=undefined listed=["d1","d3"]
+### DOLU-e2 [tr] "2" → *25.12.2026* tarihinde *Pamukkale Turu* için rezervasyon başlatıyorum. … Kaç kişi katılacaksınız? 👥   dateId=d3
+### DOLU-e1 [en] … this date is fully booked. 😔 ⏎ Available dates: ⏎ 1) Dec 10, 2026 (Thursday) … ⏎ 2) Dec 25, 2026 (Friday) … ⏎ Which date do you prefer?   listed=["d1","d3"]
+### DOLU-e2 [en] "2" → Starting reservation for *Pamukkale Tour* on *Dec 25, 2026*. …   dateId=d3
+### DOLU-e1 [ru] … на эту дату мест нет. 😔 ⏎ Доступные даты: ⏎ 1) 10 дек 2026 (четверг) … ⏎ 2) 25 дек 2026 (пятница) …   listed=["d1","d3"]
+### DOLU-e2 [ru] "2" → Начинаю бронирование *Тур в Памуккале* на *25 дек 2026*. …   dateId=d3
+### DOLU-e1 [ar] … هذا التاريخ محجوز بالكامل. 😔 ⏎ التواريخ المتاحة: ⏎ 1) 10 ديسمبر 2026 (الخميس) … ⏎ 2) 25 ديسمبر 2026 (الجمعة) …   listed=["d1","d3"]
+### DOLU-e2 [ar] "2" → أبدأ حجز *جولة باموكالي* في *25 ديسمبر 2026*. …   dateId=d3
+```
+**Toplam (`npm test`):** suite **1536 ✓ / 0 ✗**, harness **ok | 60 passed | 0 failed** (Dilim-1 20 + Dilim-2 32 + son düzeltme 8), EXIT=0.
+
 ## 8. Ürün sahibine sade özet
 Acentenin panelde girdiği vize notu, vize zorunluluğu, minimum kişi sayısı ve otel bilgisi artık bot'a ulaşıyor; eskiden iki giriş noktası bu alanları yol üstünde düşürüyordu ve bot her vize sorusuna genel bir "acenteye danışın" cevabı veriyordu. Dolu tarihler artık listede "DOLU" etiketiyle numarasız görünüyor, "20'si müsait mi?" sorusuna "dolu" deniyor ve dolu bir tarih hiçbir yoldan seçilemiyor ya da rezerve edilemiyor; bunlar dört dilde gerçek bot koduyla önce kırmızı, sonra yeşil kanıtlandı. Değişiklik commit'lendi ama canlıya alınmadı; dolu tarihin nasıl gösterileceğine dair üç küçük ürün kararı (rapor §1) onayınızı bekliyor.

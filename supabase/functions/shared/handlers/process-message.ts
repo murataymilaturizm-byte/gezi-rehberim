@@ -162,6 +162,21 @@ async function _reservationTotalText(
   const ex = await getExchangeRatesOnce().catch(() => ({}));
   return formatPriceSync(total, currencyCode || "TRY", language, ex, showDual, languageCurrencies);
 }
+// "Müsait tarihler: <liste> <soru>" bloğu — TEK KAYNAK (Dilim-2 son düzeltme; metinler
+// H-β'dan BİREBİR taşındı). Tüketiciler: H-β (dolu tarih seçimi) + :10e (dolu tarih sorusu).
+const _AVAIL_DATES_TXT: Record<string, { head: string; ask: string }> = {
+  tr: { head: "Müsait tarihler:", ask: "Hangi tarihi tercih edersiniz?" },
+  en: { head: "Available dates:", ask: "Which date do you prefer?" },
+  de: { head: "Verfügbare Termine:", ask: "Welches Datum bevorzugen Sie?" },
+  ru: { head: "Доступные даты:", ask: "Какую дату вы предпочитаете?" },
+  ar: { head: "التواريخ المتاحة:", ask: "ما التاريخ الذي تفضله؟" },
+  fr: { head: "Dates disponibles:", ask: "Quelle date préférez-vous ?" },
+  es: { head: "Fechas disponibles:", ask: "¿Qué fecha prefieres?" },
+};
+function _availDatesBlock(listText: string, lang: string): string {
+  const t = _AVAIL_DATES_TXT[lang] || _AVAIL_DATES_TXT.tr;
+  return `\n\n${t.head}\n${listText}\n\n${t.ask}`;
+}
 const _TOTAL_LABELS: Record<string, string> = {
   tr: "Toplam", en: "Total", de: "Gesamt", ru: "Итого", ar: "الإجمالي", fr: "Total", es: "Total",
 };
@@ -2556,13 +2571,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
     const _msgs: Record<string, string> = _hasAlt
       ? {
-          tr: `Maalesef *${_rejDateLabel}* dolu. 😔\n\nMüsait tarihler:\n${_altText}\n\nHangi tarihi tercih edersiniz?`,
-          en: `Sorry, *${_rejDateLabel}* is fully booked. 😔\n\nAvailable dates:\n${_altText}\n\nWhich date do you prefer?`,
-          de: `Leider ist *${_rejDateLabel}* ausgebucht. 😔\n\nVerfügbare Termine:\n${_altText}\n\nWelches Datum bevorzugen Sie?`,
-          ru: `К сожалению, *${_rejDateLabel}* уже занят. 😔\n\nДоступные даты:\n${_altText}\n\nКакую дату вы предпочитаете?`,
-          ar: `للأسف، *${_rejDateLabel}* محجوز بالكامل. 😔\n\nالتواريخ المتاحة:\n${_altText}\n\nما التاريخ الذي تفضله؟`,
-          fr: `Désolé, *${_rejDateLabel}* est complet. 😔\n\nDates disponibles:\n${_altText}\n\nQuelle date préférez-vous ?`,
-          es: `Lo siento, *${_rejDateLabel}* está completo. 😔\n\nFechas disponibles:\n${_altText}\n\n¿Qué fecha prefieres?`,
+          tr: `Maalesef *${_rejDateLabel}* dolu. 😔${_availDatesBlock(_altText, "tr")}`,
+          en: `Sorry, *${_rejDateLabel}* is fully booked. 😔${_availDatesBlock(_altText, "en")}`,
+          de: `Leider ist *${_rejDateLabel}* ausgebucht. 😔${_availDatesBlock(_altText, "de")}`,
+          ru: `К сожалению, *${_rejDateLabel}* уже занят. 😔${_availDatesBlock(_altText, "ru")}`,
+          ar: `للأسف، *${_rejDateLabel}* محجوز بالكامل. 😔${_availDatesBlock(_altText, "ar")}`,
+          fr: `Désolé, *${_rejDateLabel}* est complet. 😔${_availDatesBlock(_altText, "fr")}`,
+          es: `Lo siento, *${_rejDateLabel}* está completo. 😔${_availDatesBlock(_altText, "es")}`,
         }
       : {
           tr: `Maalesef *${_rejDateLabel}* dolu ve şu anda başka müsait tarih bulunmuyor. 😔\n\nLütfen daha sonra tekrar deneyin veya acentemizle iletişime geçin.`,
@@ -3948,6 +3963,13 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           es: `No hay disponibilidad para el ${_avDay} por ahora. 😔`,
         };
         _avCore = _avNo[_avLang] || _avNo.en;
+      }
+      // Dilim-2 son düzeltme: TARİH ADIMINDA sorulan gün müsait değilse (dolu/yok) müşteri
+      // çıkmazda kalmasın → H-β ile AYNI blok: numaralı müsait liste (buildDateList →
+      // listedDateIds) + soru. Müsait tarih yoksa liste eklenmez (mevcut cevap aynen).
+      if (_avStepKey === "waiting_for_date" && _avAvail.length === 0 && _avTour) {
+        const _avAlt = await _buildAvailableDatesText(_avTour, 1, _avLang, newContext);
+        if (_avAlt.trim()) _avCore += _availDatesBlock(_avAlt, _avLang);
       }
       const _avReply = _avStepQ ? `${_avCore}\n\n${_avStepQ}` : _avCore;
       console.log(`[process-message] :10e V10 müsaitlik-cevabı (gün=${_avDay}, müsait=${_avAvail.length}, step=${_avStepKey}) — tarih DEĞİŞMEDİ`);

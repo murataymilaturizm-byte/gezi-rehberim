@@ -138,3 +138,27 @@ for (const lang of LANGS) {
     assertEquals(t.stateOut.collectionStep, "waiting_for_date");
   });
 }
+
+// ── Son düzeltme (Dilim-2): tarih adımında dolu tarih → "dolu" + NUMARALI müsait liste → "2"
+// İki giriş: düz seçim ("20'si" → H-β) ve müsaitlik sorusu ("20'si müsait mi?" → :10e).
+const PLAIN_20: Record<string, string> = { tr: "20'si", en: "the 20th", ru: "20-е", ar: "يوم 20" };
+for (const lang of LANGS) {
+  for (const [kind, msg] of [["seçim", PLAIN_20[lang]], ["soru", AVAIL_Q[lang]]] as const) {
+    Deno.test(`DOLU-e [${lang}] tarih adımı "${kind}": dolu 20'si → "dolu" + numaralı müsait liste → "2" = listedeki 2.`, async () => {
+      setNluMode({ kind: "fixed", fn: (m) => /^\d+$/.test(m.trim())
+        ? { intent: "provide_info", language: lang }
+        : { intent: kind === "soru" ? "general_question" : "provide_info", language: lang, entities: { dates: ["20"] } } });
+      const tours = botTours([rawTour()], lang);
+      const ctx = mkContext(tours[0], { language: lang, collectionStep: "waiting_for_date" });
+      const t1 = await runTurn({ ctx, message: msg, tours });
+      dumpTurn(`DOLU-e1 [${lang}] ${kind} "${msg}"`, t1);
+      assert(t1.reply.includes(formatDateForLanguage("2026-12-20", lang)), "dolu tarih adıyla anılmalı");
+      assert(/\n1\) /.test(t1.reply) && /\n2\) /.test(t1.reply), "numaralı müsait liste eklenmeli");
+      assertEquals(JSON.stringify(t1.stateOut.listedDateIds), '["d1","d3"]', "listedDateIds yalnız müsait");
+      assertEquals(t1.stateOut.reservationInfo.dateId, undefined);
+      const t2 = await runTurn({ ctx: t1.stateOut, message: "2", tours });
+      dumpTurn(`DOLU-e2 [${lang}] ${kind} "2"`, t2);
+      assertEquals(t2.stateOut.reservationInfo.dateId, "d3", '"2" = listedeki 2. tarih (25.12)');
+    });
+  }
+}
