@@ -2,7 +2,7 @@
 // F2 (rate-limit RPC hatasında mesaj sessizce düşüyordu) + :426 (.catch'siz insert).
 // GERÇEK webhook giriş kodu; Meta payload → DB satırı / gönderilen mesaj / logCritical.
 import { assert, assertEquals } from "https://deno.land/std@0.168.0/testing/asserts.ts";
-import { setupScenario, postWebhook, userRows, sent, processCalls, criticalLog } from "./webhook_harness.ts";
+import { setupScenario, postWebhook, userRows, sysRows, sent, processCalls, criticalLog } from "./webhook_harness.ts";
 
 const NOTICE = "geçici olarak kullanılamıyor";   // K2 7-dil bildiriminin TR metni (değişmedi)
 const TECH_ERR = "teknik bir sorun";              // dış catch'in genel hata mesajı
@@ -10,7 +10,7 @@ const notices = () => sent.filter((m) => m.text.includes(NOTICE)).length;
 
 for (const [label, scen, reason] of [
   ["aylık mesaj limiti dolu", { planLimit: 10, agency: { monthly_message_count: 10 } }, "monthly_limit"],
-  ["abonelik pasif (expired)", { agency: { subscription_status: "expired" } }, "subscription_inactive"],
+  ["abonelik pasif (expired)", { agency: { subscription_status: "expired" } }, "subscription_expired"],   // panelin okuduğu eski ad (karar 2)
 ] as const) {
   Deno.test(`F1 ${label}: her mesaj role=user + dropped_reason=${reason} kaydedilir; bildirim 24 saatte 1`, async () => {
     setupScenario(scen as any);
@@ -21,6 +21,10 @@ for (const [label, scen, reason] of [
     assertEquals(rows[0].content, "Merhaba, Kapadokya turu var mı?");
     assertEquals(rows[0].metadata?.dropped_reason, reason);
     assertEquals(notices(), 1, "ilk mesajda müşteriye bildirim gider");
+    // Karar 2: müşteri satırı ve [unavailable] satırı AYNI sebep adını yazar (tek sabit).
+    const sys = sysRows();
+    assertEquals(sys.length, 1, "[unavailable] soğuma satırı yazılmalı");
+    assertEquals(sys[0].metadata?.dropped_reason, reason, "system satırı da aynı ad");
     assertEquals(sent.filter((m) => m.text.includes(TECH_ERR)).length, 0, "ek 'teknik sorun' mesajı GİTMEMELİ");
     assertEquals(processCalls.length, 0, "bot işlemez");
 

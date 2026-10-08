@@ -7139,8 +7139,17 @@ console.log("\nPAKET-0 D3 webhook kayit + fail-open muhafizi");
     /async function saveInboundMessage\(/.test(_wh) && (_wh.match(/await saveInboundMessage\(|\(await saveInboundMessage\(/g) || []).length >= 3);
   assert("F1.STATIK tek-satir role=user insert'i helper DISINDA yok",
     !/from\("whatsapp_conversations"\)\.insert\(\{\s*phone: userPhone, role: "user"/.test(_wh));
-  assert("F1.STATIK limit/abonelik dali mesaji dropped_reason ile kaydediyor",
-    /droppedReason: _isExpired \? "subscription_inactive" : "monthly_limit"/.test(_wh));
+  // Dilim-3 karar 2: sebep adı TEK SABİT (shared/constants/drop-reasons.ts); iki satır aynı adı yazar.
+  assert("F1.STATIK limit/abonelik dali: musteri satiri + [unavailable] satiri AYNI _reason (tek sabit)",
+    /const _reason = _isExpired \? subscriptionDropReason\(_subStatus\) : DROP_REASON\.MONTHLY_LIMIT;/.test(_wh) &&
+    /droppedReason: _reason,/.test(_wh) && /metadata: \{ dropped_reason: _reason,/.test(_wh));
+  const _whCode2 = _wh.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+  assert("F1.STATIK webhook kodunda sebep adi string-literal YOK (message_limit_reached / subscription_inactive / monthly_limit)",
+    !/"(?:message_limit_reached|subscription_inactive|monthly_limit)"/.test(_whCode2));
+  const { DROP_REASON } = await import("../supabase/functions/shared/constants/drop-reasons.ts");
+  const _logsSrc = await Deno.readTextFile("src/components/WhatsAppLogs.tsx");
+  assert("F1.SOZLESME panel okuyucusu (WhatsAppLogs) abonelik oneki = DROP_REASON.SUBSCRIPTION_PREFIX",
+    _logsSrc.includes(`dropped_reason?.startsWith("${DROP_REASON.SUBSCRIPTION_PREFIX}")`));
   const _rleBlock = (_wh.match(/if \(_rle\) \{([\s\S]*?)\} else if \(_rl && !_rl\.allowed\)/) || [])[1] || "";
   assert("F2.STATIK rate-limit RPC hatasi FAIL-OPEN (erken return YOK, logCritical VAR)",
     _rleBlock.length > 0 && !/return new Response/.test(_rleBlock) && /logCritical\(/.test(_rleBlock));

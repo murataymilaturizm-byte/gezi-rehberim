@@ -177,5 +177,39 @@ Satır numaraları bu commit sonrası `whatsapp-webhook/index.ts`.
 
 ---
 
+## 10. Karar uygulaması (ürün sahibi, 2026-10-08)
+
+**K1 ONAY** (bot-pause satırı metadata'sız) · **K3 ONAY** (düşürülen mesaj sayaca yazılmaz) · **K4** talimatla zaten uygulanmıştı · **K2 DÜZELT:** sebep adları tek sabitte, iki satır da onu kullanır.
+
+### 10.1 Eski adların okunup okunmadığı (grep: `src/`, `supabase/` [functions + migrations/SQL + pg_cron], `scripts/`)
+| Eski ad | Okuyan var mı? | Kanıt | Karar |
+|---|---|---|---|
+| `subscription_<status>` (system satırı) | **EVET** | `src/components/WhatsAppLogs.tsx:221-223` — `meta?.dropped_reason?.startsWith("subscription_")`, öneki atıp durumu ("expired"…) "abonelik" rozetiyle gösterir | **Eski ad korunur**; müşteri satırı buna hizalandı (`subscription_inactive` → `subscription_expired` / `_cancelled` / `_suspended`) |
+| `message_limit_reached` (system satırı) | **HAYIR** | panel / SQL / migration / pg_cron / edge / script: 0 eşleşme. (`WhatsAppLogs` içerik araması `"message limit"` — boşluklu, bu adı yakalamaz) | **Yeni ada geçildi:** iki satır da `monthly_limit` |
+| `subscription_expired` / `subscription_cancelled` (lemonsqueezy, `subscription_history.event_type`, i18n `eventTypes`) | — | Ayrı alan (abonelik olay tipi), `dropped_reason` değil | Dokunulmadı |
+
+24 saatlik soğuma sorgusu içerik **önekine** bakıyor (`like "[unavailable]%"`) — eski adla yazılmış satırlar da eşleşmeye devam eder; ad değişikliği soğumayı bozmaz.
+
+### 10.2 Uygulama
+- `supabase/functions/shared/constants/drop-reasons.ts` (**yeni**): `DROP_REASON = { MONTHLY_LIMIT: "monthly_limit", SUBSCRIPTION_PREFIX: "subscription_" }` + `subscriptionDropReason(status)`; dosya başında okuyucu sözleşmesi (WhatsAppLogs:221) yazılı.
+- `whatsapp-webhook/index.ts`: `_reason = _isExpired ? subscriptionDropReason(_subStatus) : DROP_REASON.MONTHLY_LIMIT` — **müşteri satırı** (`droppedReason: _reason`) ve **`[unavailable]` satırı** (`content` + `metadata.dropped_reason`) aynı değeri kullanır. Abonelik satırındaki fazladan `subscription_status` meta'sı kaldırıldı (durum zaten adın içinde); limit satırında `message_limit` meta'sı kaldı.
+- Suite muhafızları (+2, biri değişti): iki satırın aynı `_reason`'ı kullandığı; webhook kodunda sebep adı string-literal'i olmadığı; **panel sözleşmesi** — `WhatsAppLogs.tsx`'teki önek `DROP_REASON.SUBSCRIPTION_PREFIX` ile aynı (biri değişirse suite kırmızı).
+- Webhook harness'i: abonelik beklentisi `subscription_expired`; her F1 senaryosunda system satırının `dropped_reason`'ı müşteri satırıyla **eşit** olmalı (yeni assertion).
+
+### 10.3 Kanıt (gerçek koşum)
+```
+[LIMIT]    whatsapp_conversations yazılan: [{"role":"user","content":"Merhaba","reason":"monthly_limit"},
+           {"role":"system","content":"[unavailable] monthly_limit","reason":"monthly_limit"},
+           {"role":"user","content":"Fiyat nedir?","reason":"monthly_limit"}]
+[ABONELIK] whatsapp_conversations yazılan: [{"role":"user","content":"Merhaba","reason":"subscription_expired"},
+           {"role":"system","content":"[unavailable] subscription_exp…","reason":"subscription_expired"},
+           {"role":"user","content":"Fiyat nedir?","reason":"subscription_expired"}]
+━━━ SONUÇ ━━━  suite=✓ (1543 ✓ / 0 ✗)  harness=✓ (60/60)  webhook=✓ (7/7)   EXIT=0
+```
+
+### 10.4 Yeni KARAR GEREKLİ (uygulanmadı, bilgi)
+- **Panelin `"quota_exceeded"` okuyucusunun yazanı yok** (`WhatsAppLogs.tsx:235`). Limit satırları (`monthly_limit`) panelde "quota" rozeti almaz, ham içerik görünür. Seçenekler: panel okuyucusunu `DROP_REASON.MONTHLY_LIMIT`'e çevirmek (panel değişikliği — bu dilimde yasak) ya da webhook'un `quota_exceeded` yazması.
+- **Panel davranışı (bilgi):** `WhatsAppLogs` (Kayıtlar ekranı) `dropped_reason` taşıyan satırın içeriğini rozetli teknik metinle değiştirir, ham metin popover'da görünür — abonelik nedeniyle düşen **müşteri** satırları da bu ekranda "abonelik" rozetiyle listelenir. Konuşmalar ekranı (`WhatsAppConversations`) `metadata` okumaz, müşteri metnini olduğu gibi gösterir.
+
 ## 9. Ürün sahibine sade özet
 Mesaj limiti dolmuş ya da aboneliği durmuş bir acentenin müşterisi yazdığında, bot cevap vermese de mesaj artık konuşma ekranına kaydediliyor; acente kimin ne yazdığını görebiliyor. Bu sırada bir hata daha bulup düzelttik: aynı durumda müşteriye her mesajda hem "hizmet kullanılamıyor" hem de "teknik sorun" mesajı gidiyordu ve "günde bir kez bildir" kuralı hiç çalışmıyordu; artık müşteri günde tek bildirim alıyor. Hız-sınırı kontrolü arıza verdiğinde de mesajlar artık kaybolmadan işleniyor. Değişiklik commit'lendi, canlıya alınmadı.

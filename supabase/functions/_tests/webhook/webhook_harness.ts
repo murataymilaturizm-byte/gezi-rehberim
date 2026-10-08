@@ -93,3 +93,9 @@ export const userRows = () => db.inserts
   .filter((i) => i.table === "whatsapp_conversations")
   .flatMap((i) => [i.payload].flat())
   .filter((p: any) => p?.role === "user");
+
+/** whatsapp_conversations'a GERÇEKTEN yazılmış role=system satırları ([unavailable] soğuma kaydı). */
+export const sysRows = () => db.inserts
+  .filter((i) => i.table === "whatsapp_conversations")
+  .flatMap((i) => [i.payload].flat())
+  .filter((p: any) => p?.role === "system");

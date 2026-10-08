@@ -11,6 +11,7 @@ import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { detectLanguageChangeIntent } from "../shared/fsm/localization.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
 import { toBotTours } from "../shared/services/bot-tour.ts";
+import { DROP_REASON, subscriptionDropReason } from "../shared/constants/drop-reasons.ts";
 import { markAsRead, showTypingIndicator } from "../shared/utils/whatsapp-status.ts";
 import { checkFAQ } from "./services/faq.ts";
 import { detectCannedResponseTrigger, buildCannedResponse, isIdleContext } from "../shared/services/canned-responses.ts";
@@ -424,14 +425,17 @@ serve(async (req) => {
     const _isLimitReached = _msgLimit > 0 && _msgCount >= _msgLimit;
 
     if (_isExpired || _isLimitReached) {
-      const _reason = _isExpired ? `subscription_${_subStatus}` : "message_limit_reached";
+      // Dilim-3 karar 2: sebep adı TEK SABİTTEN (shared/constants/drop-reasons.ts) — müşteri
+      // satırı ve [unavailable] satırı AYNI adı yazar (abonelik: panelin okuduğu eski
+      // `subscription_<status>`; limit: yeni `monthly_limit` — eski ad hiçbir yerde okunmuyordu).
+      const _reason = _isExpired ? subscriptionDropReason(_subStatus) : DROP_REASON.MONTHLY_LIMIT;
       console.warn(`[webhook] Message dropped — agency "${agency.name}" reason: ${_reason}`);
 
       // F1 (PAKET-0 Dilim-3): bot cevaplamasa da müşterinin mesajı HER ZAMAN kayda
       // geçer (tek nokta saveInboundMessage) — acente panelde görür, lead kaybolmaz.
       await saveInboundMessage(supabase, agency.id, userPhone, rawMessage, {
-        droppedReason: _isExpired ? "subscription_inactive" : "monthly_limit",
-        meta: _isExpired ? { subscription_status: _subStatus } : { message_limit: _msgLimit },
+        droppedReason: _reason,
+        meta: _isExpired ? undefined : { message_limit: _msgLimit },
         lossIfFail: true,
       });
 
