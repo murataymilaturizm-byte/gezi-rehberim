@@ -7220,4 +7220,51 @@ console.log("\nPAKET-0 D3 webhook kayit + fail-open muhafizi");
   assert("D5.REGEX DATE_QUERY_RE 'ne zaman' (A3 sinifi)", _DQ.test("Kapadokya turu ne zaman?"));
 }
 
+// ─── PAKET-0 Dilim-6: tek toplam formülü (D3) + tek özet builder (G1) + ₺ literal yasağı (C2) ───
+{
+  const _strip = (s: string) => s.split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+  const _pmRaw = await Deno.readTextFile("supabase/functions/shared/handlers/process-message.ts");
+  const _pm = _strip(_pmRaw);
+  // D3: özet/completion toplamı finance.ts calculateTotal'dan; eski "priceChild || priceAdult" formülü yok.
+  const _rtt = (_pm.match(/async function _reservationTotalText\([\s\S]*?\n\}/) || [""])[0];
+  assert("D6.D3 _reservationTotalText calculateTotal cagiriyor", /calculateTotal\(/.test(_rtt));
+  const _ownFormula: string[] = [];
+  for await (const dir of ["supabase/functions/shared/handlers", "supabase/functions/shared/services"]) {
+    for await (const e of Deno.readDir(dir)) {
+      if (!e.isFile || !e.name.endsWith(".ts")) continue;
+      const src = _strip(await Deno.readTextFile(`${dir}/${e.name}`));
+      if (/price_?[cC]hild\s*\|\|\s*\w*\.?price_?[aA]dult/.test(src) || /price_?[aA]dult\s*\*\s*\w*[pP]ax|[pP]ax\w*\s*\*\s*\w*\.?price_?[aA]dult/.test(src)) _ownFormula.push(e.name);
+    }
+  }
+  assert(`D6.D3 handlers/services'te kendi toplam formulu YOK (bulunan: ${_ownFormula.join(",") || "yok"})`, _ownFormula.length === 0);
+  // G1: tek etiket tablosu + tek 💰 satırı (builder) — A2/A3/:13/:13-PERSIST/FIX3 kopyaları silindi.
+  const _labelTables = (_pm.match(/adult: "yetişkin"/g) || []).length;
+  assert(`D6.G1 ozet etiket tablosu TEK (bulunan ${_labelTables})`, _labelTables === 1);
+  assert("D6.G1 kopya tablo adlari yok (_labelsA2/_labelsA3/_fix3Labels)", !/_labelsA2|_labelsA3|_fix3Labels/.test(_pm));
+  const _moneyLines = (_pm.match(/`💰 \$\{_TOTAL_LABELS/g) || []).length;
+  assert(`D6.G1 ozet 💰 satiri yalniz builder'da (bulunan ${_moneyLines})`, _moneyLines === 1);
+  for (const ask of ["confirm", "confirmYes", "persist", "reask"]) {
+    assert(`D6.G1 _summaryWithAsk "${ask}" kullaniliyor`, _pm.includes(`languageCurrencies, "${ask}")`) || new RegExp(`languageCurrencies, "${ask}",?\\s*\\)`).test(_pm));
+  }
+  // C2: shared/handlers + shared/services + shared/fsm/prompts — fiyat yanında sabit ₺/TRY
+  // literal'i YASAK (formatPriceSync zorunlu). Yorum satırları ve "C2-MUAF" işaretli satırlar
+  // (müşteri bütçe yankısı, D1 kararı bekliyor) hariç; formatPriceSync'in kendisi utils'te.
+  const _c2Bad: string[] = [];
+  let _c2Files = 0;
+  for (const dir of ["supabase/functions/shared/handlers", "supabase/functions/shared/services", "supabase/functions/shared/fsm/prompts", "supabase/functions/shared/fsm/prompts/stages", "supabase/functions/shared/fsm/prompts/lang", "supabase/functions/shared/fsm/prompts/tones", "supabase/functions/shared/fsm/prompts/roles"]) {
+    let entries: Deno.DirEntry[] = [];
+    try { entries = [...Deno.readDirSync(dir)]; } catch { continue; }
+    for (const e of entries) {
+      if (!e.isFile || !e.name.endsWith(".ts")) continue;
+      _c2Files++;
+      const lines = (await Deno.readTextFile(`${dir}/${e.name}`)).split("\n");
+      lines.forEach((l, i) => {
+        if (/^\s*(\/\/|\*|\/\*)/.test(l) || l.includes("C2-MUAF")) return;
+        if (/\}\s*₺|\}\s*TRY\b|\+\s*["'`]\s*(₺|TRY\b)/.test(l)) _c2Bad.push(`${dir.split("/").pop()}/${e.name}:${i + 1}`);
+      });
+    }
+  }
+  assert(`D6.C2 ${_c2Files} dosyada fiyat yaninda sabit ₺/TRY literal'i YOK (bulunan: ${_c2Bad.join(", ") || "yok"})`, _c2Bad.length === 0 && _c2Files > 10);
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

@@ -115,6 +115,8 @@ export async function runTurn(params: {
   loadHistory?: (limit: number, since?: string) => Promise<Array<{ role: string; content: string }>>;
   /** Bayat oturum (stale-reset) senaryosu için adapter sentinel'i. */
   stale?: any;
+  /** Ödeme talimatı (kapora mesajı kanıtı, Dilim-6). */
+  paymentInstructions?: any;
 }): Promise<TurnResult> {
   const sb = params.supabase ?? mkSupabase();
   // Handler context'i YERİNDE değiştirebilir (L3/H-pax) → giriş state'i kanıt için klonlanır.
@@ -122,7 +124,7 @@ export async function runTurn(params: {
   const { adapter, sent, saved } = mkAdapter(params.ctx, params.identifier, params.channel, { loadHistory: params.loadHistory, stale: params.stale });
   const res = await processChatMessage({
     message: params.message, adapter: adapter as any, agency: params.agency ?? AGENCY, supabase: sb as any,
-    tours: params.tours, paymentInstructions: null, languageCurrencies: null, primaryCurrency: "TRY",
+    tours: params.tours, paymentInstructions: params.paymentInstructions ?? null, languageCurrencies: null, primaryCurrency: "TRY",
     returningUserName: null, seedLanguage: params.seedLanguage,
   } as any);
   const stateOut = (saved() || res.newContext) as ConversationContext;

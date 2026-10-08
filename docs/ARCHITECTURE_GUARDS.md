@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-10-08 (PAKET-0 Dilim-5 — tur isteme/tarih sorusu → liste yalnız `buildDateList` [(e) talep fiili 7 dil, (b) FAQ intent'inde tur adıyla] + LLM geçmişi tek fonksiyon `loadConversationHistory` [WhatsApp önyüklemede de kesim+limit, demo en yeni N] + stale-reset kesim yazar + 14 prompt örneği. Detay §G20. Suite 1582 + harness 88 + webhook 20.).
+> Son güncelleme: 2026-10-08 (PAKET-0 Dilim-6 — D3 tek toplam formülü `calculateTotal` [price_child 0 = ücretsiz] + G1 tek özet builder [5 kopya tablo silindi, her özette 💰] + C2 ₺/TRY literal yasağı [prompt listeleri formatPriceSync]. Detay §G21. Suite 1592 + harness 128 + webhook 20.).
+> Önceki: 2026-10-08 (PAKET-0 Dilim-5 — tur isteme/tarih sorusu → liste yalnız `buildDateList` [(e) talep fiili 7 dil, (b) FAQ intent'inde tur adıyla] + LLM geçmişi tek fonksiyon `loadConversationHistory` [WhatsApp önyüklemede de kesim+limit, demo en yeni N] + stale-reset kesim yazar + 14 prompt örneği. Detay §G20. Suite 1582 + harness 88 + webhook 20.).
 > Önceki: 2026-10-08 (PAKET-0 Dilim-3 — F1 `saveInboundMessage` tek kayıt noktası [limit/abonelik dalında mesaj kaydı + dropped_reason] + `:426` catch'siz builder hatası + F2 rate-limit fail-open. Detay §G19. Suite 1541 + harness 60 + webhook 7.).
 > Önceki: 2026-10-08 (PAKET-0 Dilim-2 — B1 `toBotTours` tek dönüştürücü [elle tur-mapping silindi, tüm DB kolonları taşınır] + B2 dolu tarih `isFull` [numarasız/etiketli, seçilemez]. Detay §G18. Suite 1536/1536 + harness 52/52.).
 > Önceki: 2026-10-07 (PAKET-0 Dilim-1 — H1 Katman-2 harness [`_tests/harness`, `npm test`, Deno-yoksa sert hata] + Grup A tarih-listesi TEK primitif [`buildDateList`/`listedDateIds`/`resolveListedDate`, `sortTourDates`/`representativeDate`, H-pax `pendingPax`]. Detay §G17. Suite 1506/1506 + harness 12/12.).
@@ -403,6 +404,15 @@ başına lookaround'lu (yapıyorum eşleşmez).
 | Sözleşme | Müşteri turu ADIYLA ister/görmek ister (talep fiili 7 dil, bilgi isteği hariç) veya tarih kelimeli soru sorarsa (FAQ intent'inde tur adı şartıyla) liste YALNIZ `buildDateList`. LLM/NLU geçmişi YALNIZ `loadConversationHistory`: en yeni `limit` mesaj, ASC; `since` (historyCutoffAt) varsa DB sorgusu (önyükleme zaman damgasız). Kesim yazanlar: CONFIRMING→COMPLETED + stale-reset. Prompt örnekleri tarih/müsaitlik VAAT ETMEZ. |
 | Muhafız | Suite "PAKET-0 Dilim-5" (D5.STATIK tek kaynak/adapter sorgusu yok/since-önyükleme/stale-reset/(e) kararın içinde; D5.PROMPT 7 dosya; D5.REGEX). Harness `history_datelist_test.ts` (A1–A4, B1–B3 × tr/en/ru/ar; gerçek WhatsAppAdapter/DemoChatAdapter). |
 | Açık | RU hâl eki ("в Каппадокию") ve DE bileşik ("Kappadokien-Touren") tur eşleştirmede tutmuyor → tur seçilmez, (e) devreye giremez (ayrı iş). |
+
+### G21 — Tek toplam formülü + tek özet builder + ₺ literal yasağı (PAKET-0 Dilim-6, 2026-10-08)
+| | |
+|---|---|
+| Dosya | `shared/handlers/process-message.ts` `_reservationTotalText` (→ `calculateTotal`), `_CONFIRM_LABELS` (tek tablo; soru: reask/confirm/confirmYes/persist), `_buildUpdatedSummary` + `_summaryWithAsk`; `shared/fsm/prompts/helpers.ts` `_listPrice`. |
+| Kök (denetim D3/G1/C2) | Özet/completion toplamı `priceChild || priceAdult` (açık 0 → yetişkin fiyatı) iken RPC/kapora `calculateTotal` (0 → ücretsiz) → özet 3.000, kapora 2.000 üzerinden. 6 etiket tablosu kopyası; A2/A3 özetinde 💰 yoktu; 17-BV özeti yalnız TR/EN + 💰'sız. Prompt tur listeleri sabit "₺"/" TRY". |
+| Sözleşme | Toplam YALNIZ `calculateTotal` (null → yetişkin, 0 → ücretsiz). Müşteriye giden her rezervasyon özeti `_buildUpdatedSummary`'den (💰 dahil); soru metni `_CONFIRM_LABELS[lang][ask]`. handlers/services/fsm-prompts'ta fiyat yanında sabit ₺/TRY yok → `formatPriceSync`. |
+| Muhafız | Suite "PAKET-0 Dilim-6" (D6.D3 ×2, D6.G1 ×7, D6.C2 — 38 dosya; "C2-MUAF" işaretli satır muaf). Harness `summary_total_test.ts` (T: price_child 0/null × özet=completion=RPC=kapora; G: A2/A3 × COLLECTING_INFO/CONFIRMING; E: EUR) × tr/en/ru/ar. |
+| Açık | `response-validator.ts` `validateFieldReask` CONFIRMING yedeği hâlâ `formatReservationSummary` (TR/EN, 💰 yok; fsm katmanı senkron). Bütçe yankısı (`C2-MUAF`) D1 kararını bekliyor. |
 
 ---
 

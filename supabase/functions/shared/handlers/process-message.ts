@@ -24,7 +24,6 @@ import { STEP_QUESTIONS } from "../constants/step-questions.ts";
 import { detectLanguage } from "../fsm/language.ts";
 import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getStagePrompt } from "../fsm/prompt-builder.ts";
 import { validateAIResponse, validateInjectionResponse, validateFieldReask, detectEmptyPromise, detectFakeChangeAck } from "../fsm/response-validator.ts";
-import { formatReservationSummary } from "../fsm/prompts/helpers.ts";
 import { isEchoSafe } from "../services/echo-sanitize.ts";
 import { MONTH_ALTERNATION, MONTH_NAME_TO_NUMBER } from "../constants/month-names.ts";
 import { NUMBER_WORDS } from "../fsm/simple-extractor.ts";
@@ -150,14 +149,16 @@ function _traceLang(ctx: any, src: string, to: string, msg: string): void {
 // FIX1 (2026-07-24): rezervasyon TOPLAM tutarı — TEK-KAYNAK. CONFIRMING özeti +
 // completion AYNI fonksiyondan geçer → tutar hiçbir senaryoda farklı olamaz.
 // (Para birimi + Arapça-Hint rakam mevcut formatPriceSync zincirinden.)
+// Dilim-6 D3: formül finance.ts calculateTotal (RPC snapshot + kapora ile AYNI):
+// price_child null → yetişkin fiyatı, 0 → ücretsiz. Eskiden `priceChild || priceAdult`
+// açık 0'ı yetişkin fiyatına çeviriyordu → özet 3.000, RPC/kapora 2.000.
 async function _reservationTotalText(
   paxAdult: number, paxChild: number,
   priceAdult: number, priceChild: number | null | undefined,
   currencyCode: string, language: string,
   showDual: boolean, languageCurrencies: any,
 ): Promise<string> {
-  const total = (paxAdult || 0) * (priceAdult || 0) +
-    (paxChild || 0) * (priceChild || priceAdult || 0);
+  const total = calculateTotal(paxAdult, priceAdult, paxChild, priceChild);
   if (total <= 0) return "";
   const ex = await getExchangeRatesOnce().catch(() => ({}));
   return formatPriceSync(total, currencyCode || "TRY", language, ex, showDual, languageCurrencies);
@@ -306,16 +307,36 @@ async function _fileCancellationRequest(
 }
 
 // === PAKET-B (2026-07-25): CONFIRMING hibrit-düzeltme TEK-KAYNAK ===
-// Özet etiketleri (DAL1 + pendingFieldUpdateConfirm-apply ortak).
-const _CONFIRM_LABELS: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; reask: string }> = {
-  tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   reask: "Bilgileri güncelledim. Onaylıyor musunuz? ✅" },
-  en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     reask: "I've updated the details. Do you confirm? ✅" },
-  de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",    name: "Name",     phone: "Telefon",   reask: "Ich habe die Angaben aktualisiert. Bestätigen Sie? ✅" },
-  ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   reask: "Я обновил данные. Подтверждаете? ✅" },
-  ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",        child: "طفل",     name: "الاسم",    phone: "الهاتف",    reask: "تم تحديث البيانات. هل تؤكد؟ ✅" },
-  fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant",  name: "Nom",      phone: "Téléphone", reask: "J'ai mis à jour les informations. Confirmez-vous ? ✅" },
-  es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",    name: "Nombre",   phone: "Teléfono",  reask: "He actualizado los datos. ¿Confirma? ✅" },
+// Dilim-6 G1: TEK özet etiket tablosu — eskiden A2/A3/:13/:13-PERSIST/FIX3 kendi
+// kopyalarını taşıyordu (A2/A3'te 💰 Toplam yoktu). Soru metinleri dala göre:
+//   reask   — DAL1 / pendingFieldUpdateConfirm (değer uygulandı)
+//   confirm — A2/A3 açık değişiklik sonrası
+//   confirmYes — :13 ilk özet + 17-BV (K1 Katman 3: *evet* yönlendirmesi)
+//   persist — :13-PERSIST / FIX3 (belirsiz cevap → özet tekrar)
+const _CONFIRM_LABELS: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; reask: string; confirm: string; confirmYes: string; persist: string }> = {
+  tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   reask: "Bilgileri güncelledim. Onaylıyor musunuz? ✅",
+        confirm: "Bilgiler doğru mu, onaylıyor musunuz? ✅", confirmYes: "Bilgiler doğru mu? Onaylıyorsanız *evet* yazın ✅", persist: "Onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey var mı? ✅" },
+  en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     reask: "I've updated the details. Do you confirm? ✅",
+        confirm: "Are these details correct? Do you confirm? ✅", confirmYes: "Are these details correct? Reply *yes* to confirm ✅", persist: "Do you confirm, or is there something you'd like to change? ✅" },
+  de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",    name: "Name",     phone: "Telefon",   reask: "Ich habe die Angaben aktualisiert. Bestätigen Sie? ✅",
+        confirm: "Sind die Angaben korrekt? Bestätigen Sie? ✅", confirmYes: "Sind die Angaben korrekt? Antworten Sie *ja* zur Bestätigung ✅", persist: "Bestätigen Sie, oder möchten Sie etwas ändern? ✅" },
+  ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   reask: "Я обновил данные. Подтверждаете? ✅",
+        confirm: "Данные верны? Подтверждаете? ✅", confirmYes: "Данные верны? Напишите *да* для подтверждения ✅", persist: "Подтверждаете или хотите что-то изменить? ✅" },
+  ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",        child: "طفل",     name: "الاسم",    phone: "الهاتف",    reask: "تم تحديث البيانات. هل تؤكد؟ ✅",
+        confirm: "هل المعلومات صحيحة؟ هل تؤكد؟ ✅", confirmYes: "هل المعلومات صحيحة؟ اكتب *نعم* للتأكيد ✅", persist: "هل تؤكد أم تريد تغيير شيء ما؟ ✅" },
+  fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant",  name: "Nom",      phone: "Téléphone", reask: "J'ai mis à jour les informations. Confirmez-vous ? ✅",
+        confirm: "Les informations sont-elles correctes ? Confirmez-vous ? ✅", confirmYes: "Les informations sont-elles correctes ? Répondez *oui* pour confirmer ✅", persist: "Confirmez-vous, ou souhaitez-vous changer quelque chose ? ✅" },
+  es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",    name: "Nombre",   phone: "Teléfono",  reask: "He actualizado los datos. ¿Confirma? ✅",
+        confirm: "¿Los datos son correctos? ¿Confirma? ✅", confirmYes: "¿Los datos son correctos? Responda *sí* para confirmar ✅", persist: "¿Confirma o desea cambiar algo? ✅" },
 };
+type _SummaryAsk = "reask" | "confirm" | "confirmYes" | "persist";
+/** Özet + seçilen soru (tek builder + tek soru tablosu). */
+async function _summaryWithAsk(
+  info: any, currentTour: any, lang: string, tours: any[], agency: any, languageCurrencies: any, ask: _SummaryAsk,
+): Promise<string> {
+  const _sum = await _buildUpdatedSummary(info, currentTour, lang, tours, agency, languageCurrencies);
+  return `${_sum}\n\n${(_CONFIRM_LABELS[lang] || _CONFIRM_LABELS.tr)[ask]}`;
+}
 
 // Güncellenmiş reservationInfo → özet+💰 (reask hariç; çağıran ekler). Fiyat live tours'tan
 // (completion/CONFIRMING ile AYNI _reservationTotalText → tutar tutarlı).
@@ -1469,12 +1490,16 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _showDualB1 = agency.show_multi_currency !== false;
     const _langB1 = context.language || "tr";
 
+    // C2-MUAF (Dilim-6, KARAR GEREKLİ): müşterinin YAZDIĞI bütçe sayısının yankısı — tur
+    // fiyatı değil. Girdinin para birimi denetim D1'in konusu; o karar verilene kadar
+    // TRY varsayımı aynen (formatPriceSync'e bağlamak varsayımı gizlerdi). Suite C2
+    // muhafızı yalnız "C2-MUAF" işaretli satırları muaf tutar.
     const _summary: Record<string, string> =
       _priceLower !== null && _priceUpper !== null
-        ? { tr: `${_priceLower}-${_priceUpper}₺`, en: `${_priceLower}-${_priceUpper} TRY`, de: `${_priceLower}-${_priceUpper} TRY`, fr: `${_priceLower}-${_priceUpper} TRY`, es: `${_priceLower}-${_priceUpper} TRY`, ru: `${_priceLower}-${_priceUpper} TRY`, ar: `${_priceLower}-${_priceUpper} TRY` }
+        ? { tr: `${_priceLower}-${_priceUpper}₺`, en: `${_priceLower}-${_priceUpper} TRY`, de: `${_priceLower}-${_priceUpper} TRY`, fr: `${_priceLower}-${_priceUpper} TRY`, es: `${_priceLower}-${_priceUpper} TRY`, ru: `${_priceLower}-${_priceUpper} TRY`, ar: `${_priceLower}-${_priceUpper} TRY` } // C2-MUAF
         : _priceUpper !== null
-        ? { tr: `${_priceUpper}₺ altı`, en: `under ${_priceUpper} TRY`, de: `unter ${_priceUpper} TRY`, fr: `moins de ${_priceUpper} TRY`, es: `menos de ${_priceUpper} TRY`, ru: `до ${_priceUpper} TRY`, ar: `أقل من ${_priceUpper} TRY` }
-        : { tr: `${_priceLower}₺ üstü`, en: `over ${_priceLower} TRY`, de: `über ${_priceLower} TRY`, fr: `plus de ${_priceLower} TRY`, es: `más de ${_priceLower} TRY`, ru: `более ${_priceLower} TRY`, ar: `أكثر من ${_priceLower} TRY` };
+        ? { tr: `${_priceUpper}₺ altı`, en: `under ${_priceUpper} TRY`, de: `unter ${_priceUpper} TRY`, fr: `moins de ${_priceUpper} TRY`, es: `menos de ${_priceUpper} TRY`, ru: `до ${_priceUpper} TRY`, ar: `أقل من ${_priceUpper} TRY` } // C2-MUAF
+        : { tr: `${_priceLower}₺ üstü`, en: `over ${_priceLower} TRY`, de: `über ${_priceLower} TRY`, fr: `plus de ${_priceLower} TRY`, es: `más de ${_priceLower} TRY`, ru: `более ${_priceLower} TRY`, ar: `أكثر من ${_priceLower} TRY` }; // C2-MUAF
 
     if (_filtered.length === 0) {
       const _cheapest = _priced.sort((a: any, b: any) => a.price - b.price)[0];
@@ -1925,8 +1950,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       else if (_pf.field === "phone") _u.phone = _pf.value;
       else if (_pf.field === "date") { _u.dateId = _pf.value; if (_pf.selectedDate) _u.selectedDate = _pf.selectedDate; }
       const _uCtx = { ...context, reservationInfo: _u, collectionStep: "ready_for_confirmation", pendingFieldUpdateConfirm: undefined } as any;
-      const _sum = await _buildUpdatedSummary(_u, context.currentTour, _pfLang, tours, agency, languageCurrencies);
-      const _reply = `${_sum}\n\n${(_CONFIRM_LABELS[_pfLang] || _CONFIRM_LABELS.tr).reask}`;
+      const _reply = await _summaryWithAsk(_u, context.currentTour, _pfLang, tours, agency, languageCurrencies, "reask");
       console.log(`[process-message] §35-7 pendingFieldUpdateConfirm ONAY → ${_pf.field} uygulandı`);
       await _save(_reply, _uCtx);
       await adapter.sendResponse(_reply);
@@ -2406,8 +2430,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
     // PAKET-B: özet+💰 TEK-KAYNAK helper (completion/CONFIRMING ile aynı tutar).
     const _lang = _l2Context.language || "tr";
-    const _l2Sum = await _buildUpdatedSummary(_l2Updated, _l2Context.currentTour, _lang, tours, agency, languageCurrencies);
-    const _l2Reply = `${_l2Sum}\n\n${(_CONFIRM_LABELS[_lang] || _CONFIRM_LABELS.tr).reask}`;
+    const _l2Reply = await _summaryWithAsk(_l2Updated, _l2Context.currentTour, _lang, tours, agency, languageCurrencies, "reask");
 
     const _diffs = [_l2DiffFN && "name", _l2DiffPh && "phone", _l2DiffPx && "pax", _l2DiffDid && "date", _l2DiffSd && "selectedDate"].filter(Boolean).join(",");
     console.log(`[process-message] F4 Katman 2 DAL 1: çelişki yakalandı (diffs=${_diffs}) — değişiklik uygula + özet+onay`);
@@ -2790,32 +2813,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
       let _replyBody: string;
       if (_allFilled) {
-        // Mevcut PHONE→CONFIRMING özet formatı kopyası (yeni template DEĞİL — tutarlılık)
-        const _labelsA2: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; confirm: string }> = {
-          tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu, onaylıyor musunuz? ✅" },
-          en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     confirm: "Are these details correct? Do you confirm? ✅" },
-          de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",   name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Bestätigen Sie? ✅" },
-          ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Подтверждаете? ✅" },
-          ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",         child: "طفل",    name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ هل تؤكد؟ ✅" },
-          fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant", name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Confirmez-vous ? ✅" },
-          es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",   name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? ¿Confirma? ✅" },
-        };
-        const L = _labelsA2[_langA2] || _labelsA2.tr;
-        const _tourTitle = context.currentTour
-          ? getLocalizedTourTitle(context.currentTour.title || "", _langA2)
-          : "";
-        const _dateText = _newInfo.selectedDate ? formatDateForLanguage(_newInfo.selectedDate, _langA2) : "";
-        const _paxText = typeof _newInfo.paxChild === "number" && _newInfo.paxChild > 0
-          ? `${_paxExt} ${L.adult}, ${_newInfo.paxChild} ${L.child}`
-          : `${_paxExt}`;
-        const _summary = [
-          _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
-          _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
-          _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
-          _newInfo.fullName ? `👤 ${L.name}: ${_newInfo.fullName}` : "",
-          _newInfo.phone    ? `📱 ${L.phone}: ${_newInfo.phone}`   : "",
-        ].filter(Boolean).join("\n");
-        _replyBody = `${_summary}\n\n${L.confirm}`;
+        // Dilim-6 G1: tek özet builder (💰 Toplam dahil — pax değişince yeni toplam görünür).
+        _replyBody = await _summaryWithAsk(_newInfo, context.currentTour, _langA2, tours, agency, languageCurrencies, "confirm");
       } else {
         // Eksik alan sorusu (7 dil × 3 olası step)
         const _stepQuestions: Record<string, Record<string, string>> = {
@@ -2869,17 +2868,6 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
     const _langA3 = context.language || "tr";
 
-    // 7 dil özet labelleri (A2 ile aynı format, inline kopya — A4'te helper refactor)
-    const _labelsA3: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; confirm: string }> = {
-      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu, onaylıyor musunuz? ✅" },
-      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     confirm: "Are these details correct? Do you confirm? ✅" },
-      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",   name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Bestätigen Sie? ✅" },
-      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Подтверждаете? ✅" },
-      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",         child: "طفل",    name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ هل تؤكد؟ ✅" },
-      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant", name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Confirmez-vous ? ✅" },
-      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",   name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? ¿Confirma? ✅" },
-    };
-
     const _stepQuestionsA3: Record<string, Record<string, string>> = {
       waiting_for_phone: {
         tr: "Telefon numaranızı alabilir miyim? 📱",
@@ -2911,7 +2899,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     };
 
     // Helper: değişikliği uygula → step + body inşa et + reply döndür
-    const _buildA3Reply = (prefix: string, newInfo: any): { reply: string; newCtx: any; nextStage: string; nextStep: string } => {
+    const _buildA3Reply = async (prefix: string, newInfo: any): Promise<{ reply: string; newCtx: any; nextStage: string; nextStep: string }> => {
       const _hasDate = !!newInfo.dateId;
       const _hasName = !!newInfo.fullName;
       const _hasPhone = !!newInfo.phone;
@@ -2928,22 +2916,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
 
       let _body: string;
       if (_allFilled) {
-        const L = _labelsA3[_langA3] || _labelsA3.tr;
-        const _tourTitle = context.currentTour
-          ? getLocalizedTourTitle(context.currentTour.title || "", _langA3)
-          : "";
-        const _dateText = newInfo.selectedDate ? formatDateForLanguage(newInfo.selectedDate, _langA3) : "";
-        const _paxText = typeof newInfo.paxChild === "number" && newInfo.paxChild > 0
-          ? `${newInfo.paxAdult} ${L.adult}, ${newInfo.paxChild} ${L.child}`
-          : `${newInfo.paxAdult}`;
-        const _summary = [
-          _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
-          _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
-          _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
-          newInfo.fullName ? `👤 ${L.name}: ${newInfo.fullName}` : "",
-          newInfo.phone    ? `📱 ${L.phone}: ${newInfo.phone}`   : "",
-        ].filter(Boolean).join("\n");
-        _body = `${_summary}\n\n${L.confirm}`;
+        // Dilim-6 G1: tek özet builder (💰 Toplam dahil).
+        _body = await _summaryWithAsk(newInfo, context.currentTour, _langA3, tours, agency, languageCurrencies, "confirm");
       } else {
         const _qSet = _stepQuestionsA3[_nextStep] || _stepQuestionsA3.waiting_for_phone;
         _body = _qSet[_langA3] || _qSet.tr;
@@ -2975,7 +2949,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         ar: `تم تحديث *التاريخ* من ${_oldDateText} إلى ${_newDateText}. ✨`,
       };
       const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
-      const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
+      const { reply, newCtx, nextStage, nextStep } = await _buildA3Reply(_prefix, _newInfo);
       console.log(`[A] dateId açık değişiklik uygulandı: ${_info.dateId}→${_dateExt}, stage=${nextStage}, step=${nextStep}`);
       await _save(reply, newCtx);
       await adapter.sendResponse(reply);
@@ -3005,7 +2979,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         ar: `تم تحديث *الاسم* من ${_oldName} إلى ${_nameExt}. ✨`,
       };
       const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
-      const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
+      const { reply, newCtx, nextStage, nextStep } = await _buildA3Reply(_prefix, _newInfo);
       console.log(`[A] fullName açık değişiklik uygulandı: ${String(_oldName || "").charAt(0)}***→${String(_nameExt || "").charAt(0)}***, stage=${nextStage}, step=${nextStep}`);
       await _save(reply, newCtx);
       await adapter.sendResponse(reply);
@@ -3082,7 +3056,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         ar: `تم تحديث *الهاتف* من ${_oldPhone} إلى ${_phoneExt}. ✨`,
       };
       const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
-      const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
+      const { reply, newCtx, nextStage, nextStep } = await _buildA3Reply(_prefix, _newInfo);
       console.log(`[A] phone açık değişiklik uygulandı: ${maskPhone(String(_oldPhone))}→${maskPhone(String(_phoneExt))}, stage=${nextStage}, step=${nextStep}`);
       await _save(reply, newCtx);
       await adapter.sendResponse(reply);
@@ -3117,7 +3091,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         ar: `تم تحديث *الهاتف* من ${_oldPhone} إلى ${_phoneExt}. ✨`,
       };
       const _prefix = _prefixMsgs[_langA3] || _prefixMsgs.tr;
-      const { reply, newCtx, nextStage, nextStep } = _buildA3Reply(_prefix, _newInfo);
+      const { reply, newCtx, nextStage, nextStep } = await _buildA3Reply(_prefix, _newInfo);
       console.log(`[A] phone PROMOSYON (kuru geçerli telefon, kelime yok) uygulandı: ${maskPhone(String(_oldPhone))}→${maskPhone(String(_phoneExt))}, stage=${nextStage}, step=${nextStep}`);
       await _save(reply, newCtx);
       await adapter.sendResponse(reply);
@@ -4525,7 +4499,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           const _a2Rates = await getExchangeRatesOnce().catch(() => ({}));
           const _a2Dual = agency.show_multi_currency !== false;
           if (!_a2Child) {
-            const _a2Total = formatPriceSync(_a2Date.price_adult * _a2Pax, _a2Tour?.currency || "TRY", _lang, _a2Rates, _a2Dual, languageCurrencies);
+            const _a2Total = formatPriceSync(calculateTotal(_a2Pax, _a2Date.price_adult), _a2Tour?.currency || "TRY", _lang, _a2Rates, _a2Dual, languageCurrencies);
             const _a2P: Record<string, string> = {
               tr: `*${_a2Pax} kişi* için toplam *${_a2Total}* ✨\n\n`,
               en: `Total for *${_a2Pax} ${_a2Pax === 1 ? "person" : "people"}*: *${_a2Total}* ✨\n\n`,
@@ -4727,64 +4701,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // gönderilir, LLM çağrılmaz. Bu turn'de bot pax/isim/telefon TEKRAR SORAMAZ
   // (canlı bug kanıtı: LLM dolu state'te bile "Kaç kişi?" diyordu).
   if (newContext.stage === "CONFIRMING" && context.stage !== "CONFIRMING") {
-    const _lang = newContext.language || "tr";
-    const info = (newContext.reservationInfo as any) || {};
-    const _tourTitle = newContext.currentTour
-      ? getLocalizedTourTitle(newContext.currentTour.title || "", _lang)
-      : "";
-    const _dateText = info.selectedDate ? formatDateForLanguage(info.selectedDate, _lang) : "";
-    // 2026-06-25 KÖK 2 ince ayar: paxChild gösterimi (canlı kanıt 058bb668 — ilk
-    // özet "Kişi sayısı: 3" diyordu, ikinci özet (LLM) "3 yetişkin, 2 çocuk" doğru.
-    // İlk bypass mevcut sadece paxAdult'a bakıyordu. Tutarlı için pax satırı
-    // "X yetişkin, Y çocuk" formatına çevrildi (paxChild yoksa "X yetişkin").
-    const _paxAdult = info.paxAdult ?? "";
-    const _paxChild = info.paxChild;
-    const _name = info.fullName || "";
-    const _phone = info.phone || "";
-
-    // 2026-07-02 K1 KATMAN 3: confirm satırına net anahtar-kelime yönlendirmesi.
-    // detectConfirmation dar bir onay-kelime whitelist'i kullanır; kullanıcıyı doğru
-    // kelimeye yönlendirmek Haiku'nun intent sınıflandırma tutarsızlığından bağımsız
-    // olarak COMPLETED'a geçişi güvenilir kılar (canlı yanlış-negatif dersini kapatır).
-    const _labels: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; confirm: string }> = {
-      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",  child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   confirm: "Bilgiler doğru mu? Onaylıyorsanız *evet* yazın ✅" },
-      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",     child: "child",   name: "Name",     phone: "Phone",     confirm: "Are these details correct? Reply *yes* to confirm ✅" },
-      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",  name: "Name",     phone: "Telefon",   confirm: "Sind die Angaben korrekt? Antworten Sie *ja* zur Bestätigung ✅" },
-      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",  child: "ребёнок", name: "Имя",      phone: "Телефон",   confirm: "Данные верны? Напишите *да* для подтверждения ✅" },
-      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",      child: "طفل",     name: "الاسم",    phone: "الهاتف",    confirm: "هل المعلومات صحيحة؟ اكتب *نعم* للتأكيد ✅" },
-      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",    child: "enfant",  name: "Nom",      phone: "Téléphone", confirm: "Les informations sont-elles correctes ? Répondez *oui* pour confirmer ✅" },
-      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",    child: "niño",    name: "Nombre",   phone: "Teléfono",  confirm: "¿Los datos son correctos? Responda *sí* para confirmar ✅" },
-    };
-    const L = _labels[_lang] || _labels.tr;
-
-    // paxChild varsa "X yetişkin, Y çocuk"; yoksa sadece "X" (mevcut sade davranış)
-    const _paxText = _paxAdult !== ""
-      ? (typeof _paxChild === "number" && _paxChild > 0
-          ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}`
-          : `${_paxAdult}`)
-      : "";
-
-    // FIX1: 💰 Toplam — completion ile AYNI kaynak (live tours) ve AYNI helper →
-    // özet-ile-completion tutarı hiçbir senaryoda farklı olamaz.
-    const _confTour = tours.find((t: any) => t.id === (newContext.currentTour?.id || (info as any).tourId));
-    const _confDate = _confTour?.dates?.find((d: any) => d.id === (info as any).dateId);
-    const _confTotalText = await _reservationTotalText(
-      Number(_paxAdult) || 0, typeof _paxChild === "number" ? _paxChild : 0,
-      _confDate?.price_adult || 0, _confDate?.price_child,
-      _confTour?.currency || "TRY", _lang,
-      agency.show_multi_currency !== false, languageCurrencies,
+    // 2026-07-02 K1 KATMAN 3: onay sorusu net anahtar-kelime yönlendirmeli (confirmYes).
+    // Dilim-6 G1: tek özet builder — completion ile AYNI toplam (calculateTotal).
+    const summaryReply = await _summaryWithAsk(
+      newContext.reservationInfo, newContext.currentTour, newContext.language || "tr", tours, agency, languageCurrencies, "confirmYes",
     );
-
-    const _summaryLines = [
-      _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
-      _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
-      _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
-      _name      ? `👤 ${L.name}: ${_name}`        : "",
-      _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
-      _confTotalText ? `💰 ${_TOTAL_LABELS[_lang] || _TOTAL_LABELS.en}: *${_confTotalText}*` : "",
-    ].filter(Boolean).join("\n");
-
-    const summaryReply = `${_summaryLines}\n\n${L.confirm}`;
     await _save(summaryReply, newContext);
     await adapter.sendResponse(summaryReply);
     return { success: true, response: summaryReply, newContext };
@@ -4824,60 +4745,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   //   "0555 123 45 67" gibi) LLM'e gider. SADECE belirsiz/içeriksiz intent'ler
   //   (confirm_reservation/general/greeting) bypass tetikler.
   if (shouldTriggerSummaryReask(context, newContext, nluResult.intent)) {
-    const _lang = newContext.language || "tr";
-    const info = (newContext.reservationInfo as any) || {};
-    const _tourTitle = newContext.currentTour
-      ? getLocalizedTourTitle(newContext.currentTour.title || "", _lang)
-      : "";
-    const _dateText = info.selectedDate ? formatDateForLanguage(info.selectedDate, _lang) : "";
-    // 2026-06-25 KÖK 2 ince ayar: paxChild gösterimi (:13 ile tutarlı)
-    const _paxAdult = info.paxAdult ?? "";
-    const _paxChild = info.paxChild;
-    const _name = info.fullName || "";
-    const _phone = info.phone || "";
-
-    // Mevcut :13 ile aynı label yapısı (tutarlı görünüm). FARK: confirm metni
-    // daha sade — "Bilgileri tekrar görmenizi istedim" yok (kullanıcı o cümleyi
-    // kurmadı, tuhaf). Özet zaten üstte, sade soru yeter.
-    const _labels: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; reask: string }> = {
-      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   reask: "Onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey var mı? ✅" },
-      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     reask: "Do you confirm, or is there something you'd like to change? ✅" },
-      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",    name: "Name",     phone: "Telefon",   reask: "Bestätigen Sie, oder möchten Sie etwas ändern? ✅" },
-      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   reask: "Подтверждаете или хотите что-то изменить? ✅" },
-      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",        child: "طفل",     name: "الاسم",    phone: "الهاتف",    reask: "هل تؤكد أم تريد تغيير شيء ما؟ ✅" },
-      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant",  name: "Nom",      phone: "Téléphone", reask: "Confirmez-vous, ou souhaitez-vous changer quelque chose ? ✅" },
-      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",    name: "Nombre",   phone: "Teléfono",  reask: "¿Confirma o desea cambiar algo? ✅" },
-    };
-    const L = _labels[_lang] || _labels.tr;
-
-    const _paxText = _paxAdult !== ""
-      ? (typeof _paxChild === "number" && _paxChild > 0
-          ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}`
-          : `${_paxAdult}`)
-      : "";
-
-    // CİLA-2 İŞ3 (2026-07-26): 💰 Toplam — re-ask özeti PHONE→CONFIRMING/completion ile
-    // AYNI _reservationTotalText tek-kaynağından. Canlı bug: bu re-ask özeti 💰'siz basılıyordu
-    // (ilk özet 💰'lu). Özet nereden basılırsa basılsın toplam dahil.
-    const _p13Tour = tours.find((t: any) => t.id === (newContext.currentTour?.id || (info as any).tourId));
-    const _p13Date = _p13Tour?.dates?.find((d: any) => d.id === (info as any).dateId);
-    const _p13TotalText = await _reservationTotalText(
-      Number(_paxAdult) || 0, typeof _paxChild === "number" ? _paxChild : 0,
-      _p13Date?.price_adult || 0, _p13Date?.price_child,
-      _p13Tour?.currency || "TRY", _lang,
-      agency.show_multi_currency !== false, languageCurrencies,
+    // Sade soru (persist): özet zaten üstte. Dilim-6 G1: tek özet builder (💰 dahil).
+    const reaskReply = await _summaryWithAsk(
+      newContext.reservationInfo, newContext.currentTour, newContext.language || "tr", tours, agency, languageCurrencies, "persist",
     );
-
-    const _summaryLines = [
-      _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
-      _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
-      _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
-      _name      ? `👤 ${L.name}: ${_name}`        : "",
-      _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
-      _p13TotalText ? `💰 ${_TOTAL_LABELS[_lang] || _TOTAL_LABELS.en}: *${_p13TotalText}*` : "",
-    ].filter(Boolean).join("\n");
-
-    const reaskReply = `${_summaryLines}\n\n${L.reask}`;
     console.log(`[process-message] :13-PERSIST tetiklendi (CONFIRMING no-op, intent=${nluResult.intent}, özet tekrar)`);
     await _save(reaskReply, newContext);
     await adapter.sendResponse(reaskReply);
@@ -5495,51 +5366,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       messageCount: context.messageCount + 1,
       lastUpdated: new Date().toISOString(),
     };
-    // Özet+onay tekrar — :13-PERSIST ile aynı format (tutarlı görünüm).
-    const _lang = _preservedContext.language || "tr";
-    const info = (_preservedContext.reservationInfo as any) || {};
-    const _tourTitle = _preservedContext.currentTour
-      ? getLocalizedTourTitle(_preservedContext.currentTour.title || "", _lang)
-      : "";
-    const _dateText = info.selectedDate ? formatDateForLanguage(info.selectedDate, _lang) : "";
-    const _paxAdult = info.paxAdult ?? "";
-    const _paxChild = info.paxChild;
-    const _name = info.fullName || "";
-    const _phone = info.phone || "";
-
-    const _fix3Labels: Record<string, { tour: string; date: string; pax: string; adult: string; child: string; name: string; phone: string; reask: string }> = {
-      tr: { tour: "Tur",     date: "Tarih",   pax: "Kişi sayısı", adult: "yetişkin",    child: "çocuk",   name: "Ad-Soyad", phone: "Telefon",   reask: "Onaylıyor musunuz, yoksa değiştirmek istediğiniz bir şey var mı? ✅" },
-      en: { tour: "Tour",    date: "Date",    pax: "People",      adult: "adult",       child: "child",   name: "Name",     phone: "Phone",     reask: "Do you confirm, or is there something you'd like to change? ✅" },
-      de: { tour: "Tour",    date: "Datum",   pax: "Personen",    adult: "Erwachsener", child: "Kind",    name: "Name",     phone: "Telefon",   reask: "Bestätigen Sie, oder möchten Sie etwas ändern? ✅" },
-      ru: { tour: "Тур",     date: "Дата",    pax: "Человек",     adult: "взрослый",    child: "ребёнок", name: "Имя",      phone: "Телефон",   reask: "Подтверждаете или хотите что-то изменить? ✅" },
-      ar: { tour: "الجولة", date: "التاريخ", pax: "عدد الأشخاص", adult: "بالغ",        child: "طفل",     name: "الاسم",    phone: "الهاتف",    reask: "هل تؤكد أم تريد تغيير شيء ما؟ ✅" },
-      fr: { tour: "Circuit", date: "Date",    pax: "Personnes",   adult: "adulte",      child: "enfant",  name: "Nom",      phone: "Téléphone", reask: "Confirmez-vous, ou souhaitez-vous changer quelque chose ? ✅" },
-      es: { tour: "Tour",    date: "Fecha",   pax: "Personas",    adult: "adulto",      child: "niño",    name: "Nombre",   phone: "Teléfono",  reask: "¿Confirma o desea cambiar algo? ✅" },
-    };
-    const L = _fix3Labels[_lang] || _fix3Labels.tr;
-    const _paxText = _paxAdult !== ""
-      ? (typeof _paxChild === "number" && _paxChild > 0
-          ? `${_paxAdult} ${L.adult}, ${_paxChild} ${L.child}`
-          : `${_paxAdult}`)
-      : "";
-    // CİLA-2 İŞ3 (2026-07-26): 💰 Toplam — bu re-ask özeti de tek-kaynak _reservationTotalText.
-    const _f3Tour = tours.find((t: any) => t.id === (_preservedContext.currentTour?.id || (info as any).tourId));
-    const _f3Date = _f3Tour?.dates?.find((d: any) => d.id === (info as any).dateId);
-    const _f3TotalText = await _reservationTotalText(
-      Number(_paxAdult) || 0, typeof _paxChild === "number" ? _paxChild : 0,
-      _f3Date?.price_adult || 0, _f3Date?.price_child,
-      _f3Tour?.currency || "TRY", _lang,
-      agency.show_multi_currency !== false, languageCurrencies,
+    // Özet+onay tekrar — :13-PERSIST ile aynı (Dilim-6 G1: tek özet builder, 💰 dahil).
+    const fix3Reply = await _summaryWithAsk(
+      _preservedContext.reservationInfo, _preservedContext.currentTour, _preservedContext.language || "tr", tours, agency, languageCurrencies, "persist",
     );
-    const _summaryLines = [
-      _tourTitle ? `📋 ${L.tour}: *${_tourTitle}*` : "",
-      _dateText  ? `📅 ${L.date}: ${_dateText}`    : "",
-      _paxText   ? `👥 ${L.pax}: ${_paxText}`      : "",
-      _name      ? `👤 ${L.name}: ${_name}`        : "",
-      _phone     ? `📱 ${L.phone}: ${_phone}`      : "",
-      _f3TotalText ? `💰 ${_TOTAL_LABELS[_lang] || _TOTAL_LABELS.en}: *${_f3TotalText}*` : "",
-    ].filter(Boolean).join("\n");
-    const fix3Reply = `${_summaryLines}\n\n${L.reask}`;
     await _save(fix3Reply, _preservedContext);
     await adapter.sendResponse(fix3Reply);
     return { success: true, response: fix3Reply, newContext: _preservedContext };
@@ -5765,18 +5595,11 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // V1-ack stage-aware öncelik: CONFIRMING'de sahte-ack → ÖZET+ONAY
     // (tarih listesi değil — kullanıcı onay aşamasında, K1 Katman 3 tonu).
     if (_fakeAckMatch && newContext.stage === "CONFIRMING" && _bvTour) {
-      const _sumr = formatReservationSummary(_bvTour, newContext.reservationInfo, _bvLang, newContext.tone as string);
-      // 2026-07-09 Faz 5 B: tr+en → 7-dil.
-      const _confirmQ: Record<string, string> = {
-        tr: "\n\nBilgiler doğru mu? Onaylıyorsanız *evet* yazın ✅",
-        en: "\n\nAre these details correct? Reply *yes* to confirm ✅",
-        de: "\n\nSind diese Angaben korrekt? Antworten Sie mit *ja* zur Bestätigung ✅",
-        fr: "\n\nCes informations sont-elles correctes ? Répondez *oui* pour confirmer ✅",
-        es: "\n\n¿Son correctos estos datos? Responda *sí* para confirmar ✅",
-        ru: "\n\nВсё верно? Напишите *да* для подтверждения ✅",
-        ar: "\n\nهل هذه المعلومات صحيحة؟ اكتب *نعم* للتأكيد ✅",
-      };
-      _bvReplacement = _sumr + (_confirmQ[_bvLang] || _confirmQ.en);
+      // Dilim-6 G1: eskiden formatReservationSummary (yalnız TR/EN, 💰 yok) + kendi
+      // 7-dil soru kopyası → :13 ile AYNI özet ve AYNI soru (confirmYes).
+      _bvReplacement = await _summaryWithAsk(
+        newContext.reservationInfo, _bvTour, _bvLang, tours, agency, languageCurrencies, "confirmYes",
+      );
     } else if (_bvTour?.dates?.length) {
       // 2026-10-07 A1/C2: TEK primitif — eski hâl `${price}₺` ile para birimini yok sayıyordu.
       const _bvLines = buildDateList(_bvTour, _bvTour.dates, newContext, {

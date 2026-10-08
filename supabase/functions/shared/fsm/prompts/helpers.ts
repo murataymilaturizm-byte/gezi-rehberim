@@ -23,6 +23,14 @@ export function formatDateHeader(language: string): string {
 }
 
 /**
+ * Liste satırı fiyatı — Dilim-6 C2: turun KENDİ para birimi (formatPriceSync, tek para,
+ * kur gerekmez). Eskiden sabit "₺"/" TRY" literal'i → EUR turu prompt'ta ₺ görünüyordu.
+ */
+function _listPrice(tour: any, price: number, language: string): string {
+  return formatPriceSync(price, tour?.currency || "TRY", language, null, false);
+}
+
+/**
  * Format tours list with tone-aware styling
  */
 export function formatToursList(tours: any[], language: string, tone: string = "standart"): string {
@@ -58,7 +66,7 @@ function formatToursListStandard(tours: any[], language: string): string {
       const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
 
       const icon = getTourIcon(tour.type);
-      const priceText = price ? (isTR ? `💰 ${price}₺` : `💰 ${price}₺`) : "";
+      const priceText = price ? `💰 ${_listPrice(tour, price, language)}` : "";
       const dateText = formattedDate
         ? `📅 ${formattedDate}`
         : isTR
@@ -89,9 +97,9 @@ function formatToursListCorporate(tours: any[], language: string): string {
       const formattedDate = rawDate ? formatDateForLanguage(rawDate, language) : "";
 
       if (isTR) {
-        return `${idx + 1}) *${tour.title}*\n   Destinasyon: ${tour.destination}\n   Fiyat: ${price ? price + " TRY" : "Belirtilmemiş"} (kişi başı)\n   İlk Tarih: ${formattedDate || "Belirtilmemiş"}`;
+        return `${idx + 1}) *${tour.title}*\n   Destinasyon: ${tour.destination}\n   Fiyat: ${price ? _listPrice(tour, price, language) : "Belirtilmemiş"} (kişi başı)\n   İlk Tarih: ${formattedDate || "Belirtilmemiş"}`;
       } else {
-        return `${idx + 1}) *${tour.title}*\n   Destination: ${tour.destination}\n   Price: ${price ? price + " TRY" : "Not specified"} (per person)\n   First Date: ${formattedDate || "Not specified"}`;
+        return `${idx + 1}) *${tour.title}*\n   Destination: ${tour.destination}\n   Price: ${price ? _listPrice(tour, price, language) : "Not specified"} (per person)\n   First Date: ${formattedDate || "Not specified"}`;
       }
     })
     .join("\n\n");
@@ -112,9 +120,9 @@ function formatToursListDynamic(tours: any[], language: string): string {
       const numberEmoji = getNumberEmoji(idx + 1);
 
       if (isTR) {
-        return `${numberEmoji} *${tour.title}* ${icon}\n   ⭐ ${tour.destination}\n   💎 ${price}₺ | 🚀 ${formattedDate}`;
+        return `${numberEmoji} *${tour.title}* ${icon}\n   ⭐ ${tour.destination}\n   💎 ${price ? _listPrice(tour, price, language) : "-"} | 🚀 ${formattedDate}`;
       } else {
-        return `${numberEmoji} *${tour.title}* ${icon}\n   ⭐ ${tour.destination}\n   💎 ${price}₺ | 🚀 ${formattedDate}`;
+        return `${numberEmoji} *${tour.title}* ${icon}\n   ⭐ ${tour.destination}\n   💎 ${price ? _listPrice(tour, price, language) : "-"} | 🚀 ${formattedDate}`;
       }
     })
     .join("\n\n");
@@ -134,9 +142,9 @@ function formatToursListPremium(tours: any[], language: string): string {
       const description = tour.program_kisa || (isTR ? "Eşsiz bir deneyim" : "An exclusive experience");
 
       if (isTR) {
-        return `*${tour.title}*\n${description}\n${tour.destination} | ${price ? price + " TRY" : ""} | ${formattedDate}`;
+        return `*${tour.title}*\n${description}\n${tour.destination} | ${price ? _listPrice(tour, price, language) : ""} | ${formattedDate}`;
       } else {
-        return `*${tour.title}*\n${description}\n${tour.destination} | ${price ? price + " TRY" : ""} | ${formattedDate}`;
+        return `*${tour.title}*\n${description}\n${tour.destination} | ${price ? _listPrice(tour, price, language) : ""} | ${formattedDate}`;
       }
     })
     .join("\n\n");
@@ -199,10 +207,11 @@ export function formatTourDetails(
   // rates boşsa formatPriceSync tek-para ₺-fallback'ine düşer (O2, NaN-korumalı).
   fx?: { ex: Record<string, number>; showDual: boolean; languageCurrencies?: Record<string, string> | null },
 ): string {
+  // Dilim-6 C2: fx yoksa da turun para birimi (sabit ₺ değil).
   const _fmtPrice = (amount: number): string =>
     fx
       ? formatPriceSync(amount, tour.currency || "TRY", language, fx.ex, fx.showDual, fx.languageCurrencies)
-      : `${amount}₺`;
+      : _listPrice(tour, amount, language);
   // 2026-06-19 (Bug A3 kök çözümü): datesSection bloğu KALDIRILDI. LLM artık tarih
   // konuşmuyor; tarih listesi process-message.ts :11 (TARİH LİSTESİ deterministik)
   // tarafından üretiliyor (D5 — collectionStep'ten bağımsız).
