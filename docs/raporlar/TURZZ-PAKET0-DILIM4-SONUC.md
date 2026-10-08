@@ -1,6 +1,6 @@
 # PAKET-0 · Dilim 4 — 5 "mesaj kaydedilmiyor" yolu + Dilim-3 §10.4 kararı — Sonuç Raporu
 
-**Tarih:** 2026-10-08 · **Kaynak:** `docs/raporlar/TURZZ-PAKET0-DILIM3-SONUC.md` §5 (5 yol) + §10.4 · **Uygulayan model:** Opus 5.5 (Fable incelemesine girecek) · **Kapsam:** yalnız bu 6 madde; diğer gruplara dokunulmadı · Commit/push/deploy: §8.
+**Tarih:** 2026-10-08 · **Kaynak:** `docs/raporlar/TURZZ-PAKET0-DILIM3-SONUC.md` §5 (5 yol) + §10.4 · **Uygulayan model:** Opus 5.5 (Fable incelemesine girecek) · **Kapsam:** yalnız bu 6 madde; diğer gruplara dokunulmadı · **Commit `c1e819c` · Push: yapıldı · Deploy: yapıldı** (whatsapp-webhook v295, demo-chat v274 — §8).
 
 Tüm yollar Dilim-3'ün **tek** kayıt noktası `saveInboundMessage` + tek sabit `DROP_REASON` üzerinden; yeni kayıt kopyası yazılmadı. Müşteriye giden mesajlar ve aylık sayaç davranışı **değişmedi** (önce/sonra dökümü §4).
 
@@ -121,10 +121,32 @@ Silinen kod satırı yok denecek kadar az (3) — bu dilim **eksik davranış ek
 
 ---
 
-## 8. Commit / Push / Deploy
-(§8a'ya deploy sonrası eklenecek bölümde.)
+## 8. Commit / Push / Deploy (2026-10-08)
+
+**Ön koşul `npm test`:** suite 1550 ✓ / 0 ✗ · harness ok | 60 passed · webhook ok | 15 passed · EXIT=0.
+
+**Push (origin/main):** `11e10af..c1e819c` — `c1e819c` fix(webhook): PAKET-0 Dilim-4 — 5 kayıtsız yol saveInboundMessage'a + limit adı quota_exceeded
+
+**Deploy (`supabase functions deploy`, proje `yaxjygtjtjmzslajuctk`):**
+
+| Fonksiyon | Sonuç | Versiyon | UPDATED_AT (UTC) |
+|---|---|---|---|
+| `whatsapp-webhook` | `Deployed Functions on project yaxjygtjtjmzslajuctk: whatsapp-webhook` | **295** | 2026-10-08 08:09:16 |
+| `demo-chat` | `Deployed Functions on project yaxjygtjtjmzslajuctk: demo-chat` | **274** | 2026-10-08 08:09:20 |
+
+İkisi de **ACTIVE** (önceki: whatsapp-webhook v294, demo-chat v273).
+
+**Canlı duman — demo-chat, TR "merhaba"** (yeni session, anon key; rezervasyon/DB test kaydı YOK):
+```
+[tr] "merhaba" → HTTP 200 (9419 ms) session=smoke-d4-tr-1791446964155
+  response: "Merhaba! 😊 Size nasıl yardımcı olabilirim?
+
+Hangi destinasyona bir tur düşünüyorsunuz? İsterseniz size turlarımızı gösterebilirim! ✨"
+  state: stage=BROWSING lang=tr dateId=undefined listed=undefined pendingPax=undefined
+```
+whatsapp-webhook'a canlı mesaj gönderilmedi (gerçek numara gerekir); `drop-reasons.ts` ve `metaWhatsapp.ts` yeni bundle'da — deploy hatasız, ACTIVE.
 
 ---
 
 ## 9. Ürün sahibine sade özet
-Müşterinin sesli mesajı, fotoğrafı, çok uzun mesajı, çok hızlı yazdığı için cevaplanmayan mesajları ve sistem arızası anlarında attığı mesajlar artık konuşma kaydına düşüyor; acente hiçbir müşteri temasını kaçırmıyor. Müşteriye giden cevaplar hiç değişmedi; değişen tek şey arka planda kayıt ve neden etiketinin tutulması. Aylık limit dolduğunda yazılan etiket artık panelin tanıdığı "kota" etiketi, böylece kayıtlar ekranında doğru rozetle görünüyor.
+Müşterinin sesli mesajı, fotoğrafı, çok uzun mesajı, çok hızlı yazdığı için cevaplanmayan mesajları ve sistem arızası anlarında attığı mesajlar artık konuşma kaydına düşüyor; acente hiçbir müşteri temasını kaçırmıyor. Müşteriye giden cevaplar hiç değişmedi; değişen tek şey arka planda kayıt ve neden etiketinin tutulması. Aylık limit dolduğunda yazılan etiket artık panelin tanıdığı "kota" etiketi, böylece kayıtlar ekranında doğru rozetle görünüyor; değişiklik 8 Ekim 2026'da canlıya alındı.
