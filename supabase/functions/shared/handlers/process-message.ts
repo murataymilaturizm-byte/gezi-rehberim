@@ -55,7 +55,7 @@ import { isNluFullNameTourLeak, isNluFullNameNegationLeak, isNluFullNameGiveUpLe
 import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDateAck, shouldTriggerManualDateAck, shouldTriggerSummaryReask } from "../services/bypass-gates.ts";
 import { hasQuotaForPax, getQuotaRemaining, hasAnyAvailableDate } from "../services/quota-check.ts";
 // PAKET-0 Dilim-1 (2026-10-07): tarih listesi TEK primitif (A1/A2/A3) + temsilî tarih (A4).
-import { buildDateList } from "../services/date-list.ts";
+import { buildDateList, isFullDate } from "../services/date-list.ts";
 import { representativeDate } from "../utils/tour-dates.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
@@ -1203,7 +1203,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // basıyordu (kur tutarsızlığı GÖRÜNÜMÜ: aynı tur farklı koşumda farklı ₺-taban).
     const _toursPriced = tours
       .map((t: any) => {
-        const _ps = (t.dates || []).map((d: any) => d?.price_adult).filter((p: any) => typeof p === "number" && p > 0);
+        // Dilim-2 (B2): dolu tarih fiyatı "en ucuz/pahalı"ya girmez (satılamaz).
+        const _ps = (t.dates || []).filter((d: any) => !isFullDate(d)).map((d: any) => d?.price_adult).filter((p: any) => typeof p === "number" && p > 0);
         return { tour: t, price: _ps.length ? (_matchesDesc ? Math.max(..._ps) : Math.min(..._ps)) : undefined };
       })
       .filter((x: any) => typeof x.price === "number" && x.price > 0);
@@ -3387,7 +3388,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _pdTour = tours.find((t: any) => t.id === (newContext.currentTour?.id || (newContext.reservationInfo as any).tourId));
       const _pdDates: any[] = _pdTour?.dates || newContext.currentTour?.dates || [];
       const _pdHit = _pdDay !== null && _pdMonthNum
-        ? _pdDates.find((d: any) => {
+        ? _pdDates.filter((d: any) => !isFullDate(d)).find((d: any) => {   // Dilim-2 (B2): dolu tarih yan-niyetle SEÇİLMEZ
             const _p = String(d?.departure_date || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
             return _p && parseInt(_p[2], 10) === _pdMonthNum && parseInt(_p[3], 10) === _pdDay;
           })
@@ -3919,6 +3920,23 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
           es: `Sí, ${_avList} disponible ✅`,
         };
         _avCore = _avYes[_avLang] || _avYes.en;
+      } else if (_avMatches.length > 0) {
+        // Dilim-2 (B2): tarih VAR ama DOLU — eskiden dolu tarih giriş noktasında
+        // silindiği için "görünmüyor" deniyordu (yanlış bilgi). Tarih + DOLU etiketi.
+        const _avFullList = _avMatches.map((d: any) => {
+          const _w = getWeekdayName(d.departure_date, _avLang);
+          return formatDateForLanguage(d.departure_date, _avLang) + (_w ? ` (${_w})` : "") + quotaLabel(0, true, _avLang);
+        }).join(", ");
+        const _avFull: Record<string, string> = {
+          tr: `Maalesef ${_avFullList} — bu tarihte yer kalmadı. 😔`,
+          en: `Sorry, ${_avFullList} — this date is fully booked. 😔`,
+          de: `Leider ${_avFullList} — dieser Termin ist ausgebucht. 😔`,
+          ru: `К сожалению, ${_avFullList} — на эту дату мест нет. 😔`,
+          ar: `للأسف، ${_avFullList} — هذا التاريخ محجوز بالكامل. 😔`,
+          fr: `Désolé, ${_avFullList} — cette date est complète. 😔`,
+          es: `Lo siento, ${_avFullList} — esta fecha está completa. 😔`,
+        };
+        _avCore = _avFull[_avLang] || _avFull.en;
       } else {
         const _avNo: Record<string, string> = {
           tr: `Ayın ${_avDay}'i için şu an müsaitlik görünmüyor. 😔`,
@@ -3987,7 +4005,8 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   {
     const _pLang = newContext.language || "tr";
     const _pTour = newContext.currentTour ? findTourById(newContext.currentTour.id, tours) : null;
-    const _pDates = (_pTour?.dates || []) as any[];
+    // Dilim-2 (B2): öneri/anafora yalnız SEÇİLEBİLİR tarihler üzerinden ("tam 2 tarih" sayımı dahil).
+    const _pDates = ((_pTour?.dates || []) as any[]).filter((d: any) => !isFullDate(d));
     const _curDateId = (newContext.reservationInfo as any)?.dateId;
     // Sinyal regex'leri (post-LLM deterministik, \p{L}\p{N} lookaround — K1 dersi)
     // FABLE-review2: çıplak "ilk" bağlam-şartlı daraltıldı ("ilk defa

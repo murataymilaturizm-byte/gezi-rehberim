@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-10-07 (PAKET-0 Dilim-1 — H1 Katman-2 harness [`_tests/harness`, `npm test`, Deno-yoksa sert hata] + Grup A tarih-listesi TEK primitif [`buildDateList`/`listedDateIds`/`resolveListedDate`, `sortTourDates`/`representativeDate`, H-pax `pendingPax`]. Detay §G17. Suite 1506/1506 + harness 12/12.).
+> Son güncelleme: 2026-10-08 (PAKET-0 Dilim-2 — B1 `toBotTours` tek dönüştürücü [elle tur-mapping silindi, tüm DB kolonları taşınır] + B2 dolu tarih `isFull` [numarasız/etiketli, seçilemez]. Detay §G18. Suite 1536/1536 + harness 52/52.).
+> Önceki: 2026-10-07 (PAKET-0 Dilim-1 — H1 Katman-2 harness [`_tests/harness`, `npm test`, Deno-yoksa sert hata] + Grup A tarih-listesi TEK primitif [`buildDateList`/`listedDateIds`/`resolveListedDate`, `sortTourDates`/`representativeDate`, H-pax `pendingPax`]. Detay §G17. Suite 1506/1506 + harness 12/12.).
 > Önceki: 2026-07-09 (FABLE TOPLU-DENETİM — Yan #8 TAM süpürme [injection/sahte-ack RU+AR 26 ölü pattern canlandı, "yirmi şubat" pax-sızıntısı kapandı, TR_MONTHS_GUARD→7-dil tek-kaynak], R6 öneri-onayı muafiyeti, _bookingActionRe malformed-fix, day_/index_ süpürücü [Blok 9e], CHANGE TR-ASCII, ölü-uç temizliği [needsMonthClarification/date_N], 9 PII-log maskelendi, .env untracked. 33/33 + 128-korpus miss=0. Detay §Açık-Sorular-31.).
 > Önceki: 2026-07-09 (Faz 5 DİL-PARİTE BÜTÜNCÜL — A: kur tek-zincir [convertPrice kaldırıldı, TL/etiket asla çapraz] + AR translit normalize+alias + confirmation-words.ts TEK KAYNAK [EN confirmed + 7-dil doğal onaylar] + BugA-ack 7-dil. B: AR-rakam ٠-٩ giriş-normalizasyonu + ES "de" tarih-filler + 4 kalan tr+en dict → 7-dil + alias typo'ları. Envanter §6f; korpus 128 vaka + confirmation sınıfı; miss=0.).
 > Önceki: 2026-07-09 (Faz 5 Vaka 2 — people-words.ts tek-kaynak; ppl/человек/أشخاص/çocuk X9-kaybı kapandı. 21/21.).
@@ -373,6 +374,15 @@ başına lookaround'lu (yapıyorum eşleşmez).
 | **Son kapı (temizlik)** | `DATE_SELECTION_CLEAR` (`date-list.ts`) spread: `produceTourChangeContext` (tur değişimi — G5/7b-0/T10/T11 tek helper), iptal ×3 (TOUR_SELECTED/COLLECTING/CONFIRMING→BROWSING), `resetForNewReservation` (COMPLETED→yeni). dateId yazılınca `listedDateIds`, PENDING-PAX UYGULA'da `pendingPax` handler'da temizlenir; stale-reset `createInitialContext` ile zaten temiz. Harness: `date_list_cleanup_test.ts` (liste→tur değişimi→"2"; H-pax→iptal→yeni rezervasyonda pax sızmaz; 4 dil). |
 | Muhafız | Suite "PAKET-0 D1": statik (handler'da `.map((d, i) => …departure_date` şablonu YOK, `buildDateList` ≥7 çağrı, `dates[0].` YOK, `sortTourDates` tour-cache'te) + 7-dil `buildDateList`/`resolveListedDate`/`representativeDate` davranışsal. **Uçtan-uca:** `supabase/functions/_tests/harness/date_list_test.ts` (S1/S6/S2 × tr/en/ru/ar) — `npm test`. |
 | Katman-2 harness (H1) | `supabase/functions/_tests/harness/` — `processChatMessage` GERÇEK kod, stub adapter + stub supabase; `import_map.json` ile `nlu.ts`/`ai.ts`/`error-sink.ts` stub'lanır (`setNluMode` fallback/fixed, `setAiMode` fail/fixed). `npm test` Deno yoksa **SERT HATA** (exit 2). `_tests` alt-çizgili → Supabase CLI fonksiyon saymaz. Harness `--no-check` koşar: prod'da 5+2 önceden-var-olan tip hatası (G12 altı, açık kalan). |
+
+### G18 — DB→bot tur nesnesi TEK dönüştürücü + dolu tarih `isFull` (PAKET-0 Dilim-2, 2026-10-08)
+| | |
+|---|---|
+| Dosya | `services/bot-tour.ts` (`toBotTours`, `BotTour`), `services/date-list.ts` (`isFullDate`), `info-extractor.ts` Blok 8.5/9/9c/9d/10, `process-message.ts` :10e/:10g/X8/9b-A |
+| Kök (denetim Grup B) | whatsapp-webhook + demo-chat turu ayrı ayrı BEYAZ-LİSTE ile kopyalıyordu → visa_notes/visa_required/hotel_*/min_pax/program_url düşüyordu; dolu tarihler giriş noktasında siliniyordu → H-β "dolu", :11 α-etiketi, L3 `_quotaFull` canlıda ulaşılmazdı. |
+| Sözleşme | Giriş noktaları YALNIZ `toBotTours(toursRaw, lang, today)` çağırır (elle mapping YASAK — suite statik). Tüm DB kolonları taşınır; yalnız title/destination/program_kisa lokalize (TR asıl `title_tr`/`destination_tr`). Geçmiş tarih atılır; **dolu tarih KALIR + `isFull`**. Tüm tarihleri dolu tur katalogdan gizli (K2). |
+| Dolu tarih kuralı | Listede `• <tarih> (DOLU)` numarasız; `listedDateIds` ve global numara yalnız müsait (K1). Her seçim yolu `hasQuotaForPax` → dolu ise `dateRejectedFull` → H-β. **Blok 10:** bu turn dolu tarih reddedildiyse oto-atama YOK (suite H.16 regresyonu). :10e dolu tarihe "DOLU" cevabı (7 dil). |
+| Muhafız | Suite "PAKET-0 D2": migration'lardan `tours` kolonları otomatik çıkarılıp her birinin `toBotTours` çıktısında korunduğu (DB kolonu → BotTour), giriş noktası statik yasakları, 7-dil numaralandırma. Harness `bot_tour_test.ts` (vize ×3, min_pax, dolu ×4 senaryo × tr/en/ru/ar). |
 
 ---
 

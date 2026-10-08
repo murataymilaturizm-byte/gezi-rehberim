@@ -48,9 +48,14 @@ export interface DateListOptions {
   max?: number;
 }
 
+/** B2: dolu tarih — isFull işareti (toBotTours) yoksa kontenjandan türetilir. */
+export const isFullDate = (d: any): boolean => d?.isFull === true || getQuotaRemaining(d) <= 0;
+
 /**
- * Satırları basar VE `ctx.listedDateIds`'i (basılan sırayla) yazar.
- * Boş liste → "" döner ve listedDateIds temizlenir.
+ * Satırları basar VE `ctx.listedDateIds`'i yazar.
+ * B2 (Dilim-2): dolu tarih NUMARASIZ + "(DOLU)" etiketli basılır ve listedDateIds'e
+ * GİRMEZ → numaralar yalnız seçilebilir tarihleri sayar ("2" = 2. müsait tarih).
+ * Hiç satır yok → "" + listedDateIds=undefined; satır var ama hepsi dolu → [].
  */
 export function buildDateList(
   tour: { currency?: string | null } | null | undefined,
@@ -59,28 +64,30 @@ export function buildDateList(
   opts: DateListOptions,
 ): string {
   const shown = typeof opts.max === "number" ? dates.slice(0, opts.max) : dates;
-  ctx.listedDateIds = shown.length ? shown.map((d) => String(d.id)) : undefined;
-  if (!shown.length) return "";
+  if (!shown.length) { ctx.listedDateIds = undefined; return ""; }
+  const ids: string[] = [];
   const weekday = opts.weekday !== false;
   const cur = tour?.currency || "TRY";
-  return shown
-    .map((d, i) => {
-      const wd = weekday ? getWeekdayName(d.departure_date, opts.lang) : "";
-      const dateText = formatDateForLanguage(d.departure_date, opts.lang) + (wd ? ` (${wd})` : "");
-      const priceText = opts.price && d.price_adult
-        ? ` - ${formatPriceSync(d.price_adult, cur, opts.lang, opts.price.ex, opts.price.showDual, opts.price.languageCurrencies)}`
-        : "";
-      const remaining = getQuotaRemaining(d);
-      const quotaText = opts.quota ? quotaLabel(remaining, remaining <= 0, opts.lang) : "";
-      return `${i + 1}) ${dateText}${priceText}${quotaText}`;
-    })
-    .join("\n");
+  const lines = shown.map((d) => {
+    const wd = weekday ? getWeekdayName(d.departure_date, opts.lang) : "";
+    const dateText = formatDateForLanguage(d.departure_date, opts.lang) + (wd ? ` (${wd})` : "");
+    if (isFullDate(d)) return `• ${dateText}${quotaLabel(0, true, opts.lang)}`;
+    ids.push(String(d.id));
+    const priceText = opts.price && d.price_adult
+      ? ` - ${formatPriceSync(d.price_adult, cur, opts.lang, opts.price.ex, opts.price.showDual, opts.price.languageCurrencies)}`
+      : "";
+    const quotaText = opts.quota ? quotaLabel(getQuotaRemaining(d), false, opts.lang) : "";
+    return `${ids.length}) ${dateText}${priceText}${quotaText}`;
+  });
+  ctx.listedDateIds = ids;
+  return lines.join("\n");
 }
 
 /**
  * Numara seçimini basılan listeye göre çözer. Liste yoksa kronolojik global
- * sıraya düşer (tour-cache sortTourDates garantisi). Liste varsa ve numara
- * liste dışıysa undefined — global'e DÜŞMEZ (A1'in kökü tam buydu).
+ * sıraya düşer (tour-cache sortTourDates garantisi) — B2: global sıra yalnız
+ * SEÇİLEBİLİR (dolu-olmayan) tarihleri sayar. Liste varsa ve numara liste
+ * dışıysa undefined — global'e DÜŞMEZ (A1'in kökü tam buydu).
  */
 export function resolveListedDate<D extends { id: string }>(
   n: number,
@@ -88,9 +95,10 @@ export function resolveListedDate<D extends { id: string }>(
   listedDateIds: string[] | undefined,
 ): D | undefined {
   if (!Number.isInteger(n) || n < 1) return undefined;
-  if (listedDateIds?.length) {
+  if (Array.isArray(listedDateIds)) {
     const id = listedDateIds[n - 1];
     return id ? dates.find((d) => String(d.id) === id) : undefined;
   }
-  return n <= dates.length ? dates[n - 1] : undefined;
+  const bookable = dates.filter((d) => !isFullDate(d));
+  return n <= bookable.length ? bookable[n - 1] : undefined;
 }

@@ -7052,4 +7052,75 @@ console.log("\nPAKET-0 D1 tarih-listesi tek-primitif muhafizi");
   assert("A4.representativeDate bos → undefined", representativeDate({ dates: [] }) === undefined);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// PAKET-0 Dilim-2 (2026-10-08) — B1 tek tur-dönüştürücü + B2 dolu tarih muhafızı
+// (a) DB KOLONU → BotTour: migration'lardan `tours` kolonları ÇIKARILIR (elle liste
+//     yok — yeni kolon eklenince test kendiliğinden kapsar) ve toBotTours çıktısında
+//     her birinin değeri korunmuş olmalı.
+// (b) STATİK: giriş noktalarında elle tur-mapping YOK, ikisi de toBotTours çağırır.
+// (c) DAVRANIŞSAL: dolu tarih korunur+isFull, geçmiş atılır, yalnız-dolu tur gizlenir;
+//     buildDateList dolu tarihi numarasız basar, numara/global-fallback yalnız müsaitleri sayar.
+// Uçtan-uca: supabase/functions/_tests/harness/bot_tour_test.ts (npm test).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\nPAKET-0 D2 tur-donusturucu + dolu-tarih muhafizi");
+{
+  const { toBotTours } = await import("../supabase/functions/shared/services/bot-tour.ts");
+  const { buildDateList, resolveListedDate } = await import("../supabase/functions/shared/services/date-list.ts");
+
+  // (a) migration'lardan tours kolonları
+  const _cols = new Set<string>();
+  for await (const e of Deno.readDir("supabase/migrations")) {
+    if (!e.name.endsWith(".sql")) continue;
+    const sql = await Deno.readTextFile(`supabase/migrations/${e.name}`);
+    const ct = sql.match(/CREATE TABLE (?:IF NOT EXISTS )?(?:public\.)?tours\s*\(([\s\S]*?)\n\);/i);
+    if (ct) for (const line of ct[1].split("\n")) {
+      const m = line.trim().match(/^([a-z_][a-z0-9_]*)\s+[A-Za-z]/i);
+      if (m && !/^(PRIMARY|CONSTRAINT|UNIQUE|FOREIGN|CHECK)$/i.test(m[1])) _cols.add(m[1]);
+    }
+    for (const stmt of sql.matchAll(/ALTER TABLE (?:IF EXISTS )?(?:public\.)?tours\b([\s\S]*?);/gi)) {
+      for (const m of stmt[1].matchAll(/ADD COLUMN (?:IF NOT EXISTS )?([a-z_][a-z0-9_]*)/gi)) _cols.add(m[1]);
+    }
+  }
+  const _must = ["visa_notes", "visa_required", "hotel_name", "hotel_stars", "min_pax", "program_url", "toplanma_saati", "hareket_noktasi", "tur_sure", "konaklama", "ulasim", "gezilecek_yerler", "currency", "type"];
+  assert(`B1.MIGRATION kolon cikarimi kritik kolonlari buldu (${_cols.size} kolon)`, _must.every((c) => _cols.has(c)));
+  const _raw: any = { dates: [{ id: "x", departure_date: "2099-01-01", quota: 5, remaining_quota: 5 }] };
+  for (const c of _cols) _raw[c] = c === "dates" ? _raw.dates : `v_${c}`;
+  const [_bt] = toBotTours([_raw], "tr", "2026-01-01") as any[];
+  const _missing = [..._cols].filter((c) => _bt?.[c] !== _raw[c]);
+  assert(`B1.ESLEME her DB kolonu BotTour'a tasindi (eksik: ${_missing.join(",") || "yok"})`, _missing.length === 0);
+  assert("B1.ESLEME TR asil baslik title_tr'de", _bt.title_tr === "v_title" && _bt.destination_tr === "v_destination");
+  const [_btEn] = toBotTours([_raw], "en", "2026-01-01") as any[];
+  assert("B1.LOKALIZE en → title_en / destination_en / program_kisa_en", _btEn.title === "v_title_en" && _btEn.destination === "v_destination_en" && _btEn.program_kisa === "v_program_kisa_en");
+
+  // (b) giriş noktaları
+  for (const f of ["supabase/functions/whatsapp-webhook/index.ts", "supabase/functions/demo-chat/index.ts"]) {
+    const src = await Deno.readTextFile(f);
+    assert(`B1.STATIK ${f.split("/")[2]} toBotTours cagiriyor`, /toBotTours\(toursRaw,/.test(src));
+    assert(`B1.STATIK ${f.split("/")[2]} elle tur-mapping YOK`, !/toplanma_saati:\s*tour\.|pickLocalized\(tour,|title_tr:\s*tour\./.test(src));
+    assert(`B2.STATIK ${f.split("/")[2]} remaining_quota filtresi YOK`, !/remaining_quota\s*>\s*0/.test(src));
+  }
+
+  // (c) dolu tarih
+  const D = (id: string, date: string, rem: number) => ({ id, departure_date: date, price_adult: 1000, quota: 10, remaining_quota: rem });
+  const _t = toBotTours([{ id: "t", title: "T", destination: "X", dates: [D("p", "2026-01-01", 5), D("a", "2026-12-10", 5), D("f", "2026-12-20", 0), D("b", "2026-12-25", 3)] }], "tr", "2026-10-08") as any[];
+  assert("B2.toBotTours gecmis tarih atilir, dolu KALIR", _t[0].dates.map((d: any) => d.id).join() === "a,f,b");
+  assert("B2.toBotTours isFull isareti", _t[0].dates.find((d: any) => d.id === "f").isFull === true && _t[0].dates.find((d: any) => d.id === "a").isFull === false);
+  assert("B2.toBotTours yalniz-dolu tur katalogdan gizli (KARAR: eski davranis)",
+    toBotTours([{ id: "z", title: "Z", destination: "Y", dates: [D("f", "2026-12-20", 0)] }], "tr", "2026-10-08").length === 0);
+  for (const lang of ["tr", "en", "de", "fr", "es", "ru", "ar"]) {
+    const ctx: any = {};
+    const txt = buildDateList({ currency: "TRY" }, _t[0].dates, ctx, { lang, quota: true, price: { ex: {}, showDual: true, languageCurrencies: null } });
+    const lines = txt.split("\n");
+    assert(`B2.[${lang}] 3 satir: 1) musait, • dolu (numarasiz), 2) musait`, lines.length === 3 && lines[0].startsWith("1) ") && lines[1].startsWith("• ") && lines[2].startsWith("2) "));
+    assert(`B2.[${lang}] listedDateIds yalniz musait`, JSON.stringify(ctx.listedDateIds) === '["a","b"]');
+  }
+  {
+    const ctx: any = {};
+    buildDateList(null, [D("f", "2026-12-20", 0)], ctx, { lang: "tr" });
+    assert("B2.yalniz-dolu liste → listedDateIds=[] (numara secimi hicbir seyi secmez)", Array.isArray(ctx.listedDateIds) && ctx.listedDateIds.length === 0 && resolveListedDate(1, [D("f", "2026-12-20", 0)], ctx.listedDateIds) === undefined);
+  }
+  assert("B2.resolve liste yok → global yalniz musaitleri sayar ('2' = b, dolu f DEGIL)", resolveListedDate(2, _t[0].dates, undefined)?.id === "b");
+  assert("B2.resolve liste yok + dolu tarih numarayla secilemez", resolveListedDate(3, _t[0].dates, undefined) === undefined);
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

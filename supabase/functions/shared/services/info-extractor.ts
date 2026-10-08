@@ -191,14 +191,15 @@ const _TOUR_TITLE_TRANSLATIONS: Record<string, Record<string, string>> = {
  * 2. ISO normalize edilmiş exact match
  * 3. Year-agnostic (gün+ay) partial match — "20 Aralık" gibi yılsız tarihler için
  */
-function matchDateWithTourDates(dateStr: string, tourDates: any[]): any | null {
+function matchDateWithTourDates(dateStr: string, tourDates: any[], listedDateIds?: string[]): any | null {
   if (!dateStr || tourDates.length === 0) return null;
 
   // Özel prefix'ler (simple-extractor'dan gelebilir)
+  // Dilim-2 (B2): "ikinci tarih" (index_1) Blok 8 numara-seçimiyle AYNI sözleşme —
+  // basılan listeye göre; liste yoksa yalnız seçilebilir (dolu-olmayan) tarihler sayılır.
   if (dateStr.startsWith("index_")) {
     const idx = parseInt(dateStr.split("_")[1]);
-    if (!isNaN(idx) && idx >= 0 && idx < tourDates.length) return tourDates[idx];
-    return null;
+    return isNaN(idx) ? null : (resolveListedDate(idx + 1, tourDates, listedDateIds) ?? null);
   }
   if (dateStr.startsWith("day_")) {
     const day = parseInt(dateStr.split("_")[1]);
@@ -648,10 +649,13 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
       // müsaitlik-kelime, QUESTION_SIGNAL değil (zıt-yön dersi).
       // 2026-07-09 FAZ4-P1: TR+EN → 7-dil TEK KAYNAK (availability-words.ts).
       const _availQ = AVAILABILITY_RE.test(message || "");
+      const _ordBookable = _ordMatches.filter((d: any) => hasQuotaForPax(d, 1));
       if (_availQ) {
         (extractedInfo as any).availabilityQueryDay = _ordDay;
-      } else if (_ordMatches.length === 1) {
-        const cand = _ordMatches[0];
+      } else if (_ordBookable.length === 1 || (_ordBookable.length === 0 && _ordMatches.length === 1)) {
+        // Dilim-2 (B2): dolu tarihler artık listede → seçim SEÇİLEBİLİR eşleşmeler
+        // üzerinden; yalnız dolu eşleşme varsa (tek) → dateRejectedFull (H-β "dolu").
+        const cand = _ordBookable[0] ?? _ordMatches[0];
         if (hasQuotaForPax(cand, 1)) {
           extractedInfo.selectedDate = cand.departure_date;
           extractedInfo.dateId = cand.id;
@@ -682,7 +686,7 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   if (extractedInfo.selectedDate && !extractedInfo.dateId && _activeTourIdForDate) {
     const tour = findTourById(_activeTourIdForDate, tours);
     if (tour?.dates?.length > 0) {
-      const matched = matchDateWithTourDates(extractedInfo.selectedDate, tour.dates);
+      const matched = matchDateWithTourDates(extractedInfo.selectedDate, tour.dates, context.listedDateIds);
       if (matched) {
         if (hasQuotaForPax(matched, 1)) {
           extractedInfo.selectedDate = matched.departure_date;
@@ -714,9 +718,13 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
         return p && parseInt(p[1]) === _pd;
       });
       delete extractedInfo.selectedDate; // raw day_ ASLA state'e sızmasın
-      if (_pMatches.length === 1 && hasQuotaForPax(_pMatches[0], 1)) {
-        extractedInfo.selectedDate = _pMatches[0].departure_date;
-        extractedInfo.dateId = _pMatches[0].id;
+      // Dilim-2 (B2): Blok 8.5 ile aynı — seçilebilir eşleşme önce, tek dolu → H-β.
+      const _pBookable = _pMatches.filter((d: any) => hasQuotaForPax(d, 1));
+      if (_pBookable.length === 1) {
+        extractedInfo.selectedDate = _pBookable[0].departure_date;
+        extractedInfo.dateId = _pBookable[0].id;
+      } else if (_pBookable.length === 0 && _pMatches.length === 1) {
+        extractedInfo.dateRejectedFull = { departureDate: _pMatches[0].departure_date, remaining: getQuotaRemaining(_pMatches[0]) };
       } else if (_pMatches.length > 1) {
         (extractedInfo as any).dateAmbiguousDay = _pd;
         console.log(`[info-extractor] V9 Blok 9c: 'ayın ${_pd}' çok eşleşme → netleştirme`);
@@ -742,6 +750,9 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
         extractedInfo.selectedDate = _rm.departure_date;
         extractedInfo.dateId = _rm.id;
         console.log(`[info-extractor] Blok 9d: göreli tarih ${_relIso} → dateId eşleşti`);
+      } else if (_rm) {
+        // Dilim-2 (B2): tarih var ama DOLU → H-β "dolu" (eski: "yok" sanılıp liste)
+        extractedInfo.dateRejectedFull = { departureDate: _rm.departure_date, remaining: getQuotaRemaining(_rm) };
       } else {
         console.log(`[info-extractor] Blok 9d: göreli tarih ${_relIso} tur tarihlerinde yok → :11 liste`);
       }
@@ -792,14 +803,22 @@ export function extractAllInfo(params: ExtractAllInfoParams): Record<string, any
   // produceTourChangeContext eski dateId/selectedDate'i sildi + waiting_for_date
   // ayarladı; Blok 10 yeni turun tek tarihini sessizce atamasın → kullanıcı
   // yeni turun tarihini onaylasın (deterministik :11 tarih listesi tetiklenir).
+  const _b10All: any[] = context.currentTour?.dates || [];
+  const _b10Bookable = _b10All.filter((d: any) => hasQuotaForPax(d, 1));
   if (
     !params.tourJustChanged &&
     !extractedInfo.dateId &&
     !extractedInfo.selectedDate &&
-    context.currentTour?.dates?.length === 1 &&
+    // Dilim-2 (B2): kullanıcı bu turn'de DOLU bir tarih istediyse (Blok 8.5/9/9c/9d
+    // dateRejectedFull) başka tarihi SESSİZCE atama — H-β "dolu + alternatifler" cevaplar.
+    !extractedInfo.dateRejectedFull &&
+    // Dolu tarihler artık dizide → "tek tarih" = tek SEÇİLEBİLİR tarih (eski davranış:
+    // dolu tarih giriş noktasında siliniyordu); tek tarihli tur SONRADAN dolduysa eski
+    // dateRejectedFull yolu korunur (aşağıdaki else).
+    (_b10Bookable.length === 1 || (_b10Bookable.length === 0 && _b10All.length === 1)) &&
     (fsmIntent === "provide_info" || fsmIntent === "confirm" || fsmIntent === "reservation_intent")
   ) {
-    const single = context.currentTour.dates[0];
+    const single = _b10Bookable[0] ?? _b10All[0];
     if (hasQuotaForPax(single, 1)) {
       extractedInfo.selectedDate = single.departure_date;
       extractedInfo.dateId = single.id;

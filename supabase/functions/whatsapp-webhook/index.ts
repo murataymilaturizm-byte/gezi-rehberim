@@ -9,8 +9,8 @@ import { normalizePhone, formatPhoneDisplay } from "../_shared/phone.ts";
 import { getRequestUser, isSuperAdmin } from "../_shared/edge-auth.ts";
 import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { detectLanguageChangeIntent } from "../shared/fsm/localization.ts";
-import { pickLocalized } from "../shared/fsm/localization.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
+import { toBotTours } from "../shared/services/bot-tour.ts";
 import { markAsRead, showTypingIndicator } from "../shared/utils/whatsapp-status.ts";
 import { checkFAQ } from "./services/faq.ts";
 import { detectCannedResponseTrigger, buildCannedResponse, isIdleContext } from "../shared/services/canned-responses.ts";
@@ -468,31 +468,8 @@ serve(async (req) => {
       }
       throw _cacheErr;
     }
-    const today = new Date().toISOString().split("T")[0];
-    const tours = toursRaw
-      .map((tour: any) => ({
-        id: tour.id,
-        title: pickLocalized(tour, "title", _prelimLang),
-        destination: pickLocalized(tour, "destination", _prelimLang),
-        // BUG #2/#3 FIX: tüm dil varyantları matching için (title + destination)
-        title_tr: tour.title, title_en: tour.title_en, title_de: tour.title_de,
-        title_ru: tour.title_ru, title_ar: tour.title_ar, title_fr: tour.title_fr, title_es: tour.title_es,
-        destination_tr: tour.destination,
-        destination_en: tour.destination_en, destination_de: tour.destination_de,
-        destination_ru: tour.destination_ru, destination_ar: tour.destination_ar,
-        destination_fr: tour.destination_fr, destination_es: tour.destination_es,
-        type: tour.type,
-        currency: tour.currency,
-        program_kisa: pickLocalized(tour, "program_kisa", _prelimLang),
-        gezilecek_yerler: tour.gezilecek_yerler,
-        toplanma_saati: tour.toplanma_saati,
-        hareket_noktasi: tour.hareket_noktasi,
-        tur_sure: tour.tur_sure,
-        konaklama: tour.konaklama,
-        ulasim: tour.ulasim,
-        dates: (tour.dates || []).filter((d: any) => d.departure_date >= today && d.remaining_quota > 0),
-      }))
-      .filter((tour: any) => tour.dates.length > 0);
+    // PAKET-0 Dilim-2 (B1): DB→bot tur nesnesi TEK dönüştürücü (shared/services/bot-tour.ts).
+    const tours = toBotTours(toursRaw, _prelimLang, new Date().toISOString().split("T")[0]);
 
     // === Canned responses + FAQ (plan özelliği, hızlı çıkış) ===
     // BAĞLAM-DUYARLI: canned yalnız BOŞTA bağlamda (aktif akış/COMPLETED/§35 bekleme
