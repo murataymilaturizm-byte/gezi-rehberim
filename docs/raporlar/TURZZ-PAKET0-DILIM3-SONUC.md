@@ -1,6 +1,6 @@
 # PAKET-0 · Dilim 3 — F1 (düşürülen mesaj kaydı) + F2 (rate-limit fail-open) + `:426` — Sonuç Raporu
 
-**Tarih:** 2026-10-08 · **Kaynak:** `docs/raporlar/TURZZ-FABLE-DENETIM.md` §8 Grup F (F1, F2) + Dilim-2 raporu §7 Gözlem 5'in `:426` kısmı · **Uygulayan model:** Opus 5.5 (Fable incelemesine girecek) · **Kapsam:** yalnız F1 + F2 + `:426`; diğer return-200 yolları envanterlendi, **düzeltilmedi** (§5) · **Commit:** tek commit · **Push: YAPILMADI · Deploy: YAPILMADI.**
+**Tarih:** 2026-10-08 · **Kaynak:** `docs/raporlar/TURZZ-FABLE-DENETIM.md` §8 Grup F (F1, F2) + Dilim-2 raporu §7 Gözlem 5'in `:426` kısmı · **Uygulayan model:** Opus 5.5 (Fable incelemesine girecek) · **Kapsam:** yalnız F1 + F2 + `:426`; diğer return-200 yolları envanterlendi, **düzeltilmedi** (§5) · **Commit:** `db7f99a` + `d45b863` · **Push: yapıldı · Deploy: yapıldı** (whatsapp-webhook v294, demo-chat v273 — §11).
 
 Ön iş: Dilim-2 raporu §8 sade özetindeki "canlıya alınmadı / onay bekliyor" cümlesi gerçek duruma göre düzeltildi (kararlar onaylandı, 8 Ekim'de canlıda: demo-chat v272, whatsapp-webhook v293).
 
@@ -211,5 +211,30 @@ Satır numaraları bu commit sonrası `whatsapp-webhook/index.ts`.
 - **Panelin `"quota_exceeded"` okuyucusunun yazanı yok** (`WhatsAppLogs.tsx:235`). Limit satırları (`monthly_limit`) panelde "quota" rozeti almaz, ham içerik görünür. Seçenekler: panel okuyucusunu `DROP_REASON.MONTHLY_LIMIT`'e çevirmek (panel değişikliği — bu dilimde yasak) ya da webhook'un `quota_exceeded` yazması.
 - **Panel davranışı (bilgi):** `WhatsAppLogs` (Kayıtlar ekranı) `dropped_reason` taşıyan satırın içeriğini rozetli teknik metinle değiştirir, ham metin popover'da görünür — abonelik nedeniyle düşen **müşteri** satırları da bu ekranda "abonelik" rozetiyle listelenir. Konuşmalar ekranı (`WhatsAppConversations`) `metadata` okumaz, müşteri metnini olduğu gibi gösterir.
 
+## 11. Deploy (2026-10-08, ürün sahibi onayı sonrası)
+
+**Ön koşul `npm test`:** suite 1543 ✓ / 0 ✗ · harness ok | 60 passed · webhook ok | 7 passed · EXIT=0.
+
+**Push (origin/main):** `0bcc05a..d45b863`
+- `db7f99a` — fix(webhook): PAKET-0 Dilim-3 — düşürülen mesaj kaydı (F1) + rate-limit fail-open (F2) + catch'siz builder (:426)
+- `d45b863` — fix(webhook): Dilim-3 karar 2 — dropped_reason adları tek sabit (DROP_REASON)
+
+**Deploy (`supabase functions deploy`, proje `yaxjygtjtjmzslajuctk`):**
+| Fonksiyon | Sonuç | Versiyon | UPDATED_AT (UTC) |
+|---|---|---|---|
+| `whatsapp-webhook` | `Deployed Functions on project yaxjygtjtjmzslajuctk: whatsapp-webhook` | **294** | 2026-10-08 07:58:11 |
+| `demo-chat` | `Deployed Functions on project yaxjygtjtjmzslajuctk: demo-chat` | **273** | 2026-10-08 07:58:16 |
+
+`supabase functions list` → ikisi de **ACTIVE** (önceki: whatsapp-webhook v293, demo-chat v272).
+
+**Canlı duman — demo-chat, TR "merhaba"** (yeni session, anon key; rezervasyon/DB test kaydı YOK):
+```
+[tr] "merhaba" → HTTP 200 (9299 ms) session=smoke-d3-tr-1791446306831
+  response: "Merhaba! 😊 Demo Turizm'e hoş geldiniz! \n\nSize nasıl yardımcı olabilirim? İster turlarımız hakkında bilgi alabilir, ister rezervasyon yapabilirsiniz. ✨\n\nHangi destinasyon ilginizi çekiyor?"
+  state: stage=BROWSING lang=tr dateId=undefined listed=undefined pendingPax=undefined
+```
+
+**whatsapp-webhook:** canlı mesaj **gönderilmedi** (talimat). Durum: **ACTIVE** (v294). GET doğrulama ucu (`hub.challenge`) testi **ATLANDI** — `handleVerify` (`index.ts:84-117`) `hub.verify_token`'ın bir acentenin `meta_verify_token`'ı ya da `WHATSAPP_VERIFY_TOKEN`/`META_VERIFY_TOKEN` env değeriyle eşleşmesini şart koşuyor; token'sız istek 400/403 döner, challenge yankısı test edilemez (token elimde değil, secret'tan okumadım).
+
 ## 9. Ürün sahibine sade özet
-Mesaj limiti dolmuş ya da aboneliği durmuş bir acentenin müşterisi yazdığında, bot cevap vermese de mesaj artık konuşma ekranına kaydediliyor; acente kimin ne yazdığını görebiliyor. Bu sırada bir hata daha bulup düzelttik: aynı durumda müşteriye her mesajda hem "hizmet kullanılamıyor" hem de "teknik sorun" mesajı gidiyordu ve "günde bir kez bildir" kuralı hiç çalışmıyordu; artık müşteri günde tek bildirim alıyor. Hız-sınırı kontrolü arıza verdiğinde de mesajlar artık kaybolmadan işleniyor. Değişiklik commit'lendi, canlıya alınmadı.
+Mesaj limiti dolmuş ya da aboneliği durmuş bir acentenin müşterisi yazdığında, bot cevap vermese de mesaj artık konuşma ekranına kaydediliyor; acente kimin ne yazdığını görebiliyor. Bu sırada bir hata daha bulup düzelttik: aynı durumda müşteriye her mesajda hem "hizmet kullanılamıyor" hem de "teknik sorun" mesajı gidiyordu ve "günde bir kez bildir" kuralı hiç çalışmıyordu; artık müşteri günde tek bildirim alıyor. Hız-sınırı kontrolü arıza verdiğinde de mesajlar artık kaybolmadan işleniyor; değişiklik 8 Ekim 2026'da canlıya alındı (whatsapp-webhook v294, demo-chat v273).
