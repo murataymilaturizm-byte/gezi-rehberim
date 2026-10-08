@@ -209,5 +209,30 @@ Tip denetimi: `deno check` (webhook + demo-chat) **12 → 12**.
 ### 11.4 Net satır
 `whatsapp-webhook/index.ts`: +73 / −66 = **+7** (blok yeniden sıralandı; desteklenmeyen dalın ikinci acente sorgusu ve kendi kimlik çözümü kaldırıldı, açıklama yorumları eklendi).
 
+### 11.5 Deploy (çift-kayıt düzeltmesi)
+
+**Ön koşul `npm test`:** suite 1553 ✓ / 0 ✗ · harness ok | 60 passed · webhook ok | 20 passed · EXIT=0.
+
+**Migration:** YOK (dedup taşıma ile çözüldü — §11.1).
+
+**Push (origin/main):** `3f52eae..604829d` — `604829d` fix(webhook): Dilim-4 çift kayıt — dedup tüm kayıt yollarından önce (taşıma, migration yok)
+
+| Fonksiyon | Sonuç | Versiyon | UPDATED_AT (UTC) |
+|---|---|---|---|
+| `whatsapp-webhook` | `Deployed Functions on project yaxjygtjtjmzslajuctk: whatsapp-webhook` | **296** | 2026-10-08 08:29:00 |
+| `demo-chat` | `Deployed Functions on project yaxjygtjtjmzslajuctk: demo-chat` | **275** | 2026-10-08 08:29:05 |
+
+İkisi de **ACTIVE** (önceki: whatsapp-webhook v295, demo-chat v274).
+
+**Canlı duman — demo-chat, TR "merhaba"** (yeni session; rezervasyon/DB test kaydı YOK):
+```
+[tr] "merhaba" → HTTP 200 (7377 ms) session=smoke-d4b-tr-1791448147142
+  response: "Merhaba! 😊 Hoş geldiniz!
+
+Size nasıl yardımcı olabilirim? Turlarımız hakkında bilgi almak ister misiniz? 🌟"
+  state: stage=BROWSING lang=tr dateId=undefined listed=undefined pendingPax=undefined
+```
+whatsapp-webhook'a canlı mesaj gönderilmedi (gerçek numara gerekir); deploy hatasız, ACTIVE.
+
 ## 9. Ürün sahibine sade özet
-Müşterinin sesli mesajı, fotoğrafı, çok uzun mesajı, çok hızlı yazdığı için cevaplanmayan mesajları ve sistem arızası anlarında attığı mesajlar artık konuşma kaydına düşüyor; acente hiçbir müşteri temasını kaçırmıyor. Müşteriye giden cevaplar hiç değişmedi; değişen tek şey arka planda kayıt ve neden etiketinin tutulması. Aylık limit dolduğunda yazılan etiket artık panelin tanıdığı "kota" etiketi, böylece kayıtlar ekranında doğru rozetle görünüyor; değişiklik 8 Ekim 2026'da canlıya alındı.
+Müşterinin sesli mesajı, fotoğrafı, çok uzun mesajı, çok hızlı yazdığı için cevaplanmayan mesajları ve sistem arızası anlarında attığı mesajlar artık konuşma kaydına düşüyor; acente hiçbir müşteri temasını kaçırmıyor. Müşteriye giden cevaplar hiç değişmedi; WhatsApp aynı mesajı iki kez teslim etse bile kayıt ve cevap artık tek kez oluşuyor. Aylık limit dolduğunda yazılan etiket artık panelin tanıdığı "kota" etiketi, böylece kayıtlar ekranında doğru rozetle görünüyor; değişiklik 8 Ekim 2026'da canlıya alındı.
