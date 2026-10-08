@@ -10,7 +10,7 @@
 
 | # | Bulgu | Etki | Kanıt |
 |---|---|---|---|
-| B1 | Yabancı dildeki **82 sayfanın 82'si** `<html lang="tr">`, `og:locale=tr_TR` | Google sayfanın dilini TR sinyaliyle görüyor; hreflang ile çelişki | §1, `SEOHead.tsx:67,71` + `i18n/index.ts:24-26` |
+| B1 | Yabancı dildeki **100 sayfanın 100'ü** `<html lang="tr">` *(ilk sürümde hesap hatasıyla 82 yazılmıştı; düzeltme: Dalga 2a raporu)*, `og:locale=tr_TR` | Google sayfanın dilini TR sinyaliyle görüyor; hreflang ile çelişki | §1, `SEOHead.tsx:67,71` + `i18n/index.ts:24-26` |
 | B2 | Yabancı sayfalarda **menü, footer, CTA, dil seçici etiketi, kategori, "Paylaş", global JSON-LD açıklaması TR** | Sayfa "karışık dil"; gövde dışı metnin tamamı TR | §4 |
 | B3 | Yabancı dil klasörlerine **başka hiçbir dilden `<a href>` yok** (TR→yabancı: 0); yabancı **blog index'leri yetim** (0 gelen link) | Yabancı kümeler yalnız sitemap + hreflang ile keşfedilebilir adalar → "keşfedildi, dizine eklenmedi" ile uyumlu (nedensellik doğrulanmadı) | §3 |
 | B4 | Blog **gövdeleri gerçekten çevrilmiş** (96/96 doğru dilde, TR ile 3-gram örtüşme ort. %0.5–0.8) | Olumlu: içerik kalitesi dizinlemenin engeli değil | §2 |
@@ -41,7 +41,7 @@ Doğru çalışan (değişiklik gerekmez): 148/148 HTTP 200; 148/148 canonical k
 | fr | blog | 18 | 18 | 18 | 0 | **0** | 18 | 18 |
 | es | blog-index | 1 | 1 | 1 | 0 | **0** | 0 | 0 |
 | es | blog | 18 | 18 | 18 | 0 | **0** | 18 | 18 |
-| **Toplam** | | **148** | 148 | 148 | 0 | 66 | 126 | 126 |
+| **Toplam** | | **148** | 148 | 148 | 0 | 48 *(ilk sürümde hatalı 66)* | 126 | 126 |
 
 **Dil bazında:** tr 48 · en 31 · de 31 · fr 19 · es 19 · ru 0 · ar 0. Kaynak dosyalar: `src/blog/posts/{tr,en,de}` 30'ar, `{fr,es}` 18'er, `{ru,ar}` 0.
 
@@ -406,7 +406,7 @@ Sütunlar: TR karşılığı = aynı yazının TR URL'si; `<html lang>` ✗ = UR
 | **F. Daraltma** | fr/es'i noindex + sitemap dışı, yalnız en/de | Taranacak alan azalır, ama 36 gerçek çeviri kaybolur | Küçük, **önerilmez** |
 
 ### Benim önerim
-1. **Dalga 2a (önce, birlikte): A + B + C.** Ölçülen üç kök (yanlış dil sinyali, karışık dilde arayüz, bağlantısız dil adaları) doğrudan "keşfedildi, dizine eklenmedi" ile uyumlu sorunlar ve çeviri gerektirmiyor. Toplam ~2–3 gün. Teslim kanıtı (curl): 82 yabancı sayfada `<html lang>` = URL dili; header/footer o dilde; yetim sayfa 0; TR→yabancı `<a href>` > 0; blog index'lerinde hreflang.
+1. **Dalga 2a (önce, birlikte): A + B + C.** Ölçülen üç kök (yanlış dil sinyali, karışık dilde arayüz, bağlantısız dil adaları) doğrudan "keşfedildi, dizine eklenmedi" ile uyumlu sorunlar ve çeviri gerektirmiyor. Toplam ~2–3 gün. Teslim kanıtı (curl): 100 yabancı sayfada `<html lang>` = URL dili; header/footer o dilde; yetim sayfa 0; TR→yabancı `<a href>` > 0; blog index'lerinde hreflang.
 2. **Ardından 4–6 hafta Search Console ölçümü.** "Keşfedildi" → "dizine eklendi" geçişi dil bazında izlenmeli; şu anki GSC sayıları **doğrulanmadı**.
 3. **Dalga 2b: D** (en/de giriş sayfaları + tools'un dizine açılması). 2a sonuç verirse bir sonraki büyük kaldıraç.
 4. **E (slug) şimdilik yapılmasın.** Google'ın dil tespitinde URL slug'ı zayıf sinyal; dizinleme oturmadan URL değiştirmek keşfi sıfırlar. Dalga 2b sonrası yeniden değerlendirilsin.
