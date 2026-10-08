@@ -423,7 +423,7 @@ export function findMatchingTours(
   // kelimelere matchByQuery (exact + translation + fuzzy).
   const msgWords = message
     .split(/\s+/)
-    .map((w) => w.replace(/[?!.,;:()*"']/g, "")) // noktalama temizle
+    .map((w) => w.replace(/[?!.,;:()*"'؟،]/g, "")) // noktalama temizle (Dilim-5: Arapça ؟ ، dahil)
     .filter(isMeaningfulTourKeyword); // 3+ harf + stopword değil
 
   const seenTourIds = new Set<string>();

@@ -17,6 +17,7 @@ const DEFAULT_TTL_MS = 45 * 60_000;
 
 import type { ChannelAdapter, LoadContextResult } from "../shared/handlers/types.ts";
 import type { ConversationContext } from "../shared/fsm/types.ts";
+import { loadConversationHistory } from "../shared/services/context-manager.ts";
 
 export class DemoChatAdapter implements ChannelAdapter {
   readonly channel = "demo" as const;
@@ -95,20 +96,14 @@ export class DemoChatAdapter implements ChannelAdapter {
   }
 
   /**
-   * Konuşma geçmişi DB'den yüklenir (WhatsApp ile aynı tablo).
+   * Konuşma geçmişi DB'den yüklenir (WhatsApp ile aynı tablo, aynı fonksiyon).
    * ASC sıralı döner (eski → yeni) — process-message bunu bekler.
+   * Dilim-5: eskiden ASC+limit EN ESKİ N mesajı alıyordu; tek kaynak en yeni N'i alır.
    */
   async loadHistory(limit = 50, since?: string): Promise<Array<{ role: string; content: string }>> {
-    let q = this._supabase
-      .from("whatsapp_conversations")
-      .select("role, content")
-      .eq("phone", this.identifier)
-      .eq("agency_id", this._agencyId)
-      .neq("role", "system");
-    // 2026-06-24 FIX A1: cutoff varsa SADECE sonrasını getir (history kirlenmesi).
-    if (since) q = q.gt("created_at", since);
-    const { data } = await q.order("created_at", { ascending: true }).limit(limit);
-    return (data || []).filter((m: any) => m.role === "user" || m.role === "assistant");
+    return await loadConversationHistory({
+      supabase: this._supabase, phone: this.identifier, agencyId: this._agencyId, limit, since,
+    });
   }
 
   /**

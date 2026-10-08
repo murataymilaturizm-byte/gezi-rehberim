@@ -12,7 +12,7 @@ BU ÜSLUBUN TEMEL ÖZELLİKLERİ:
 ÖRNEK CÜMLELER:
 - "Merhaba! 😊 Size nasıl yardımcı olabilirim?"
 - "Harika bir seçim! ✨ Kapadokya turumuz gerçekten muhteşem."
-- "Tabii ki! Şu tarihlerde yerimiz var: ..."`,
+- "Tabii ki! Bu turla ilgili merak ettiğiniz başka bir şey var mı?"`,
 
   kurumsal: `⚠️ ÜSLUP: KURUMSAL (Resmi ve Profesyonel)
 BU ÜSLUBUN TEMEL ÖZELLİKLERİ:
@@ -39,7 +39,7 @@ BU ÜSLUBUN TEMEL ÖZELLİKLERİ:
 ÖRNEK CÜMLELER:
 - "Merhaba! 🎉 Harika bir gün! Size nasıl yardımcı olabilirim? 🚀"
 - "Muhteşem bir seçim! 🌟 Kapadokya turumuz kesinlikle unutulmaz olacak! ✨"
-- "Süper! 🔥 O tarih için yerimiz var! 💫"`,
+- "Süper! 🔥 Hemen yardımcı oluyorum! 💫"`,
 
   premium: `⚠️ ÜSLUP: PREMIUM (Lüks ve Zarif)
 BU ÜSLUBUN TEMEL ÖZELLİKLERİ:

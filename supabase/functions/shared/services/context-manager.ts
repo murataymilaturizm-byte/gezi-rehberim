@@ -48,34 +48,57 @@ export function buildNLUContextBase(context: ConversationContext): string {
   return ctx;
 }
 
+export type HistoryMessage = { role: string; content: string };
+
 /**
- * Konuşma geçmişini DESC sırayla döndürür (yeniden eskiye).
- * Preloaded: process_whatsapp_message_atomic RPC DESC döndürür — olduğu gibi geçer.
- * DB fallback: DESC sorgular.
- * Çağıran taraf (webhook) tek bir .reverse() ile ASC'ye çevirerek kullanır.
- * Limit 20: bir rezervasyon akışı 12-14 mesaj, 10 ile tarih seçimi kayboluyordu.
+ * LLM/NLU'ya giden konuşma geçmişi — TEK KAYNAK (WhatsApp ve demo-chat adapter'ları
+ * bunu çağırır). ASC döner (eskiden yeniye), yalnız user/assistant, en fazla `limit`
+ * mesaj — her zaman EN YENİ `limit` mesaj.
+ *
+ * 2026-10-08 Dilim-5 (canlı olay TURZZ-CANLI-ESKI-VERI-TESHIS.md §3.3): eskiden
+ * WhatsApp'ta önyüklenmiş geçmiş (process_whatsapp_message_atomic, son 50, DESC,
+ * created_at YOK) kesim zamanını VE limiti yok sayıyordu → rezervasyon tamamlandıktan
+ * sonra LLM eski uydurma listeyi geçmişte görüp kopyaladı. Demo-chat ise ASC+limit ile
+ * EN ESKİ N mesajı alıyordu.
+ *  - `since` (historyCutoffAt) varsa: önyüklemede zaman damgası olmadığından DB
+ *    sorgusu (created_at > since) — kesim HER ZAMAN uygulanır.
+ *  - `since` yoksa: önyükleme varsa ondan (ek sorgu yok), yoksa DB.
+ *  - `excludeLatestUser`: çağıran güncel mesajı geçmiş yüklenmeden ÖNCE kaydettiyse
+ *    (WhatsApp erken kayıt) DB'deki en yeni satır o mesajdır — LLM'e userMessage olarak
+ *    ayrıca gider, geçmişte tekrar etmesin.
  */
-export async function getConversationHistory(
-  supabase: any,
-  phone: string,
-  agencyId: string,
-  preloaded: Array<{ role: string; content: string }> | null,
-  limit = 20,
-  since?: string,
-): Promise<Array<{ role: string; content: string }>> {
-  // 2026-06-24 FIX A1: preloaded varsa cutoff yoksayılır (preloaded mesajlarda
-  // timestamp yok → filter uygulanamaz). Bilinen kabul edilebilir sınır.
-  if (preloaded !== null) return preloaded;
+export async function loadConversationHistory(opts: {
+  supabase: any;
+  phone: string;
+  agencyId: string;
+  limit: number;
+  since?: string;
+  /** DESC önyüklenmiş geçmiş (WhatsApp atomic RPC). */
+  preloaded?: HistoryMessage[] | null;
+  excludeLatestUser?: string | null;
+}): Promise<HistoryMessage[]> {
+  const { supabase, phone, agencyId, limit, since, preloaded, excludeLatestUser } = opts;
+  const isChat = (m: HistoryMessage) => m.role === "user" || m.role === "assistant";
 
-  let q = supabase
-    .from("whatsapp_conversations")
-    .select("role, content")
-    .eq("phone", phone)
-    .eq("agency_id", agencyId)
-    .neq("role", "system");
-  // 2026-06-24 FIX A1: cutoff varsa SADECE sonrasını getir (history kirlenmesi).
-  if (since) q = q.gt("created_at", since);
-  const { data } = await q.order("created_at", { ascending: false }).limit(limit);
-
-  return data ?? [];
+  let desc: HistoryMessage[];
+  if (preloaded && !since) {
+    // Önyükleme güncel mesaj kaydedilmeden önce alınır → onu içermez.
+    desc = preloaded.filter(isChat).slice(0, limit);
+  } else {
+    let q = supabase
+      .from("whatsapp_conversations")
+      .select("role, content")
+      .eq("phone", phone)
+      .eq("agency_id", agencyId)
+      .neq("role", "system");
+    if (since) q = q.gt("created_at", since);
+    const fetchN = excludeLatestUser ? limit + 1 : limit;
+    const { data } = await q.order("created_at", { ascending: false }).limit(fetchN);
+    desc = ((data ?? []) as HistoryMessage[]).filter(isChat);
+    if (excludeLatestUser && desc[0]?.role === "user" && desc[0].content === excludeLatestUser) {
+      desc = desc.slice(1);
+    }
+    desc = desc.slice(0, limit);
+  }
+  return desc.map(({ role, content }) => ({ role, content })).reverse();
 }

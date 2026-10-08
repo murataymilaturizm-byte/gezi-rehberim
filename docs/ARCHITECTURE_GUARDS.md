@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-10-08 (PAKET-0 Dilim-3 — F1 `saveInboundMessage` tek kayıt noktası [limit/abonelik dalında mesaj kaydı + dropped_reason] + `:426` catch'siz builder hatası + F2 rate-limit fail-open. Detay §G19. Suite 1541 + harness 60 + webhook 7.).
+> Son güncelleme: 2026-10-08 (PAKET-0 Dilim-5 — tur isteme/tarih sorusu → liste yalnız `buildDateList` [(e) talep fiili 7 dil, (b) FAQ intent'inde tur adıyla] + LLM geçmişi tek fonksiyon `loadConversationHistory` [WhatsApp önyüklemede de kesim+limit, demo en yeni N] + stale-reset kesim yazar + 14 prompt örneği. Detay §G20. Suite 1582 + harness 88 + webhook 20.).
+> Önceki: 2026-10-08 (PAKET-0 Dilim-3 — F1 `saveInboundMessage` tek kayıt noktası [limit/abonelik dalında mesaj kaydı + dropped_reason] + `:426` catch'siz builder hatası + F2 rate-limit fail-open. Detay §G19. Suite 1541 + harness 60 + webhook 7.).
 > Önceki: 2026-10-08 (PAKET-0 Dilim-2 — B1 `toBotTours` tek dönüştürücü [elle tur-mapping silindi, tüm DB kolonları taşınır] + B2 dolu tarih `isFull` [numarasız/etiketli, seçilemez]. Detay §G18. Suite 1536/1536 + harness 52/52.).
 > Önceki: 2026-10-07 (PAKET-0 Dilim-1 — H1 Katman-2 harness [`_tests/harness`, `npm test`, Deno-yoksa sert hata] + Grup A tarih-listesi TEK primitif [`buildDateList`/`listedDateIds`/`resolveListedDate`, `sortTourDates`/`representativeDate`, H-pax `pendingPax`]. Detay §G17. Suite 1506/1506 + harness 12/12.).
 > Önceki: 2026-07-09 (FABLE TOPLU-DENETİM — Yan #8 TAM süpürme [injection/sahte-ack RU+AR 26 ölü pattern canlandı, "yirmi şubat" pax-sızıntısı kapandı, TR_MONTHS_GUARD→7-dil tek-kaynak], R6 öneri-onayı muafiyeti, _bookingActionRe malformed-fix, day_/index_ süpürücü [Blok 9e], CHANGE TR-ASCII, ölü-uç temizliği [needsMonthClarification/date_N], 9 PII-log maskelendi, .env untracked. 33/33 + 128-korpus miss=0. Detay §Açık-Sorular-31.).
@@ -393,6 +394,15 @@ başına lookaround'lu (yapıyorum eşleşmez).
 | Sözleşme | Müşteri metni `whatsapp_conversations`'a YALNIZ `saveInboundMessage` ile (`role:"user"`; düşürülen mesajda `metadata.dropped_reason`: `monthly_limit` / `subscription_inactive`). Supabase builder üzerinde ASLA `.catch(` — `await` + `{ error }` kontrolü + `logCritical`. `check_rate_limit` hatası → `logCritical(RATE_LIMIT_RPC_FAIL)` + akış DEVAM (fail-open); `allowed=false` davranışı aynen. |
 | Muhafız | Suite "PAKET-0 D3" (statik: builder `.catch` yasağı — HEAD'e karşı kırmızı doğrulandı; tek kayıt noktası; fail-open). Webhook giriş-katmanı harness'i `_tests/webhook/` (GERÇEK index.ts; stub supabase builder aslına uygun: tembel + catch'siz) — `npm test` üçüncü parça. |
 | Açık (rapor §5) | Desteklenmeyen tip, kimlik bilgisi eksik, >2000 karakter, `allowed=false`, `TOUR_DATA_UNAVAILABLE` yolları hâlâ kaydetmiyor; canned/FAQ/anket kendi çift-insert'leri. |
+
+### G20 — Tarih listesi LLM'e bırakılmaz + LLM geçmişi TEK fonksiyon (PAKET-0 Dilim-5, 2026-10-08)
+| | |
+|---|---|
+| Dosya | `shared/handlers/process-message.ts` `:11` kararı (`_isUserAskingDates` — (e) `_isTourListRequest`, (b) `_isDateQuestion`), stale-reset `_freshCtx.historyCutoffAt`; `shared/constants/date-detection.ts` (`TOUR_REQUEST_RE`, `TOUR_INFO_REQUEST_RE`, `DATE_INTENTS`+browse_tours); `shared/services/context-manager.ts` `loadConversationHistory`; iki adapter'ın `loadHistory`'si; prompt örnekleri (tones/tr,en + lang/de,es,fr,ru,ar). |
+| Kök (canlı olay TURZZ-CANLI-ESKI-VERI-TESHIS.md) | "Kapadokya turu istiyorum" / "kapadokya turlarını görmek istiyorum" TOUR_SELECTED'a geçiyor ama (a)/(b)/(c) tutmuyordu → LLM, WhatsApp'ta kesimi ve limiti YOK SAYAN önyüklü geçmişten (son 50) eski 2026 tarihli + 1.500₺ listeyi kopyaladı. Demo-chat ise en ESKİ N mesajı alıyordu. |
+| Sözleşme | Müşteri turu ADIYLA ister/görmek ister (talep fiili 7 dil, bilgi isteği hariç) veya tarih kelimeli soru sorarsa (FAQ intent'inde tur adı şartıyla) liste YALNIZ `buildDateList`. LLM/NLU geçmişi YALNIZ `loadConversationHistory`: en yeni `limit` mesaj, ASC; `since` (historyCutoffAt) varsa DB sorgusu (önyükleme zaman damgasız). Kesim yazanlar: CONFIRMING→COMPLETED + stale-reset. Prompt örnekleri tarih/müsaitlik VAAT ETMEZ. |
+| Muhafız | Suite "PAKET-0 Dilim-5" (D5.STATIK tek kaynak/adapter sorgusu yok/since-önyükleme/stale-reset/(e) kararın içinde; D5.PROMPT 7 dosya; D5.REGEX). Harness `history_datelist_test.ts` (A1–A4, B1–B3 × tr/en/ru/ar; gerçek WhatsAppAdapter/DemoChatAdapter). |
+| Açık | RU hâl eki ("в Каппадокию") ve DE bileşik ("Kappadokien-Touren") tur eşleştirmede tutmuyor → tur seçilmez, (e) devreye giremez (ayrı iş). |
 
 ---
 

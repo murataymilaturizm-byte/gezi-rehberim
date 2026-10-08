@@ -7174,4 +7174,50 @@ console.log("\nPAKET-0 D3 webhook kayit + fail-open muhafizi");
     _rleBlock.length > 0 && !/return new Response/.test(_rleBlock) && /logCritical\(/.test(_rleBlock));
 }
 
+// ─── PAKET-0 Dilim-5: tarih listesi LLM'e bırakılmaz + geçmiş filtresi tek kaynak ───
+{
+  const _strip = (s: string) => s.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+  const _waAd = _strip(await Deno.readTextFile("supabase/functions/whatsapp-webhook/adapter.ts"));
+  const _demoAd = _strip(await Deno.readTextFile("supabase/functions/demo-chat/adapter.ts"));
+  const _cm = await Deno.readTextFile("supabase/functions/shared/services/context-manager.ts");
+  // WhatsApp ve demo-chat geçmişi AYNI fonksiyondan; adapter'larda kendi DB sorgusu yok.
+  const _loadBody = (src: string) => (src.match(/async loadHistory\([^)]*\)[^{]*\{([\s\S]*?)\n  \}/) || [])[1] || "";
+  for (const [name, src] of [["whatsapp", _waAd], ["demo-chat", _demoAd]] as const) {
+    const b = _loadBody(src);
+    assert(`D5.STATIK ${name} loadHistory = loadConversationHistory (tek kaynak)`, /loadConversationHistory\(/.test(b));
+    assert(`D5.STATIK ${name} loadHistory kendi whatsapp_conversations sorgusunu YAPMIYOR`, b.length > 0 && !/from\("whatsapp_conversations"\)/.test(b));
+  }
+  assert("D5.STATIK eski getConversationHistory (preloaded'da kesimi yok sayan) context-manager'dan kaldirildi",
+    !/export async function getConversationHistory/.test(_cm) && /export async function loadConversationHistory/.test(_cm));
+  // Kesim önyüklemede de uygulanır: since varken önyüklenmiş (zaman damgasız) geçmiş kullanılmaz.
+  assert("D5.STATIK loadConversationHistory: onyukleme yalniz since YOKKEN kullanilir", /if \(preloaded && !since\)/.test(_cm));
+  // Stale-reset ("Tekrar hoş geldiniz") taze context'e kesim yazar.
+  const _pm = await Deno.readTextFile("supabase/functions/shared/handlers/process-message.ts");
+  assert("D5.STATIK stale-reset _freshCtx.historyCutoffAt yaziyor", /_freshCtx\.historyCutoffAt = new Date\(\)\.toISOString\(\)/.test(_pm));
+  // (e) tur-isteme koşulu mevcut :11 kararının İÇİNDE (yeni erken-return dalı değil).
+  const _askBlock = (_pm.match(/const _isUserAskingDates =([\s\S]*?);\r?\n/) || [])[1] || "";
+  assert("D5.STATIK _isTourListRequest mevcut _isUserAskingDates kararinin icinde", /_isTourListRequest/.test(_askBlock));
+  // Prompt örnekleri tarih/müsaitlik VAAT ETMEZ (yasakla çelişen örnek yok) — 7 dil.
+  const { DATE_QUERY_RE: _DQ, TOUR_REQUEST_RE: _TR, TOUR_INFO_REQUEST_RE: _TI } = await import("../supabase/functions/shared/constants/date-detection.ts");
+  const _promptFiles = ["tones/tr.ts", "tones/en.ts", "lang/de.ts", "lang/es.ts", "lang/fr.ts", "lang/ru.ts", "lang/ar.ts"];
+  const _promiseRe = /yerimiz var|have availability|Verfügbarkeit (an|für)|disponibilidad (en|para)|disponibilités (à|pour)|места на эт|أماكن متاحة/i;
+  for (const f of _promptFiles) {
+    const src = await Deno.readTextFile(`supabase/functions/shared/fsm/prompts/${f}`);
+    assert(`D5.PROMPT ${f}: tarih/musaitlik vaat eden ornek YOK`, !_promiseRe.test(src));
+  }
+  // Talep fiili / bilgi isteği sınıfları — 7 dil davranışsal (runtime regex).
+  const _req: Array<[string, boolean, boolean]> = [
+    ["kapadokya turlarını görmek istiyorum", true, false], ["Kapadokya turu istiyorum", true, false],
+    ["I want to see the Cappadocia tours", true, false], ["Ich möchte die Tour sehen", true, false],
+    ["Je veux voir le circuit", true, false], ["Quiero ver el tour", true, false],
+    ["хочу посмотреть тур", true, false], ["أريد أن أرى الجولة", true, false],
+    ["Kapadokya turu hakkında bilgi almak istiyorum", true, true], ["I would like information about the tour", true, true],
+    ["verano en capadocia", false, false], ["overseas tour", false, false], ["istemiyorum", false, false],
+  ];
+  for (const [m, r, i] of _req) {
+    assert(`D5.REGEX "${m}" talep=${r} bilgi=${i}`, _TR.test(m) === r && _TI.test(m) === i);
+  }
+  assert("D5.REGEX DATE_QUERY_RE 'ne zaman' (A3 sinifi)", _DQ.test("Kapadokya turu ne zaman?"));
+}
+
 Deno.exit(fail === 0 ? 0 : 1);

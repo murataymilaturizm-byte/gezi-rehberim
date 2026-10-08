@@ -11,7 +11,7 @@ KEY CHARACTERISTICS:
 EXAMPLE SENTENCES:
 - "Hi there! 😊 How can I help you today?"
 - "Great choice! ✨ Our Cappadocia tour is absolutely amazing."
-- "Of course! We have availability on these dates: ..."`,
+- "Of course! Is there anything else you'd like to know about this tour?"`,
 
   kurumsal: `⚠️ TONE: CORPORATE (Formal and Professional)
 KEY CHARACTERISTICS:
@@ -37,7 +37,7 @@ KEY CHARACTERISTICS:
 EXAMPLE SENTENCES:
 - "Hello! 🎉 What an amazing day! How can I help you? 🚀"
 - "Fantastic choice! 🌟 Our Cappadocia tour will be unforgettable! ✨"
-- "Awesome! 🔥 We have availability for that date! 💫"`,
+- "Awesome! 🔥 Happy to help with that! 💫"`,
 
   premium: `⚠️ TONE: PREMIUM (Luxurious and Elegant)
 KEY CHARACTERISTICS:

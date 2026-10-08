@@ -202,7 +202,7 @@ CARACTÉRISTIQUES CLÉS :
 EXEMPLES DE PHRASES :
 - « Bonjour ! 😊 Comment puis-je vous aider aujourd'hui ? »
 - « Excellent choix ! ✨ Notre circuit de Cappadoce est absolument magnifique. »
-- « Bien sûr ! Nous avons des disponibilités à ces dates : ... »`,
+- « Bien sûr ! Souhaitez-vous savoir autre chose sur ce circuit ? »`,
 
     kurumsal: `⚠️ TON : CORPORATE (Formel et Professionnel)
 CARACTÉRISTIQUES CLÉS :
@@ -228,7 +228,7 @@ CARACTÉRISTIQUES CLÉS :
 EXEMPLES DE PHRASES :
 - « Bonjour ! 🎉 Quelle journée incroyable ! Comment puis-je vous aider ? 🚀 »
 - « Choix fantastique ! 🌟 Notre circuit de Cappadoce sera inoubliable ! ✨ »
-- « Génial ! 🔥 Nous avons des disponibilités pour cette date ! 💫 »`,
+- « Génial ! 🔥 Je m'en occupe avec plaisir ! 💫 »`,
 
     premium: `⚠️ TON : PREMIUM (Luxueux et Élégant)
 CARACTÉRISTIQUES CLÉS :

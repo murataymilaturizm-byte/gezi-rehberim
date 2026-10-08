@@ -21,7 +21,7 @@ import type { ConversationContext, ConversationTone } from "../shared/fsm/types.
 import type { ChannelAdapter, LoadContextResult } from "../shared/handlers/types.ts";
 import { createInitialContext } from "../shared/fsm/state-machine.ts";
 import { getDefaultToneForLanguage } from "../shared/fsm/localization.ts";
-import { getConversationHistory } from "../shared/services/context-manager.ts";
+import { loadConversationHistory } from "../shared/services/context-manager.ts";
 import { truncateForWhatsApp } from "./utils/format.ts";
 import { sendWhatsAppMessage } from "../_shared/metaWhatsapp.ts";
 // K1: Meta gönderim fail'lerini görünür yapmak için merkezi error sink.
@@ -160,10 +160,11 @@ export class WhatsAppAdapter implements ChannelAdapter {
   }
 
   async loadHistory(limit = 50, since?: string): Promise<Array<{ role: string; content: string }>> {
-    // getConversationHistory DESC döndürür; reverse ile ASC yapılır (process-message bunu bekler)
-    // 2026-06-24 FIX A1: since varsa cutoff sonrası mesajlar filtrelenir.
-    const raw = await getConversationHistory(this.supabase, this.phone, this.agency.id, this.preloadedHistory, limit, since);
-    return [...raw].reverse(); // DESC → ASC
+    // Dilim-5: tek kaynak (demo-chat ile aynı) — kesim + limit önyüklemede de uygulanır.
+    return await loadConversationHistory({
+      supabase: this.supabase, phone: this.phone, agencyId: this.agency.id, limit, since,
+      preloaded: this.preloadedHistory, excludeLatestUser: this.savedUserContent,
+    });
   }
 
   async saveResponse(reply: string, newContext: ConversationContext): Promise<void> {
@@ -173,13 +174,15 @@ export class WhatsAppAdapter implements ChannelAdapter {
   // P2-A BULGU-1 (2026-07-28): webhook user-mesajını AI'dan ÖNCE ayrı-insert etti mi?
   // Ettiyse saveTransaction user'ı TEKRAR yazmaz ("" → RPC ve fallback atlar; saveResponse
   // ile aynı kanıtlı yol). Realtime paneli mesajı atıldığı saniye gösterir.
-  private userAlreadySaved = false;
-  markUserSaved(): void { this.userAlreadySaved = true; }
+  // Dilim-5: kaydedilen içerik de tutulur → loadHistory DB'den okurken bu satırı
+  // geçmişe tekrar koymaz (excludeLatestUser).
+  private savedUserContent: string | null = null;
+  markUserSaved(content: string): void { this.savedUserContent = content; }
 
   async saveTransaction(userMessage: string, reply: string, newContext: ConversationContext): Promise<void> {
     await saveConversationAtomic(
       this.supabase, this.phone, this.agency.id,
-      this.userAlreadySaved ? "" : userMessage, reply, newContext,
+      this.savedUserContent !== null ? "" : userMessage, reply, newContext,
     );
   }
 

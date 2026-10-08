@@ -201,7 +201,7 @@ KERNMERKMALE:
 BEISPIELSÄTZE:
 - "Hallo! 😊 Wie kann ich Ihnen heute helfen?"
 - "Großartige Wahl! ✨ Unsere Kappadokien-Tour ist absolut fantastisch."
-- "Gerne! Wir haben Verfügbarkeit an diesen Terminen: ..."`,
+- "Gerne! Möchten Sie noch etwas über diese Tour wissen?"`,
 
     kurumsal: `⚠️ TON: KORPORATIV (Formell und Professionell)
 KERNMERKMALE:
@@ -227,7 +227,7 @@ KERNMERKMALE:
 BEISPIELSÄTZE:
 - "Hallo! 🎉 Was für ein toller Tag! Wie kann ich Ihnen helfen? 🚀"
 - "Fantastische Wahl! 🌟 Unsere Kappadokien-Tour wird unvergesslich! ✨"
-- "Fantastisch! 🔥 Wir haben Verfügbarkeit für dieses Datum! 💫"`,
+- "Fantastisch! 🔥 Ich helfe Ihnen gerne weiter! 💫"`,
 
     premium: `⚠️ TON: PREMIUM (Luxuriös und Elegant)
 KERNMERKMALE:

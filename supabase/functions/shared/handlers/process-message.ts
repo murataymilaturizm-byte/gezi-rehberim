@@ -60,7 +60,7 @@ import { representativeDate } from "../utils/tour-dates.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
 import { buildAIFallbackResponse } from "../services/fallback-response.ts";
-import { DATE_QUERY_RE, DATE_INTENTS } from "../constants/date-detection.ts";
+import { DATE_QUERY_RE, DATE_INTENTS, TOUR_REQUEST_RE, TOUR_INFO_REQUEST_RE } from "../constants/date-detection.ts";
 import { CHANGE_KEYWORDS_RE } from "../constants/change-detection.ts";
 import { isSummaryRequest } from "../constants/summary-request.ts";
 import { PRICE_QUESTION_RE } from "../constants/price-question.ts";
@@ -504,6 +504,10 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     // Fresh context — yeni stage GREETING/BROWSING'e dönmüş gibi
     const _freshCtx = createInitialContext(_lang, getDefaultToneForLanguage(_lang) as any);
     _freshCtx.collectEmail = agency.collect_email === true;
+    // Dilim-5: "Tekrar hoş geldiniz" = yeni oturum → eski konuşma (eski fiyat/tarih
+    // listeleri) LLM'e gitmesin. Rezervasyon tamamlanmasıyla (state-machine CONFIRMING→
+    // COMPLETED) aynı mekanizma: historyCutoffAt → loadConversationHistory since.
+    _freshCtx.historyCutoffAt = new Date().toISOString();
     // === P9-C HATIRLATMA KATMANI ===
     // Eski state'te tur VARSA ve tur HÂLÂ satıştaysa (findTourById güncel listeden):
     // mesaja hatırlatma + fresh context'e TEK-ADAYLI pendingTourClarification yazılır.
@@ -4135,16 +4139,38 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   const _isNewReservationIntent =
     newContext.stage === "TOUR_SELECTED" &&
     (fsmIntent === "reservation_intent" || fsmIntent === "tour_selected");
+  // 2026-10-08 Dilim-5 (canlı olay TURZZ-CANLI-ESKI-VERI-TESHIS.md — 11:41 / 11:49 UTC+3):
+  // "Kapadokya turu istiyorum" (tour_search) ve "kapadokya turlarını görmek istiyorum"
+  // (browse_tours, COMPLETED→TOUR_SELECTED) TOUR_SELECTED'a geçti ama (a)/(b)/(c)'nin
+  // hiçbiri tutmadı → LLM eski geçmişten 2026 tarihli + 1.500₺ liste UYDURDU.
+  // (e) Müşteri bu turda turu ADIYLA istedi/görmek istedi (talep fiili, 7 dil) → liste
+  //     deterministik. Bilgi isteği ("hakkında bilgi", "programı") hariç → LLM anlatır.
+  // _tourNamedThisTurn: tur bu mesajda eşleşti VE FSM'in seçtiği tur o (başka tura geçiş
+  // FSM'de reddedildiyse eski turun listesi basılmaz).
+  const _tourNamedThisTurn =
+    !!selectedTour && !!newContext.currentTour && selectedTour.id === newContext.currentTour.id;
+  const _isTourListRequest =
+    newContext.stage === "TOUR_SELECTED" && _tourNamedThisTurn &&
+    TOUR_REQUEST_RE.test(message) && !TOUR_INFO_REQUEST_RE.test(message);
+  // (b) KÖK 6 guard'ı yalnız (a)'ya aittir (waiting_for_date'te "iptal şartları"). Tarih
+  // KELİMESİ içeren soru NLU'da faq_general/general_question gelse de (DATE_INTENTS bu
+  // intent'leri zaten sayıyor) tarih sorusudur; bilgi-intent'inde (b) için ek şart: tur
+  // bu mesajda ADIYLA geçti ("Kapadokya turu ne zaman?") — "iptal ne zamana kadar?"
+  // gibi tur-dışı FAQ LLM'de kalır.
+  const _isDateQuestion =
+    (newContext.stage === "TOUR_SELECTED" || newContext.stage === "COLLECTING_INFO") && _askingViaQuery &&
+    (!_isInfoQuestionFsmIntent || _tourNamedThisTurn);
   const _isUserAskingDates =
     !!newContext.currentTour &&
-    !_isInfoQuestionFsmIntent &&   // KÖK 6: bilgi sorusu intent'leri :11'i atlatır
     (
-      // (a) Veri-toplama akışında tarih adımı: otomatik
-      (newContext.stage === "COLLECTING_INFO" && newContext.collectionStep === "waiting_for_date") ||
+      // (a) Veri-toplama akışında tarih adımı: otomatik. KÖK 6: bilgi sorusu intent'leri atlar.
+      (!_isInfoQuestionFsmIntent && newContext.stage === "COLLECTING_INFO" && newContext.collectionStep === "waiting_for_date") ||
       // (b) Kullanıcı tarih sorusu sordu (TOUR_SELECTED veya COLLECTING_INFO herhangi adım)
-      ((newContext.stage === "TOUR_SELECTED" || newContext.stage === "COLLECTING_INFO") && _askingViaQuery) ||
+      _isDateQuestion ||
       // (c) BUG-X1 fix: TOUR_SELECTED'da rezervasyon başlatma niyeti
-      _isNewReservationIntent
+      (!_isInfoQuestionFsmIntent && _isNewReservationIntent) ||
+      // (e) Dilim-5: turu adıyla isteme/görme talebi
+      _isTourListRequest
     );
 
   // 2026-07-01 PROBLEM 1 fix: (d) takılma güvenlik ağı _isUserAskingDates ÜST guard'ından

@@ -48,13 +48,16 @@ export function mkSupabase(opts: SupabaseStubOptions = {}) {
 }
 
 // ─── Stub adapter ─────────────────────────────────────────────────────────
-export function mkAdapter(ctx: ConversationContext | null, identifier = "905551112233", channel: "whatsapp" | "demo" = "whatsapp") {
+export function mkAdapter(
+  ctx: ConversationContext | null, identifier = "905551112233", channel: "whatsapp" | "demo" = "whatsapp",
+  extra: { loadHistory?: (limit: number, since?: string) => Promise<Array<{ role: string; content: string }>>; stale?: any } = {},
+) {
   const sent: string[] = [];
   let saved: ConversationContext | null = null;
   const adapter = {
     identifier, channel,
-    loadContext: async () => ({ context: ctx }),
-    loadHistory: async () => [] as Array<{ role: string; content: string }>,
+    loadContext: async () => (extra.stale ? { context: null, stale: extra.stale } : { context: ctx }),
+    loadHistory: extra.loadHistory ?? (async () => [] as Array<{ role: string; content: string }>),
     saveResponse: async (_r: string, c: ConversationContext) => { saved = c; },
     saveTransaction: async (_u: string, _r: string, c: ConversationContext) => { saved = c; },
     sendResponse: async (r: string) => { sent.push(r); },
@@ -108,11 +111,15 @@ export async function runTurn(params: {
   seedLanguage?: string;
   identifier?: string;
   channel?: "whatsapp" | "demo";
+  /** Gerçek bir adapter'in geçmiş yükleyicisini bağlamak için (Dilim-5). */
+  loadHistory?: (limit: number, since?: string) => Promise<Array<{ role: string; content: string }>>;
+  /** Bayat oturum (stale-reset) senaryosu için adapter sentinel'i. */
+  stale?: any;
 }): Promise<TurnResult> {
   const sb = params.supabase ?? mkSupabase();
   // Handler context'i YERİNDE değiştirebilir (L3/H-pax) → giriş state'i kanıt için klonlanır.
   const stateIn = params.ctx ? structuredClone(params.ctx) : null;
-  const { adapter, sent, saved } = mkAdapter(params.ctx, params.identifier, params.channel);
+  const { adapter, sent, saved } = mkAdapter(params.ctx, params.identifier, params.channel, { loadHistory: params.loadHistory, stale: params.stale });
   const res = await processChatMessage({
     message: params.message, adapter: adapter as any, agency: params.agency ?? AGENCY, supabase: sb as any,
     tours: params.tours, paymentInstructions: null, languageCurrencies: null, primaryCurrency: "TRY",

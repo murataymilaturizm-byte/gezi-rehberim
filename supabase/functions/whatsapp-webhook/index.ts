@@ -715,13 +715,13 @@ serve(async (req) => {
     // işlem-SONUNDA birlikte yazıyordu → mesaj ancak bot-cevabıyla beliriyordu;
     // pause-yolu zaten erken yazdığı için oradaki anlık-düşme gözlemiyle tutarlıydı).
     // adapter.markUserSaved() → saveTransaction user'ı TEKRAR yazmaz (çift-kayıt yok).
-    // History çift-mesaj riski: _preloadedHistory bu insert'ten ÖNCE yüklendi →
-    // loadHistory yeni satırı görmez (nadir preload-null fallback'inde LLM history'de
-    // kopya görebilir — state-etkisi yok, kabul edilen marjinal durum).
+    // History çift-mesaj: _preloadedHistory bu insert'ten ÖNCE yüklendi; loadHistory DB'den
+    // okursa (kesim zamanı varsa / önyükleme yoksa) kaydedilen içerik markUserSaved(içerik)
+    // ile bilindiği için geçmişten düşülür (Dilim-5, loadConversationHistory).
     // Best-effort: insert hatası akışı BOZMAZ (eski davranışa geri düşer).
     // Dilim-3: tek kayıt noktası. Başarısızsa yedek yol saveTransaction (atomik) → lossIfFail=false.
     if (await saveInboundMessage(supabase, agency.id, userPhone, rawMessage, { lossIfFail: false })) {
-      adapter.markUserSaved();
+      adapter.markUserSaved(rawMessage);
     }
 
     const result = await processChatMessage({
