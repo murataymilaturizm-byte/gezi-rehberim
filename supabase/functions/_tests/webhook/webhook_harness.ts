@@ -44,6 +44,7 @@ export interface Scenario {
   botPaused?: boolean;
   agencyNotFound?: boolean;         // resolveAgencyByPhoneNumberId acente bulamaz
   toursDown?: boolean;              // tours SELECT hata → getCachedTours TOUR_DATA_UNAVAILABLE (yalnız önbelleksiz acente id'sinde)
+  tours?: any[];                    // Dilim-8: tours SELECT sonucu (getCachedTours önbelleği acente id'sine göre → benzersiz id ver)
 }
 
 const _processed = new Set<string>();
@@ -61,7 +62,8 @@ export function setupScenario(s: Scenario = {}) {
         return { data: { success: true, context: null, history: [] }, error: null };
       },
       check_rate_limit: () => s.rateLimit ?? { data: { allowed: true }, error: null },
-      increment_agency_message_count: () => ({ data: null, error: null }),
+      // Gerçek RPC: UPDATE ... SET n = n + 1 (atomik) — eşzamanlı çağrılar kaybolmaz.
+      increment_agency_message_count: () => { db.agencyCount++; return { data: null, error: null }; },
     },
     select: (table, f) => {
       if (table === "plan_features") return { data: { message_limit: s.planLimit ?? -1, has_user_profiles: false, has_templates: false }, error: null };
@@ -72,7 +74,8 @@ export function setupScenario(s: Scenario = {}) {
       }
       if (table === "whatsapp_user_profiles") return { data: s.botPaused ? { bot_paused: true, bot_paused_until: null } : null, error: null };
       if (table === "tours" && s.toursDown) return { data: null, error: { message: "simulated tours outage" } };
-      if (table === "tours" || table === "registrations") return { data: [], error: null };
+      if (table === "tours") return { data: s.tours ?? [], error: null };
+      if (table === "registrations") return { data: [], error: null };
       return undefined;
     },
     insertResult: (table, payload) =>
@@ -82,6 +85,8 @@ export function setupScenario(s: Scenario = {}) {
   });
   sent.length = 0; processCalls.length = 0; criticalLog.length = 0;
   meta.agency = s.agencyNotFound ? null : mkAgency(s.agency);
+  db.agencyCount = meta.agency?.monthly_message_count ?? 0;
+  meta.snapshot = () => ({ monthly_message_count: db.agencyCount });
 }
 
 let _mid = 0;

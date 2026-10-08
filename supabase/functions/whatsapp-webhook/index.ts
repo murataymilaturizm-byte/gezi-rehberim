@@ -11,6 +11,7 @@ import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { detectLanguageChangeIntent } from "../shared/fsm/localization.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
 import { toBotTours } from "../shared/services/bot-tour.ts";
+import { todayIST } from "../shared/utils/date.ts";
 import { DROP_REASON, subscriptionDropReason, MEDIA_PLACEHOLDER } from "../shared/constants/drop-reasons.ts";
 import { markAsRead, showTypingIndicator } from "../shared/utils/whatsapp-status.ts";
 import { checkFAQ } from "./services/faq.ts";
@@ -52,6 +53,25 @@ const corsHeaders = {
 // dalında müşteri mesajı HİÇ yazılmıyordu → acente o müşteriyi görmüyordu.
 // lossIfFail: yazım düşerse mesaj kalıcı kaybolur mu? (true → error, false → warning:
 // çağıran tarafın yedek yazım yolu var — ör. normal akışta saveTransaction).
+// Dilim-8 (denetim F4): aylık mesaj sayacı — TEK YOL, atomik RPC
+// (increment_agency_message_count: UPDATE ... SET n = n + 1). Eskiden FAQ ve ana akış
+// istek başında okunan değeri +1 ile YAZIYORDU (okuma-değiştir-yazma) → eşzamanlı iki
+// mesaj sayacı 1 artırıyordu (fatura/limit düşük sayım). Hata akışı bozmaz, görünür kalır.
+async function incrementMonthlyMessageCount(supabase: any, agencyId: string, path: string): Promise<void> {
+  try {
+    const { error } = await supabase.rpc("increment_agency_message_count", { p_agency_id: agencyId });
+    if (error) throw error;
+  } catch (_cntErr: any) {
+    await logCritical({
+      event: "MESSAGE_COUNTER_FAIL",
+      error: _cntErr?.message || String(_cntErr),
+      context: { agencyId, path },
+      agencyId,
+      severity: "error",
+    });
+  }
+}
+
 async function saveInboundMessage(
   supabase: any,
   agencyId: string,
@@ -447,13 +467,17 @@ serve(async (req) => {
 
     // === Monthly message counter reset ===
     const _now = new Date();
-    const _msgCount: number = (agency as any).monthly_message_count ?? 0;
+    // Dilim-8 (F4 yanı): let — ay sıfırlandığında limit kontrolü de 0'dan yapılsın (eskiden
+    // sıfırlama ÖNCESİ okunan değer kalıyordu → geçen ay limiti dolan acentenin yeni aydaki
+    // ilk mesajı yine "limit doldu" sayılıyordu).
+    let _msgCount: number = (agency as any).monthly_message_count ?? 0;
     const _lastReset = (agency as any).last_message_reset_date
       ? new Date((agency as any).last_message_reset_date) : null;
     if (!_lastReset || _lastReset.getMonth() !== _now.getMonth() || _lastReset.getFullYear() !== _now.getFullYear()) {
       await supabase.from("agencies").update({ monthly_message_count: 0, last_message_reset_date: _now.toISOString() })
         .eq("id", agency.id);
       (agency as any).monthly_message_count = 0;
+      _msgCount = 0;
     }
 
     // === Abonelik + mesaj limiti ===
@@ -586,7 +610,8 @@ serve(async (req) => {
       throw _cacheErr;
     }
     // PAKET-0 Dilim-2 (B1): DB→bot tur nesnesi TEK dönüştürücü (shared/services/bot-tour.ts).
-    const tours = toBotTours(toursRaw, _prelimLang, new Date().toISOString().split("T")[0]);
+    // Dilim-8 (F5): "bugün" Europe/Istanbul (eski: UTC — 00:00–03:00 arası dünkü tur listeleniyordu).
+    const tours = toBotTours(toursRaw, _prelimLang, todayIST());
 
     // === Canned responses + FAQ (plan özelliği, hızlı çıkış) ===
     // BAĞLAM-DUYARLI: canned yalnız BOŞTA bağlamda (aktif akış/COMPLETED/§35 bekleme
@@ -610,20 +635,7 @@ serve(async (req) => {
           ]);
           await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
             userPhone, truncateForWhatsApp(canned));
-          // R2: await + try/catch — RPC fail olursa sessiz kayıp yerine error-sink'e gider.
-          // Akış bozulmasın (sayaç hatası mesaj göndermeyi engellemesin) ama görünür kalsın.
-          try {
-            const { error: _cntErr } = await supabase.rpc("increment_agency_message_count", { p_agency_id: agency.id });
-            if (_cntErr) throw _cntErr;
-          } catch (_cntErr: any) {
-            await logCritical({
-              event: "MESSAGE_COUNTER_FAIL",
-              error: _cntErr?.message || String(_cntErr),
-              context: { agencyId: agency.id, path: "canned_response" },
-              agencyId: agency.id,
-              severity: "error",
-            });
-          }
+          await incrementMonthlyMessageCount(supabase, agency.id, "canned_response");
           return new Response(JSON.stringify({ success: true }), {
             status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
@@ -639,21 +651,7 @@ serve(async (req) => {
         ]);
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
           userPhone, truncateForWhatsApp(faqResponse));
-        // R2: aynı pattern — billing drift önle
-        try {
-          const { error: _cntErr } = await supabase.from("agencies")
-            .update({ monthly_message_count: (_msgCount ?? 0) + 1 })
-            .eq("id", agency.id);
-          if (_cntErr) throw _cntErr;
-        } catch (_cntErr: any) {
-          await logCritical({
-            event: "MESSAGE_COUNTER_FAIL",
-            error: _cntErr?.message || String(_cntErr),
-            context: { agencyId: agency.id, path: "faq_response" },
-            agencyId: agency.id,
-            severity: "error",
-          });
-        }
+        await incrementMonthlyMessageCount(supabase, agency.id, "faq_response");
         return new Response(JSON.stringify({ success: true }), {
           status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -743,22 +741,7 @@ serve(async (req) => {
     }
 
     // === Monthly counter increment (her başarılı işlemde) ===
-    // R2: Önceden .then(() => {}) fire-and-forget'ti — RPC fail olursa sessizce kaybolup
-    // billing drift yapıyordu. Şimdi await + try/catch + error-sink (akış bozulmaz).
-    try {
-      const { error: _cntErr } = await supabase.from("agencies")
-        .update({ monthly_message_count: (_msgCount ?? 0) + 1 })
-        .eq("id", agency.id);
-      if (_cntErr) throw _cntErr;
-    } catch (_cntErr: any) {
-      await logCritical({
-        event: "MESSAGE_COUNTER_FAIL",
-        error: _cntErr?.message || String(_cntErr),
-        context: { agencyId: agency.id, path: "main_flow" },
-        agencyId: agency.id,
-        severity: "error",
-      });
-    }
+    await incrementMonthlyMessageCount(supabase, agency.id, "main_flow");
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

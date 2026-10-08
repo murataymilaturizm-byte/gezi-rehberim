@@ -6868,7 +6868,10 @@ console.log("\n── SINIF-KORUMASI: TypeScript derleyici kapısı ──");
   const sayfalar = ["RehberSozlesmesi", "TurKarHesaplayici", "TurSatisSozlesmesi", "TurTeklifi", "TransferSozlesmesi"];
   for (const s of sayfalar) {
     const src = await Deno.readTextFile(`src/pages/tools/${s}.tsx`);
-    const kullanilan = [...src.matchAll(/cta.([a-zA-Z]+)/g)].map((m) => m[1]);
+    const kullanilan = [...src.matchAll(/\bcta\.([a-zA-Z]+)/g)].map((m) => m[1]);
+    // Dilim-8: regex eskiden \b yerine görünmez backspace (0x08) içeriyordu → HİÇ eşleşmiyor,
+    // test boşuna geçiyordu. Boş eşleşme artık kırmızı (CTA alanı okunamadı = muhafız kör).
+    assert(`CTA.ALAN ${s} en az bir cta.<alan> kullanımı okundu (${kullanilan.length})`, kullanilan.length > 0);
     const hatali = kullanilan.filter((k) => !gecerli.has(k));
     assert(`CTA.ALAN ${s} geçerli alan kullanıyor${hatali.length ? " — HATALI: " + [...new Set(hatali)].join(",") : ""}`,
       hatali.length === 0);
@@ -7323,6 +7326,65 @@ console.log("\nPAKET-0 D3 webhook kayit + fail-open muhafizi");
   for (const [m, l] of _dci) assert(`D7.E3 dil-degisim-niyeti "${m}" → ${l}`, detectLanguageChangeIntent(m) === l);
   // Akış ortası anlık karakter geçişi yalnız yazı sistemi dile özgü (ru/ar) tespitte.
   assert("D7.E3 anlik char-gecisi SCRIPT_UNIQUE_LANGS ile sinirli", /\(SCRIPT_UNIQUE_LANGS as readonly string\[\]\)\.includes\(runtimeDetectedLang\)\) \{/.test(_pm7));
+}
+
+// ─── PAKET-0 Dilim-8 (1): kaynakta görünmez kontrol karakteri YASAK ───
+// Bir yazma aracı/şablon "\b"yi backspace'e (0x08) çevirince regex sessizce ölür (bu
+// dosyanın CTA.ALAN testi böyle boşuna geçiyordu; ARCHITECTURE_GUARDS G22 başlığı da).
+// Kaynakta 0x00–0x08, 0x0B, 0x0C, 0x0E–0x1F hiçbir meşru kullanımda yok → hepsi kırmızı.
+// (Bu muhafız karakter sınıfını kendi kaynağına yazmamak için char kodlarıyla kurar.)
+{
+  const _ctl = new RegExp("[" + [[0, 8], [11, 12], [14, 31]].map(([a, b]) =>
+    String.fromCharCode(a) + "-" + String.fromCharCode(b)).join("") + "]");
+  assert("D8.CTL dedektor: backspace'li regex yakalanir", _ctl.test("/" + String.fromCharCode(8) + "cta./"));
+  assert("D8.CTL dedektor: normal \\b metni temiz", !_ctl.test(String.raw`/\bcta\./`));
+  const _ctlBad: string[] = [];
+  let _ctlFiles = 0;
+  const _ctlWalk = async (dir: string) => {
+    for await (const e of Deno.readDir(dir)) {
+      if (["node_modules", ".git", "dist", ".vercel"].includes(e.name)) continue;
+      const p = `${dir}/${e.name}`;
+      if (e.isDirectory) { await _ctlWalk(p); continue; }
+      if (!/\.(ts|tsx|js|mjs|cjs)$/.test(e.name)) continue;
+      _ctlFiles++;
+      (await Deno.readTextFile(p)).split("\n").forEach((l, i) => {
+        const m = l.match(_ctl);
+        if (m) _ctlBad.push(`${p}:${i + 1} (0x${m[0].charCodeAt(0).toString(16).padStart(2, "0")})`);
+      });
+    }
+  };
+  for (const d of ["scripts", "supabase/functions", "src"]) await _ctlWalk(d);
+  assert(`D8.CTL ${_ctlFiles} kaynak dosyada kontrol karakteri YOK (bulunan: ${_ctlBad.join(", ") || "yok"})`, _ctlBad.length === 0 && _ctlFiles > 300);
+}
+
+// ─── PAKET-0 Dilim-8 (2) F5: "bugün" tek kaynak todayIST + (3) F4: tek sayaç yolu ───
+{
+  const _strip8 = (s: string) => s.split("\n").filter((l) => !/^\s*(\/\/|\*)/.test(l)).join("\n");
+  const _f5Files = [
+    "supabase/functions/whatsapp-webhook/index.ts", "supabase/functions/demo-chat/index.ts",
+    "supabase/functions/shared/handlers/process-message.ts", "supabase/functions/shared/fsm/prompts/helpers.ts",
+  ];
+  // UTC gün kesiti ("…toISOString().slice(0,10)" / ".split('T')[0]") ve satır içi Istanbul
+  // hesabı bu dosyalarda YOK — gün kararı yalnız shared/utils/date.ts todayIST().
+  const _utcDay = /toISOString\(\)\s*\.\s*(?:slice\(\s*0\s*,\s*10\s*\)|split\(\s*["']T["']\s*\)\s*\[\s*0\s*\]|substring\(\s*0\s*,\s*10\s*\))/;
+  for (const f of _f5Files) {
+    const src = _strip8(await Deno.readTextFile(f));
+    assert(`D8.F5 ${f.split("/").slice(-2).join("/")}: UTC gun kesiti YOK`, !_utcDay.test(src));
+    assert(`D8.F5 ${f.split("/").slice(-2).join("/")}: satir ici Europe/Istanbul gun hesabi YOK`, !/timeZone:\s*["']Europe\/Istanbul["']/.test(src));
+  }
+  for (const f of _f5Files.slice(0, 2)) {
+    assert(`D8.F5 ${f.split("/").slice(-2).join("/")}: toBotTours(…, todayIST())`, /toBotTours\([^)]*todayIST\(\)\)/.test(await Deno.readTextFile(f)));
+  }
+  const { todayIST } = await import("../supabase/functions/shared/utils/date.ts");
+  assert("D8.F5 todayIST: UTC 22:30 → Istanbul ertesi gun", todayIST(new Date("2027-03-10T22:30:00Z")) === "2027-03-11");
+  assert("D8.F5 todayIST: UTC 20:59 → ayni gun", todayIST(new Date("2027-03-10T20:59:00Z")) === "2027-03-10");
+
+  // F4: aylık sayaç YALNIZ atomik RPC — +1 hesaplı UPDATE yok; her yol tek yardımcıdan.
+  const _wh8 = _strip8(await Deno.readTextFile("supabase/functions/whatsapp-webhook/index.ts"));
+  assert("D8.F4 okuma-degistir-yazma sayac UPDATE'i YOK", !/monthly_message_count:\s*\(?\s*_?\w*\s*(?:\?\?\s*0\s*\)?)?\s*\+\s*1/.test(_wh8));
+  assert("D8.F4 RPC cagrisi yalniz incrementMonthlyMessageCount icinde (1)", (_wh8.match(/rpc\("increment_agency_message_count"/g) || []).length === 1);
+  const _incCalls = (_wh8.match(/await incrementMonthlyMessageCount\(supabase, agency\.id, "(\w+)"\)/g) || []);
+  assert(`D8.F4 sayac yollari tek yardimcidan (canned/faq/main = ${_incCalls.length})`, _incCalls.length === 3);
 }
 
 Deno.exit(fail === 0 ? 0 : 1);

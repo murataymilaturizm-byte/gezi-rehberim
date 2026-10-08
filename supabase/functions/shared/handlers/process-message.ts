@@ -77,6 +77,7 @@ import { quotaLabel } from "../constants/quota-labels.ts";
 import { maskPhone } from "../utils/log-mask.ts";
 // K4: TEK yuvarlama kuralı — tüm kapora/toplam hesapları buradan.
 import { calculateTotal, calculateDeposit } from "../utils/finance.ts";
+import { todayIST } from "../utils/date.ts";
 import { normalizePhone, formatPhoneDisplay } from "../../_shared/phone.ts";
 import { CONFIRM_POSITIVE } from "../constants/confirmation-words.ts";
 import type { ChannelAdapter, ProcessMessageInput, ProcessMessageResult } from "./types.ts";
@@ -542,7 +543,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       const _stTour = _stale.lastTourId && _stale.lastTourTitle ? findTourById(_stale.lastTourId, tours) : null;
       if (_stTour) {
         const _stTitle = getLocalizedTourTitle(_stTour.title || _stale.lastTourTitle!, _lang) || _stale.lastTourTitle!;
-        const _istToday = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" });
+        const _istToday = todayIST();
         const _dateOk = !!_stale.lastSelectedDate && String(_stale.lastSelectedDate).slice(0, 10) >= _istToday;
         const _dateTxt = _dateOk ? formatDateForLanguage(String(_stale.lastSelectedDate), _lang) : "";
         const _remindMsgs: Record<string, string> = _dateOk
@@ -661,7 +662,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   if (context.stage !== "COMPLETED" && context.reservationInfo?.dateId && context.reservationInfo?.tourId) {
     const _resTour = tours.find((t: any) => t.id === context.reservationInfo!.tourId);
     const _resDate = _resTour?.dates?.find((d: any) => d.id === context.reservationInfo!.dateId);
-    const _today = new Date().toISOString().slice(0, 10);
+    const _today = todayIST(); // Dilim-8 (F5): eski UTC
     const _isPast = _resDate && _resDate.departure_date < _today;
     const _quotaFull = _resDate && (_resDate.remaining_quota ?? _resDate.quota ?? 1) <= 0;
     const _stillValid = _resTour && _resDate && !_isPast && !_quotaFull;
@@ -4067,7 +4068,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
       !_curDateId && !newContext.proposedDateId &&
       _anyDateSignal.test(message) && _pDates.length > 0
     ) {
-      const _istToday = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Istanbul" });
+      const _istToday = todayIST();
       const _nearest = _pDates
         .filter((d: any) => getQuotaRemaining(d) > 0 && String(d.departure_date) >= _istToday)
         .sort((a: any, b: any) => String(a.departure_date).localeCompare(String(b.departure_date)))[0];

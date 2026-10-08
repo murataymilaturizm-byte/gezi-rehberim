@@ -6,6 +6,8 @@ export interface StubDb {
   inserts: Array<{ table: string; payload: any }>;
   updates: Array<{ table: string; payload: any }>;
   rpcCalls: Array<{ name: string; args: any }>;
+  /** Dilim-8: agencies.monthly_message_count'un DB'deki değeri (update yazar, RPC artırır). */
+  agencyCount: number;
   conf: {
     rpc?: Record<string, (args: any) => { data: any; error: any }>;
     /** table → select sonucu (filters = eq/like çağrıları) */
@@ -14,9 +16,9 @@ export interface StubDb {
     insertResult?: (table: string, payload: any) => { data: any; error: any } | undefined;
   };
 }
-export const db: StubDb = { inserts: [], updates: [], rpcCalls: [], conf: {} };
+export const db: StubDb = { inserts: [], updates: [], rpcCalls: [], agencyCount: 0, conf: {} };
 export function resetDb(conf: StubDb["conf"] = {}) {
-  db.inserts = []; db.updates = []; db.rpcCalls = []; db.conf = conf;
+  db.inserts = []; db.updates = []; db.rpcCalls = []; db.agencyCount = 0; db.conf = conf;
 }
 
 function builder(table: string) {
@@ -29,7 +31,12 @@ function builder(table: string) {
       if (!r?.error) db.inserts.push({ table, payload });
       return r ?? { data: null, error: null };
     }
-    if (op === "update") { db.updates.push({ table, payload }); return { data: null, error: null }; }
+    if (op === "update") {
+      db.updates.push({ table, payload });
+      // Gerçek DB gibi: SET monthly_message_count = <istemcinin hesapladığı değer> (üzerine yazar)
+      if (table === "agencies" && typeof payload?.monthly_message_count === "number") db.agencyCount = payload.monthly_message_count;
+      return { data: null, error: null };
+    }
     return db.conf.select?.(table, filters) ?? { data: null, error: null };
   };
   const b: any = {

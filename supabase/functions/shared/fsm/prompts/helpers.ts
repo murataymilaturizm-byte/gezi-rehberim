@@ -3,10 +3,12 @@ import { formatDateForLanguage } from "../localization.ts";
 import { formatPriceSync } from "../../utils/currency-display.ts";
 // A4 (2026-10-07): "ilk tarih" = kronolojik ilk kontenjanlı+fiyatlı tarih (tek kaynak).
 import { representativeDate } from "../../utils/tour-dates.ts";
+import { todayIST } from "../../utils/date.ts";
 
 export function formatDateHeader(language: string): string {
-  const now = new Date();
-  const currentDateStr = formatDateForLanguage(now.toISOString().split("T")[0], language);
+  // Dilim-8 (F5): LLM'e verilen "bugün" de Europe/Istanbul (eski: UTC gün + UTC gün adı).
+  const _today = todayIST();
+  const currentDateStr = formatDateForLanguage(_today, language);
 
   const dayNames: Record<string, string[]> = {
     tr: ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"],
@@ -18,7 +20,7 @@ export function formatDateHeader(language: string): string {
     es: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
   };
 
-  const dayName = (dayNames[language] || dayNames.tr)[now.getDay()];
+  const dayName = (dayNames[language] || dayNames.tr)[new Date(`${_today}T12:00:00Z`).getUTCDay()];
   return `📅 CURRENT DATE: ${dayName}, ${currentDateStr}`;
 }
 
@@ -220,7 +222,7 @@ export function formatTourDetails(
   // alanları EKLENDİ. DB'de bu alanlar dolu (Pamukkale 07:30, Kapadokya Balon
   // 05:00, vb.) ama prompt'a girmediği için LLM saat uyduruyor + tutarsız
   // davranıyordu. Artık deterministik veri prompt'ta → halüsinasyon kapısı kapalı.
-  const _today = new Date().toISOString().slice(0, 10);
+  const _today = todayIST(); // Dilim-8 (F5)
   const firstDate = representativeDate({ dates: (tour.dates || []).filter((d: any) => !d?.departure_date || d.departure_date >= _today) });
   const price = firstDate?.price_adult;
   const meetTime = formatTime(tour.toplanma_saati);

@@ -7,14 +7,14 @@ export const verifyMetaSignature = real.verifyMetaSignature;
 export const getMetaCredentials = real.getMetaCredentials;
 
 export const sent: Array<{ to: string; text: string }> = [];
-export const meta: { agency: any } = { agency: null };
+export const meta: { agency: any; snapshot?: () => Record<string, any> } = { agency: null };
 export async function sendWhatsAppMessage(_pid: string, _tok: string, to: string, text: string) {
   sent.push({ to, text });
   return { success: true, messageId: "wamid.out" };
 }
 export async function sendWhatsAppTemplate() { return { success: true }; }
 export async function resolveAgencyByPhoneNumberId(_sb: any, _pid: string) {
-  return meta.agency ? { agency: meta.agency, error: null } : { agency: null, error: "not found" };
+  return meta.agency ? { agency: { ...meta.agency, ...(meta.snapshot?.() ?? {}) }, error: null } : { agency: null, error: "not found" };
 }
 export async function subscribeAppToWaba() { return true; }
 export async function verifyWabaSubscription() { return true; }

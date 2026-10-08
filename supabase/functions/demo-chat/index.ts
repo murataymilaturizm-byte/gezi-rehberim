@@ -12,6 +12,7 @@ import { detectLanguage } from "../shared/fsm/language.ts";
 import { AGENCY_SELECT } from "../shared/constants/agency-columns.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
 import { toBotTours } from "../shared/services/bot-tour.ts";
+import { todayIST } from "../shared/utils/date.ts";
 import { processChatMessage } from "../shared/handlers/process-message.ts";
 import { detectCannedResponseTrigger, buildCannedResponse, isIdleContext } from "../shared/services/canned-responses.ts";
 import { analyzeUserMessage } from "../shared/fsm/nlu.ts";
@@ -267,7 +268,8 @@ serve(async (req) => {
       throw _cacheErr;
     }
     // PAKET-0 Dilim-2 (B1): DB→bot tur nesnesi TEK dönüştürücü (shared/services/bot-tour.ts).
-    const tours = toBotTours(toursRaw, _prelimLang, new Date().toISOString().split("T")[0]);
+    // Dilim-8 (F5): "bugün" Europe/Istanbul (eski: UTC — 00:00–03:00 arası dünkü tur listeleniyordu).
+    const tours = toBotTours(toursRaw, _prelimLang, todayIST());
 
     // === ADAPTER + CORE PROCESSING ===
     const adapter = new DemoChatAdapter(
