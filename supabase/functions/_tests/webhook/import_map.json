@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "https://deno.land/std@0.168.0/http/server.ts": "./stubs/std-server.ts",
+    "https://esm.sh/@supabase/supabase-js@2": "./stubs/supabase-js.ts",
+    "../../_shared/metaWhatsapp.ts": "./stubs/meta.ts",
+    "../../_shared/error-sink.ts": "../harness/stubs/error-sink.ts",
+    "../../shared/utils/whatsapp-status.ts": "./stubs/wa-status.ts",
+    "../../shared/handlers/process-message.ts": "./stubs/process-message.ts"
+  }
+}

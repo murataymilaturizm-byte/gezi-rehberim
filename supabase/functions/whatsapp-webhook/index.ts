@@ -43,6 +43,39 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ─── GELEN MÜŞTERİ MESAJI KAYDI — TEK NOKTA (PAKET-0 Dilim-3, F1) ─────────────
+// Müşterinin yazdığı her metin whatsapp_conversations'a role=user olarak BURADAN
+// yazılır: normal akış (erken kayıt), bot-pause (insan devraldı) ve bot'un
+// cevaplamadığı "düşürülen" mesajlar (droppedReason → metadata.dropped_reason;
+// panel acenteye müşterinin ne yazdığını gösterebilsin). Eskiden limit/abonelik
+// dalında müşteri mesajı HİÇ yazılmıyordu → acente o müşteriyi görmüyordu.
+// lossIfFail: yazım düşerse mesaj kalıcı kaybolur mu? (true → error, false → warning:
+// çağıran tarafın yedek yazım yolu var — ör. normal akışta saveTransaction).
+async function saveInboundMessage(
+  supabase: any,
+  agencyId: string,
+  phone: string,
+  content: string,
+  opts: { droppedReason?: string; meta?: Record<string, unknown>; lossIfFail: boolean },
+): Promise<boolean> {
+  const row: Record<string, unknown> = { phone, role: "user", content, agency_id: agencyId };
+  if (opts.droppedReason) row.metadata = { dropped_reason: opts.droppedReason, ...(opts.meta || {}) };
+  try {
+    const { error } = await supabase.from("whatsapp_conversations").insert(row);
+    if (error) throw new Error(error.message);
+    return true;
+  } catch (e) {
+    await logCritical({
+      event: "INBOUND_MESSAGE_SAVE_FAIL",
+      error: e instanceof Error ? e.message : String(e),
+      context: { dropped_reason: opts.droppedReason ?? null, lossIfFail: opts.lossIfFail },
+      agencyId,
+      severity: opts.lossIfFail ? "error" : "warning",
+    }).catch(() => {});
+    return false;
+  }
+}
+
 // ─── GET: Webhook doğrulama ───────────────────────────────────────────────────
 async function handleVerify(req: Request): Promise<Response> {
   const url = new URL(req.url);
@@ -339,10 +372,17 @@ serve(async (req) => {
         p_agency_id: agency.id,
       });
       if (_rle) {
-        console.error("[rate_limit_rpc_error]", _rle.message);
-        return new Response(JSON.stringify({ success: true }), {
-          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        // F2 (PAKET-0 Dilim-3): FAIL-OPEN. Eskiden RPC hatasında mesaj cevapsız ve
+        // kayıtsız düşüyordu (müşteri + acente için tam sessizlik). Rate-limit bir
+        // kötüye-kullanım koruması; altyapı hatası müşteriyi cezalandırmamalı →
+        // görünür kıl (logCritical) ve mesajı normal işle.
+        await logCritical({
+          event: "RATE_LIMIT_RPC_FAIL",
+          error: _rle.message,
+          context: { path: "whatsapp-webhook", failOpen: true },
+          agencyId: agency.id,
+          severity: "error",
+        }).catch(() => {});
       } else if (_rl && !_rl.allowed) {
         const _rlMsgs: Record<string, string> = {
           tr: "Çok hızlı mesaj gönderiyorsunuz. 🙏 Lütfen bir dakika bekleyin.",
@@ -387,6 +427,14 @@ serve(async (req) => {
       const _reason = _isExpired ? `subscription_${_subStatus}` : "message_limit_reached";
       console.warn(`[webhook] Message dropped — agency "${agency.name}" reason: ${_reason}`);
 
+      // F1 (PAKET-0 Dilim-3): bot cevaplamasa da müşterinin mesajı HER ZAMAN kayda
+      // geçer (tek nokta saveInboundMessage) — acente panelde görür, lead kaybolmaz.
+      await saveInboundMessage(supabase, agency.id, userPhone, rawMessage, {
+        droppedReason: _isExpired ? "subscription_inactive" : "monthly_limit",
+        meta: _isExpired ? { subscription_status: _subStatus } : { message_limit: _msgLimit },
+        lossIfFail: true,
+      });
+
       // 24h cooldown: bu müşteriye son 24 saatte aynı bildirim atıldı mı?
       const _since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { data: _recentNotice } = await supabase
@@ -417,13 +465,28 @@ serve(async (req) => {
         // Meta 24h penceresi: müşteri az önce bize yazdığı için pencere AÇIK — free text gönderilebilir
         await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken,
           userPhone, _unavMsg).catch((e) => console.error("[K2 unav send fail]", e));
-        // Conversations'a işaretle (cooldown takibi)
-        supabase.from("whatsapp_conversations").insert({
-          agency_id: agency.id, phone: userPhone,
-          role: "system",
-          content: `[unavailable] ${_reason}`,
-          metadata: { dropped_reason: _reason, customer_notified: true },
-        }).catch(() => {});
+        // Conversations'a işaretle (cooldown takibi).
+        // Dilim-3 (:426): eski `.insert(...).catch(()=>{})` Postgrest builder'da `catch`
+        // metodu olmadığı için insert'i HİÇ çalıştırmadan TypeError atıyordu → soğuma
+        // kaydı yazılmıyor (bildirim HER mesajda) + dış catch müşteriye ayrıca "teknik
+        // sorun" mesajı gönderiyordu. Artık await + hata görünür (logCritical).
+        try {
+          const { error: _markErr } = await supabase.from("whatsapp_conversations").insert({
+            agency_id: agency.id, phone: userPhone,
+            role: "system",
+            content: `[unavailable] ${_reason}`,
+            metadata: { dropped_reason: _reason, customer_notified: true },
+          });
+          if (_markErr) throw new Error(_markErr.message);
+        } catch (_me) {
+          await logCritical({
+            event: "UNAVAILABLE_MARK_INSERT_FAIL",
+            error: _me instanceof Error ? _me.message : String(_me),
+            context: { reason: _reason, note: "24h soğuma kaydı yazılamadı — bildirim tekrarlanabilir" },
+            agencyId: agency.id,
+            severity: "error",
+          }).catch(() => {});
+        }
       } else {
         // 24h içinde zaten bildirim atılmış — sessiz
         console.log("[K2] Suppressed unav notice (24h cooldown)", maskPhone(userPhone));
@@ -557,9 +620,9 @@ serve(async (req) => {
         const pausedUntil = profile.bot_paused_until ? new Date(profile.bot_paused_until) : null;
         if (!pausedUntil || pausedUntil > new Date()) {
           console.log(`[whatsapp-webhook] Bot paused for ${maskPhone(userPhone)} — saving message, skipping AI`);
-          await supabase.from("whatsapp_conversations").insert({
-            phone: userPhone, role: "user", content: rawMessage, agency_id: agency.id,
-          });
+          // Dilim-3: tek kayıt noktası (eski satır şekli aynen; hata artık görünür).
+          // dropped_reason YOK — bilinçli: insan devraldı, mesaj "düşürülmüyor" (rapor KARAR).
+          await saveInboundMessage(supabase, agency.id, userPhone, rawMessage, { lossIfFail: true });
           return new Response(JSON.stringify({ success: true, skipped: "bot_paused" }), {
             status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
@@ -602,14 +665,9 @@ serve(async (req) => {
     // loadHistory yeni satırı görmez (nadir preload-null fallback'inde LLM history'de
     // kopya görebilir — state-etkisi yok, kabul edilen marjinal durum).
     // Best-effort: insert hatası akışı BOZMAZ (eski davranışa geri düşer).
-    try {
-      const { error: _earlyErr } = await supabase.from("whatsapp_conversations").insert({
-        phone: userPhone, role: "user", content: rawMessage, agency_id: agency.id,
-      });
-      if (!_earlyErr) adapter.markUserSaved();
-      else console.error("[whatsapp-webhook] early user-insert failed (fallback to atomic):", _earlyErr.message);
-    } catch (_e) {
-      console.error("[whatsapp-webhook] early user-insert threw (fallback to atomic):", _e instanceof Error ? _e.message : _e);
+    // Dilim-3: tek kayıt noktası. Başarısızsa yedek yol saveTransaction (atomik) → lossIfFail=false.
+    if (await saveInboundMessage(supabase, agency.id, userPhone, rawMessage, { lossIfFail: false })) {
+      adapter.markUserSaved();
     }
 
     const result = await processChatMessage({

@@ -56,5 +56,11 @@ const s2 = run("Katman-2 harness: supabase/functions/_tests/harness",
   ["test", "--no-check", "--allow-read", "--allow-env", "--allow-net", "--allow-write",
    "--import-map=supabase/functions/_tests/harness/import_map.json", "supabase/functions/_tests/harness/"]);
 
-console.log(`\n━━━ SONUÇ ━━━  suite=${s1 === 0 ? "✓" : "✗ (" + s1 + ")"}  harness=${s2 === 0 ? "✓" : "✗ (" + s2 + ")"}`);
-process.exit(s1 === 0 && s2 === 0 ? 0 : 1);
+// PAKET-0 Dilim-3: webhook giriş-katmanı harness'i (gerçek whatsapp-webhook/index.ts, ayrı import-map).
+const s3 = run("Katman-2 webhook harness: supabase/functions/_tests/webhook",
+  ["test", "--no-check", "--allow-read", "--allow-env", "--allow-net", "--allow-write",
+   "--import-map=supabase/functions/_tests/webhook/import_map.json", "supabase/functions/_tests/webhook/"]);
+
+const ok = (c) => (c === 0 ? "✓" : "✗ (" + c + ")");
+console.log(`\n━━━ SONUÇ ━━━  suite=${ok(s1)}  harness=${ok(s2)}  webhook=${ok(s3)}`);
+process.exit(s1 === 0 && s2 === 0 && s3 === 0 ? 0 : 1);

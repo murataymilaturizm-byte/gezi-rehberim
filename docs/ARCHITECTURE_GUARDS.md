@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-10-08 (PAKET-0 Dilim-2 — B1 `toBotTours` tek dönüştürücü [elle tur-mapping silindi, tüm DB kolonları taşınır] + B2 dolu tarih `isFull` [numarasız/etiketli, seçilemez]. Detay §G18. Suite 1536/1536 + harness 52/52.).
+> Son güncelleme: 2026-10-08 (PAKET-0 Dilim-3 — F1 `saveInboundMessage` tek kayıt noktası [limit/abonelik dalında mesaj kaydı + dropped_reason] + `:426` catch'siz builder hatası + F2 rate-limit fail-open. Detay §G19. Suite 1541 + harness 60 + webhook 7.).
+> Önceki: 2026-10-08 (PAKET-0 Dilim-2 — B1 `toBotTours` tek dönüştürücü [elle tur-mapping silindi, tüm DB kolonları taşınır] + B2 dolu tarih `isFull` [numarasız/etiketli, seçilemez]. Detay §G18. Suite 1536/1536 + harness 52/52.).
 > Önceki: 2026-10-07 (PAKET-0 Dilim-1 — H1 Katman-2 harness [`_tests/harness`, `npm test`, Deno-yoksa sert hata] + Grup A tarih-listesi TEK primitif [`buildDateList`/`listedDateIds`/`resolveListedDate`, `sortTourDates`/`representativeDate`, H-pax `pendingPax`]. Detay §G17. Suite 1506/1506 + harness 12/12.).
 > Önceki: 2026-07-09 (FABLE TOPLU-DENETİM — Yan #8 TAM süpürme [injection/sahte-ack RU+AR 26 ölü pattern canlandı, "yirmi şubat" pax-sızıntısı kapandı, TR_MONTHS_GUARD→7-dil tek-kaynak], R6 öneri-onayı muafiyeti, _bookingActionRe malformed-fix, day_/index_ süpürücü [Blok 9e], CHANGE TR-ASCII, ölü-uç temizliği [needsMonthClarification/date_N], 9 PII-log maskelendi, .env untracked. 33/33 + 128-korpus miss=0. Detay §Açık-Sorular-31.).
 > Önceki: 2026-07-09 (Faz 5 DİL-PARİTE BÜTÜNCÜL — A: kur tek-zincir [convertPrice kaldırıldı, TL/etiket asla çapraz] + AR translit normalize+alias + confirmation-words.ts TEK KAYNAK [EN confirmed + 7-dil doğal onaylar] + BugA-ack 7-dil. B: AR-rakam ٠-٩ giriş-normalizasyonu + ES "de" tarih-filler + 4 kalan tr+en dict → 7-dil + alias typo'ları. Envanter §6f; korpus 128 vaka + confirmation sınıfı; miss=0.).
@@ -383,6 +384,15 @@ başına lookaround'lu (yapıyorum eşleşmez).
 | Sözleşme | Giriş noktaları YALNIZ `toBotTours(toursRaw, lang, today)` çağırır (elle mapping YASAK — suite statik). Tüm DB kolonları taşınır; yalnız title/destination/program_kisa lokalize (TR asıl `title_tr`/`destination_tr`). Geçmiş tarih atılır; **dolu tarih KALIR + `isFull`**. Tüm tarihleri dolu tur katalogdan gizli (K2). |
 | Dolu tarih kuralı | Listede `• <tarih> (DOLU)` numarasız; `listedDateIds` ve global numara yalnız müsait (K1). Her seçim yolu `hasQuotaForPax` → dolu ise `dateRejectedFull` → H-β. **Blok 10:** bu turn dolu tarih reddedildiyse oto-atama YOK (suite H.16 regresyonu). :10e dolu tarihe "DOLU" cevabı (7 dil). |
 | Muhafız | Suite "PAKET-0 D2": migration'lardan `tours` kolonları otomatik çıkarılıp her birinin `toBotTours` çıktısında korunduğu (DB kolonu → BotTour), giriş noktası statik yasakları, 7-dil numaralandırma. Harness `bot_tour_test.ts` (vize ×3, min_pax, dolu ×4 senaryo × tr/en/ru/ar). |
+
+### G19 — Webhook gelen mesaj kaydı TEK NOKTA + rate-limit fail-open (PAKET-0 Dilim-3, 2026-10-08)
+| | |
+|---|---|
+| Dosya | `whatsapp-webhook/index.ts` `saveInboundMessage` (modül seviyesi), limit/abonelik dalı, bot-pause, normal akış erken kaydı, `if (_rle)` |
+| Kök (denetim F1/F2) | Limit/abonelik dolunca müşteri mesajı hiç kaydedilmiyordu; `[unavailable]` soğuma insert'i `.insert(...).catch()` idi — Postgrest builder'da `catch` YOK (yalnız `then`) → insert hiç çalışmıyor + TypeError dış catch'e → müşteriye her mesajda "hizmet kapalı" + "teknik sorun"; rate-limit RPC hatası mesajı sessizce düşürüyordu. |
+| Sözleşme | Müşteri metni `whatsapp_conversations`'a YALNIZ `saveInboundMessage` ile (`role:"user"`; düşürülen mesajda `metadata.dropped_reason`: `monthly_limit` / `subscription_inactive`). Supabase builder üzerinde ASLA `.catch(` — `await` + `{ error }` kontrolü + `logCritical`. `check_rate_limit` hatası → `logCritical(RATE_LIMIT_RPC_FAIL)` + akış DEVAM (fail-open); `allowed=false` davranışı aynen. |
+| Muhafız | Suite "PAKET-0 D3" (statik: builder `.catch` yasağı — HEAD'e karşı kırmızı doğrulandı; tek kayıt noktası; fail-open). Webhook giriş-katmanı harness'i `_tests/webhook/` (GERÇEK index.ts; stub supabase builder aslına uygun: tembel + catch'siz) — `npm test` üçüncü parça. |
+| Açık (rapor §5) | Desteklenmeyen tip, kimlik bilgisi eksik, >2000 karakter, `allowed=false`, `TOUR_DATA_UNAVAILABLE` yolları hâlâ kaydetmiyor; canned/FAQ/anket kendi çift-insert'leri. |
 
 ---
 

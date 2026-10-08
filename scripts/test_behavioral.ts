@@ -7123,4 +7123,27 @@ console.log("\nPAKET-0 D2 tur-donusturucu + dolu-tarih muhafizi");
   assert("B2.resolve liste yok + dolu tarih numarayla secilemez", resolveListedDate(3, _t[0].dates, undefined) === undefined);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// PAKET-0 Dilim-3 (2026-10-08) — F1/F2 webhook "mesajı düşürme" muhafızı (STATİK)
+// Davranışsal kanıt: supabase/functions/_tests/webhook/webhook_test.ts (gerçek giriş kodu).
+// ═══════════════════════════════════════════════════════════════════════════
+console.log("\nPAKET-0 D3 webhook kayit + fail-open muhafizi");
+{
+  const _wh = await Deno.readTextFile("supabase/functions/whatsapp-webhook/index.ts");
+  // Postgrest builder'da `catch` METODU YOK (postgrest-js runtime: yalnız then) →
+  // `.insert(...).catch(...)` insert'i çalıştırmadan TypeError atar (eski :426 hatası).
+  const _whCode = _wh.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n"); // yorumlar hariç
+  assert("F1.STATIK webhook'ta Postgrest insert/update zincirinde .catch( YOK",
+    !/\.(?:insert|update|upsert)\((?:[^()]|\([^()]*\))*\)\s*\.catch\(/.test(_whCode));
+  assert("F1.STATIK tek kayit noktasi saveInboundMessage tanimli ve >=3 yerde kullaniliyor",
+    /async function saveInboundMessage\(/.test(_wh) && (_wh.match(/await saveInboundMessage\(|\(await saveInboundMessage\(/g) || []).length >= 3);
+  assert("F1.STATIK tek-satir role=user insert'i helper DISINDA yok",
+    !/from\("whatsapp_conversations"\)\.insert\(\{\s*phone: userPhone, role: "user"/.test(_wh));
+  assert("F1.STATIK limit/abonelik dali mesaji dropped_reason ile kaydediyor",
+    /droppedReason: _isExpired \? "subscription_inactive" : "monthly_limit"/.test(_wh));
+  const _rleBlock = (_wh.match(/if \(_rle\) \{([\s\S]*?)\} else if \(_rl && !_rl\.allowed\)/) || [])[1] || "";
+  assert("F2.STATIK rate-limit RPC hatasi FAIL-OPEN (erken return YOK, logCritical VAR)",
+    _rleBlock.length > 0 && !/return new Response/.test(_rleBlock) && /logCritical\(/.test(_rleBlock));
+}
+
 Deno.exit(fail === 0 ? 0 : 1);
