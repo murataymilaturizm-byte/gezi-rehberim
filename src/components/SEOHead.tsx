@@ -5,23 +5,9 @@
 import { Head } from "vite-react-ssg";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
-
-// i18n.language (tr/en/de/ru/ar/fr/es) → OG locale (IETF BCP 47)
-const OG_LOCALE_MAP: Record<string, string> = {
-  tr: "tr_TR",
-  en: "en_US",
-  de: "de_DE",
-  ru: "ru_RU",
-  ar: "ar_SA",
-  fr: "fr_FR",
-  es: "es_ES",
-};
-
-interface HreflangLink {
-  rel: string;
-  hreflang: string;
-  href: string;
-}
+// SEO Dalga 2a: og:locale + hreflang TEK KAYNAK (lang-routing). i18n.language artık
+// sayfa başına URL dilinden gelir (UrlLangProvider) → prerender'da da doğru.
+import { OG_LOCALE, hreflangLinks } from "@/lib/lang-routing";
 
 interface SEOHeadProps {
   title?: string;
@@ -31,7 +17,6 @@ interface SEOHeadProps {
   canonical?: string;
   schema?: object;
   type?: "website" | "article";
-  extraLinks?: HreflangLink[];
   /** SEO-FIX (2026-07-10): admin/auth gibi sayfalar için noindex,nofollow. */
   noindex?: boolean;
 }
@@ -53,7 +38,6 @@ export const SEOHead = ({
   canonical,
   schema,
   type = "website",
-  extraLinks,
   noindex = false,
 }: SEOHeadProps) => {
   const { i18n } = useTranslation();
@@ -64,7 +48,9 @@ export const SEOHead = ({
   // hiç basılmıyor, index.html'deki hardcode ana-URL geçerli kalıyordu →
   // "her sayfa kendini ana sayfa sanıyor" kökünün ikinci yarısı).
   const canonicalUrl = `${SITE_URL}${canonical ?? pathname}`;
-  const ogLocale = OG_LOCALE_MAP[i18n.language] || "tr_TR";
+  const ogLocale = OG_LOCALE[i18n.language] || "tr_TR";
+  // hreflang: yalnız indexlenebilir sayfalarda ve yalnız var olan indexlenebilir karşılıklara.
+  const alternates = noindex ? [] : hreflangLinks(pathname);
 
   return (
     <Head>
@@ -96,7 +82,7 @@ export const SEOHead = ({
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
 
       {/* hreflang alternate links */}
-      {extraLinks?.map((link, i) => (
+      {alternates.map((link, i) => (
         <link key={i} rel={link.rel} hrefLang={link.hreflang} href={link.href} />
       ))}
 

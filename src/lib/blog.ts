@@ -128,7 +128,9 @@ function parsePost(raw: string, slug: string, lang: string, isFallback = false, 
     tags:        (data.tags as string[])      ?? [],
     image:       (data.image as string)       ?? "/blog/default.jpg",
     author:      (data.author as string)      ?? "Turzz AI",
-    readingTime: (data.readingTime as number) ?? Math.ceil(wordCount / 200),
+    // SEO Dalga 2a: frontmatter "11 dk" / "11 min" gibi METİN → sayı. Birim i18n'den
+    // (t("blog.minutesRead")) gelir; eskiden metin olduğu gibi basılıyordu ("11 dk min read").
+    readingTime: parseInt(String(data.readingTime ?? ""), 10) || Math.ceil(wordCount / 200),
     updated:     data.updated ? String(data.updated) : undefined,
     // parser boolean üretmez ("true" string kalır) → iki biçim de kabul
     featured:    data.featured === true || data.featured === "true" || undefined,

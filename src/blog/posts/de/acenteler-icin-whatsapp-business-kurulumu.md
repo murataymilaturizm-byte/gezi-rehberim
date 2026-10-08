@@ -2,7 +2,7 @@
 title: "WhatsApp Business für Reisebüros einrichten: Schritt-für-Schritt-Anleitung (2026)"
 description: "WhatsApp Business für ein in der Türkei tätiges Reisebüro einrichten: Profil, Katalog, Schnellantworten, die 24-Stunden-Regel und der richtige Zeitpunkt für die API — Leitfaden 2026 + FAQ."
 date: "2026-08-14"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["WhatsApp Business", "Agentur-Einrichtung", "WhatsApp API", "Buchungsassistent", "2026"]
 image: "/blog/acenteler-icin-whatsapp-business-kurulumu.jpg"
 imageAlt: "WhatsApp Business Einrichtungsleitfaden für Reisebüros 2026"

@@ -5,12 +5,15 @@ import { Button } from "@/components/ui/button";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
 import { SiteHeader } from "@/components/SiteHeader";
 import { toolsHubUrl } from "@/lib/tools/registry";
+import { menuBlogHref } from "@/lib/lang-routing";
+import { postHref } from "@/lib/blog";
 
+// SEO Dalga 2a: etiketler i18n'den (eskiden sabit TR — yabancı sayfanın footer'ı TR'ydi).
 const ozellikler = [
-  { href: "/whatsapp-chatbot-seyahat-acentesi", label: "WhatsApp Chatbot" },
-  { href: "/ai-tur-rezervasyonu", label: "AI Tur Rezervasyonu" },
-  { href: "/cok-dilli-musteri-hizmetleri", label: "Çok Dilli Hizmet" },
-  { href: "/tur-otomasyonu", label: "Tur Otomasyonu" },
+  { href: "/whatsapp-chatbot-seyahat-acentesi", labelKey: "footer.whatsappChatbot" },
+  { href: "/ai-tur-rezervasyonu", labelKey: "footer.aiReservation" },
+  { href: "/cok-dilli-musteri-hizmetleri", labelKey: "footer.multilingualService" },
+  { href: "/tur-otomasyonu", labelKey: "footer.tourAutomation" },
 ];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -34,7 +37,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 {ozellikler.map((item) => (
                   <li key={item.href}>
                     <Link to={item.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   </li>
                 ))}
@@ -54,14 +57,14 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
             <div>
               <h3 className="font-semibold text-foreground mb-3 text-sm">{t("footer.resources")}</h3>
               <ul className="space-y-2">
-                <li><Link to="/blog" className="text-sm text-muted-foreground hover:text-primary transition-colors">Blog</Link></li>
+                <li><Link to={menuBlogHref(i18n.language)} className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("nav.blog")}</Link></li>
                 <li><Link to={toolsHubUrl(i18n.language)} className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("nav.tools")}</Link></li>
-                <li><Link to="/yardim" className="text-sm text-muted-foreground hover:text-primary transition-colors">Yardım Merkezi</Link></li>
-                <li><Link to="/nasil-baslarim" className="text-sm text-muted-foreground hover:text-primary transition-colors">Nasıl Başlarım?</Link></li>
+                <li><Link to="/yardim" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.helpCenter")}</Link></li>
+                <li><Link to="/nasil-baslarim" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.gettingStarted")}</Link></li>
                 {/* SITE-MENU-1: Fiyatlandırma menüden kalktı, buradan erişilir.
                     PayTR entegrasyonu tamamlandığında menüye geri dönecek. */}
                 <li><Link to="/#pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("nav.pricing")}</Link></li>
-                <li><Link to="/blog/manuel-whatsapp-vs-ai-chatbot-karsilastirma" className="text-sm text-muted-foreground hover:text-primary transition-colors">Karşılaştırma</Link></li>
+                <li><Link to={postHref("manuel-whatsapp-vs-ai-chatbot-karsilastirma", i18n.language)} className="text-sm text-muted-foreground hover:text-primary transition-colors">{t("footer.comparison")}</Link></li>
               </ul>
             </div>
           </div>

@@ -2,7 +2,7 @@
 title: "Leitfaden für Tagestour-Veranstalter: Last-Minute-Verkauf und Kapazitätsmanagement (2026)"
 description: "Wie reduziert man leere Plätze bei Tagestouren? Die Logik der Last-Minute-Nachfrage, Kapazitätsmanagement, die Abfahrtsentscheidung, ein Wetterplan und Preisdisziplin + FAQ."
 date: "2026-09-06"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Tagestouren", "Kapazitätsmanagement", "Last-Minute-Verkauf", "Tourbetrieb", "2026"]
 image: "/blog/gunubirlik-tur-operatoru-rehberi.jpg"
 imageAlt: "Leitfaden zu Kapazität und Last-Minute-Verkauf für Tagestour-Veranstalter 2026"

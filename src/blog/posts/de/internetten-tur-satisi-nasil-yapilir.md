@@ -2,7 +2,7 @@
 title: "Touren online verkaufen: Fahrplan für neue Agenturen in der Türkei (2026)"
 description: "Der Online-Verkaufsleitfaden für Agenturen in der Türkei: Kanalwahl, rechtliche Pflichten, Zahlungseinzug, Plan für die ersten 30 Tage und Konversionshebel. 2026 + FAQ."
 date: "2026-08-21"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Touren online verkaufen", "Online-Verkauf", "Virtueller POS", "Fernabsatz", "2026"]
 image: "/blog/internetten-tur-satisi-nasil-yapilir.jpg"
 imageAlt: "Online-Tourenverkauf Fahrplan für Reisebüros 2026"

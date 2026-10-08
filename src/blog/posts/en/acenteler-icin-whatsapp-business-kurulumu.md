@@ -2,7 +2,7 @@
 title: "WhatsApp Business Setup for Travel Agencies: Step-by-Step Guide (2026)"
 description: "How to set up WhatsApp Business for a travel agency operating in Türkiye: profile, catalogue, quick replies, the 24-hour rule and when to move to the API — 2026 guide + FAQ."
 date: "2026-08-14"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["WhatsApp Business", "Agency Setup", "WhatsApp API", "Booking Assistant", "2026"]
 image: "/blog/acenteler-icin-whatsapp-business-kurulumu.jpg"
 imageAlt: "WhatsApp Business setup guide for travel agencies 2026"

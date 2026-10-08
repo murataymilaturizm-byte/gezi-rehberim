@@ -2,7 +2,7 @@
 title: "How to Write a Tour Cancellation & Refund Policy (Template + 2026 Regulatory Notes)"
 description: "How to write tour cancellation and refund terms: a deposit-refund ladder example, force-majeure principles, a fillable policy template and where to display the terms + FAQ."
 date: "2026-08-28"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["Tour Cancellation Refund Terms", "Cancellation Policy", "Deposit Refund", "Tour Contract", "2026"]
 image: "/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir.jpg"
 imageAlt: "Guide and template for writing a tour cancellation and refund policy 2026"

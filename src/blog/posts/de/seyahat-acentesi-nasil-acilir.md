@@ -2,7 +2,7 @@
 title: "Reisebüro in der Türkei gründen: Leitfaden 2026 (TÜRSAB, Lizenzen, Kosten)"
 description: "Reisebüro in der Türkei gründen: erforderliche Dokumente, TÜRSAB-Mitgliedschaft, Unterschiede der Gruppen A-B-C und die aktuelle Kostentabelle 2026. Schritt-für-Schritt-Leitfaden + FAQ."
 date: "2026-08-12"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Reisebüro gründen", "TÜRSAB", "Agenturgründung", "Betriebslizenz", "2026"]
 image: "/blog/seyahat-acentesi-nasil-acilir.jpg"
 imageAlt: "Reisebüro in der Türkei gründen 2026 TÜRSAB Leitfaden"

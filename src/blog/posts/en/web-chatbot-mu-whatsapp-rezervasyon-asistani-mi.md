@@ -2,7 +2,7 @@
 title: "Website Chatbot or WhatsApp Booking Assistant? A Comparison for Travel Agencies (2026)"
 description: "The differences between a website chatbot and a WhatsApp AI booking assistant for a travel agency: channel, conversion, cost, setup. Comparison table + FAQ."
 date: "2026-08-17"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["Agency Chatbot", "WhatsApp Booking Assistant", "Web Chatbot", "Comparison", "2026"]
 image: "/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi.jpg"
 imageAlt: "Website chatbot vs WhatsApp booking assistant comparison 2026"

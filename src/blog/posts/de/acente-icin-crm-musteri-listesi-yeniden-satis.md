@@ -2,7 +2,7 @@
 title: "CRM für Reisebüros: Wie wird eine Kundenliste zu Gold? (Saisonaler Wiederverkaufs-Leitfaden 2026)"
 description: "CRM-Leitfaden für Agenturen: Telefonbuch vs. Kundenliste, ein funktionierendes Label-System, der saisonale Re-Kontakt-Kalender, die Bewertungsschleife nach der Tour und der richtige Automatisierungszeitpunkt + FAQ."
 date: "2026-09-02"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Agentur CRM", "Kundenliste", "Wiederverkauf", "Kunden-Nachfassen", "2026"]
 image: "/blog/acente-icin-crm-musteri-listesi-yeniden-satis.jpg"
 imageAlt: "CRM- und Wiederverkaufs-Leitfaden für Reisebüros 2026"

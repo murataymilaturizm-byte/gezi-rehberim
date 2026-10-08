@@ -10,6 +10,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import "./i18n";
+import { UrlLangProvider } from "@/components/UrlLangProvider";
 
 // HTML root'unda dir ve lang attribute'unu i18n diline göre günceller.
 // Arapça seçilince dir="rtl" olur, tarayıcı RTL layout'a geçer. (client-only)
@@ -64,7 +65,9 @@ const queryClient = new QueryClient();
 // routes dizisi + <Outlet/>. HelmetProvider KALDIRILDI: head artık vite-react-ssg
 // <Head> (SEOHead içinde) ile yönetilir → prerender'da ham HTML'e gömülür.
 function Layout() {
+  // SEO Dalga 2a: sayfa dili URL'den, sayfa başına ayrı i18n örneği (prerender eşzamanlı).
   return (
+    <UrlLangProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
@@ -83,6 +86,7 @@ function Layout() {
         </Suspense>
       </TooltipProvider>
     </QueryClientProvider>
+    </UrlLangProvider>
   );
 }
 

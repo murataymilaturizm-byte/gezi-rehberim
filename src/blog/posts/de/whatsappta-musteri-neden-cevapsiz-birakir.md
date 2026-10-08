@@ -2,7 +2,7 @@
 title: "Warum verstummen Kunden auf WhatsApp? Der Nachrichten-Konversions-Leitfaden für den Tourenverkauf (2026)"
 description: "Warum schweigt der Kunde nach der Preisfrage? Nachrichten-Trichter, Nachfass-Vorlagen nach dem Preis, die 15-Minuten-Regel und der richtige Zeitpunkt für Automatisierung + FAQ."
 date: "2026-08-26"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["WhatsApp Kunden-Nachfassen", "Nachrichten-Konversion", "Tourenverkauf", "Nachfassnachricht", "2026"]
 image: "/blog/whatsappta-musteri-neden-cevapsiz-birakir.jpg"
 imageAlt: "WhatsApp Kunden-Nachfassen und Nachrichten-Konversion Leitfaden 2026"

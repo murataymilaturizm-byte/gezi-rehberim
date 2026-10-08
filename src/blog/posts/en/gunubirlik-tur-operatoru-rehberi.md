@@ -2,7 +2,7 @@
 title: "The Day-Tour Operator's Guide: Last-Minute Sales and Capacity Management (2026)"
 description: "How do you cut empty seats on day tours? The logic of last-minute demand, capacity management, the departure-decision threshold, a weather plan and pricing discipline + FAQ."
 date: "2026-09-06"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["Day Tours", "Capacity Management", "Last-Minute Sales", "Tour Operations", "2026"]
 image: "/blog/gunubirlik-tur-operatoru-rehberi.jpg"
 imageAlt: "Capacity and last-minute sales guide for day-tour operators 2026"

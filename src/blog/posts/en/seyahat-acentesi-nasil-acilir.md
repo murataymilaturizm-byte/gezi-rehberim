@@ -2,7 +2,7 @@
 title: "How to Open a Travel Agency in Türkiye: 2026 Guide (TÜRSAB, Licences, Costs)"
 description: "Everything you need to open a travel agency in Türkiye: required documents, TÜRSAB membership, A-B-C group differences and the 2026 cost table. Step-by-step guide + FAQ."
 date: "2026-08-12"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["How to Open a Travel Agency", "TÜRSAB", "Agency Setup", "Operating Licence", "2026"]
 image: "/blog/seyahat-acentesi-nasil-acilir.jpg"
 imageAlt: "How to open a travel agency in Türkiye 2026 TÜRSAB setup guide"

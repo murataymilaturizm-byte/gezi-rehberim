@@ -4,7 +4,9 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
 import turzzLogo from "@/assets/turzz-logo-orange.png";
-import { LanguageSelector } from "@/components/LanguageSelector";
+// SEO Dalga 2a: taranabilir dil menüsü (<a href>); eski Radix seçici panelde kalır.
+import { SiteLanguageMenu } from "@/components/SiteLanguageMenu";
+import { menuBlogHref } from "@/lib/lang-routing";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toolsHubUrl } from "@/lib/tools/registry";
 
@@ -41,7 +43,7 @@ export function navItems(lang: string): NavItem[] {
     { key: "nav.home", href: "/", isActive: (p) => p === "/" },
     // "Özellikler" ürün bölümü = landing'in operasyon/özellik bölümü (anchor)
     { key: "nav.features", href: "/#operasyon", isActive: (p, h) => p === "/" && h === "#operasyon" },
-    { key: "nav.blog", href: "/blog", isActive: (p) => /^\/(?:[a-z]{2}\/)?blog(?:\/|$)/.test(p) },
+    { key: "nav.blog", href: menuBlogHref(lang), isActive: (p) => /^\/(?:[a-z]{2}\/)?blog(?:\/|$)/.test(p) },
     { key: "nav.tools", href: toolsHubUrl(lang), isActive: (p) => /^\/(?:araclar|(?:en|de)\/tools)(?:\/|$)/.test(p) },
     { key: "nav.contact", href: "/#contact", isActive: (p, h) => p === "/" && h === "#contact" },
   ];
@@ -106,7 +108,7 @@ export function SiteHeader() {
           </a>
           {/* Dil + tema: mobilde çekmecede (360px'te CTA'ya yer açar) */}
           <div className="hidden lg:flex items-center gap-1">
-            <LanguageSelector />
+            <SiteLanguageMenu />
             <ThemeToggle />
           </div>
           <Button variant="ghost" asChild size="sm" className="hidden lg:inline-flex">
@@ -151,7 +153,7 @@ export function SiteHeader() {
               </span>
             </a>
             <div className="flex items-center gap-2 py-2">
-              <LanguageSelector />
+              <SiteLanguageMenu />
               <ThemeToggle />
             </div>
             <Button variant="outline" asChild size="sm" className="w-full mt-1">

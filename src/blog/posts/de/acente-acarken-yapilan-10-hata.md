@@ -2,7 +2,7 @@
 title: "Die 10 Fehler bei der Agenturgründung (und wie man sie vermeidet) — 2026"
 description: "Die 10 häufigsten Fehler neuer Reisebüros in der Türkei: vom unterschätzten TÜRSAB-Prozess bis zu unbeantworteten WhatsApp-Nachrichten. Für jeden Fehler eine praktische Lösung + FAQ."
 date: "2026-08-19"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Fehler neuer Agenturen", "Agenturgründung", "TÜRSAB", "Kundenverlust", "2026"]
 image: "/blog/acente-acarken-yapilan-10-hata.jpg"
 imageAlt: "Die 10 Fehler bei der Gründung eines Reisebüros und ihre Lösungen 2026"

@@ -2,7 +2,7 @@
 title: "Why Do Customers Go Silent on WhatsApp? The Message-Conversion Guide for Tour Sales (2026)"
 description: "Why does the customer who asked the price go quiet? The message funnel, post-price follow-up templates, the 15-minute rule and when to automate — for agencies in Türkiye + FAQ."
 date: "2026-08-26"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["WhatsApp Customer Follow-up", "Message Conversion", "Tour Sales", "Follow-up Message", "2026"]
 image: "/blog/whatsappta-musteri-neden-cevapsiz-birakir.jpg"
 imageAlt: "WhatsApp customer follow-up and message conversion guide 2026"

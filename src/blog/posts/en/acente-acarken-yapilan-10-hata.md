@@ -2,7 +2,7 @@
 title: "The 10 Mistakes New Travel Agencies Make (and How to Avoid Them) — 2026"
 description: "The 10 most common mistakes of new travel agencies in Türkiye: from underestimating the TÜRSAB process to unanswered WhatsApp messages. A practical fix for each + FAQ."
 date: "2026-08-19"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["New Agency Mistakes", "Agency Setup", "TÜRSAB", "Customer Loss", "2026"]
 image: "/blog/acente-acarken-yapilan-10-hata.jpg"
 imageAlt: "The 10 mistakes new travel agencies make and their fixes 2026"

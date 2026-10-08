@@ -2,7 +2,7 @@
 title: "CRM for Travel Agencies: How Does a Customer List Turn into Gold? (Seasonal Repeat-Sales Guide 2026)"
 description: "Agency CRM guide: the difference between a phone book and a customer list, a working label system, a seasonal re-contact calendar, the post-tour review loop and when to automate + FAQ."
 date: "2026-09-02"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["Agency CRM", "Customer List", "Repeat Sales", "Customer Follow-up", "2026"]
 image: "/blog/acente-icin-crm-musteri-listesi-yeniden-satis.jpg"
 imageAlt: "CRM and repeat-sales guide for travel agencies 2026"

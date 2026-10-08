@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Layout } from "@/components/Layout";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, AlertCircle, ArrowRight, BookOpen } from "lucide-react";
 import { getAllPosts, getAllCategories, postHref, hasOwnPosts, type BlogPost } from "@/lib/blog";
 import { BlogCoverImage } from "@/components/BlogCoverImage";
+import { OtherLanguageLinks } from "@/components/OtherLanguageLinks";
+import { langFromPath } from "@/lib/lang-routing";
 
 const schema = {
   "@context": "https://schema.org",
@@ -18,13 +20,8 @@ const schema = {
   "publisher": { "@type": "Organization", "name": "Turzz AI" },
 };
 
-const SUPPORTED_LANGS = ["tr", "en", "de", "ru", "ar", "fr", "es"];
-
-/** URL'den dil kodunu çıkarır. /en/blog → "en", /blog → null (TR default) */
-function getLangFromPath(pathname: string): string | null {
-  const m = pathname.match(/^\/([a-z]{2})\//);
-  return m && SUPPORTED_LANGS.includes(m[1]) ? m[1] : null;
-}
+// SEO Dalga 2a: URL dili TEK KAYNAK lang-routing.langFromPath. Eski yerel regex sonda "/"
+// istiyordu → "/en/blog" için null dönüyordu (dil i18n'e kalıyordu).
 
 /** Blog URL'si oluşturur. TR prefix'siz, diğerleri prefix'li. */
 function buildBlogUrl(lang: string, slug?: string): string {
@@ -230,16 +227,9 @@ export default function Blog() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
 
-  // URL'den dili al (örn: /en/blog → "en"), yoksa i18n diline bak
-  const urlLang = getLangFromPath(location.pathname);
-  const lang = urlLang ?? i18n.language ?? "tr";
-
-  // URL'deki dil i18n state'iyle farklıysa senkronize et
-  useEffect(() => {
-    if (urlLang && urlLang !== i18n.language) {
-      i18n.changeLanguage(urlLang);
-    }
-  }, [urlLang, i18n]);
+  // URL dili (önek yoksa tr). i18n örneği zaten bu dilde (UrlLangProvider) — eski
+  // useEffect changeLanguage prerender'da çalışmadığı için kaldırıldı.
+  const lang = langFromPath(location.pathname);
 
   const allPosts: BlogPost[] = useMemo(() => {
     try { return getAllPosts(lang); }
@@ -267,8 +257,8 @@ export default function Blog() {
   return (
     <Layout>
       <SEOHead
-        title="Blog — WhatsApp Chatbot ve Turizm Teknolojisi Rehberleri"
-        description="Seyahat acenteleri için WhatsApp chatbot rehberleri, AI turizm teknolojisi, dijital dönüşüm ipuçları. Turzz AI Blog."
+        title={t("blog.indexSeoTitle")}
+        description={t("blog.indexSeoDescription")}
         keywords="whatsapp chatbot blog, turizm teknolojisi, seyahat acentesi dijital dönüşüm, tur yazılımı rehber"
         canonical={buildBlogUrl(lang)}
         // 2026-09-18: bu dilde HİÇ kendi yazısı yoksa (ru/ar) liste tamamen
@@ -281,8 +271,9 @@ export default function Blog() {
         <div className="container mx-auto px-4 max-w-5xl text-center">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Turzz AI Blog</h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Seyahat acenteleri için WhatsApp chatbot, AI teknolojisi ve dijital dönüşüm rehberleri.
+            {t("blog.indexSeoDescription")}
           </p>
+          <OtherLanguageLinks className="justify-center mt-4" />
         </div>
       </section>
 

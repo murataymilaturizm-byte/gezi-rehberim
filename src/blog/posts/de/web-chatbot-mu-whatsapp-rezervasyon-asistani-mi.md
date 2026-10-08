@@ -2,7 +2,7 @@
 title: "Website-Chatbot oder WhatsApp-Buchungsassistent? Ein Vergleich für Reisebüros (2026)"
 description: "Die Unterschiede zwischen Website-Chatbot und WhatsApp-KI-Buchungsassistent für Reisebüros: Kanal, Konversion, Kosten, Einrichtung. Vergleichstabelle + FAQ."
 date: "2026-08-17"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Agentur-Chatbot", "WhatsApp-Buchungsassistent", "Web-Chatbot", "Vergleich", "2026"]
 image: "/blog/web-chatbot-mu-whatsapp-rezervasyon-asistani-mi.jpg"
 imageAlt: "Website-Chatbot vs. WhatsApp-Buchungsassistent Vergleich 2026"

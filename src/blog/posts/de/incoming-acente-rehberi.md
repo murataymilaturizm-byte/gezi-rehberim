@@ -2,7 +2,7 @@
 title: "Wie arbeitet eine Incoming-Agentur? Leitfaden für den Einstieg in den Auslandsmarkt (2026)"
 description: "Was ist Incoming-Agenturarbeit und wie beginnt man? Marktwahl, Partnerbeziehungen, Zeitzonen- und Sprachbetrieb, Preisgestaltung und Inkasso — ein praktischer Leitfaden + FAQ."
 date: "2026-09-04"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Incoming-Agentur", "Ausländische Touristen", "B2B-Tourismus", "Partneragenturen", "2026"]
 image: "/blog/incoming-acente-rehberi.jpg"
 imageAlt: "Incoming-Agentur-Leitfaden: Einstieg in den Auslandsmarkt 2026"

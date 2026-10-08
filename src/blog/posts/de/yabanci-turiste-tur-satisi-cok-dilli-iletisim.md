@@ -2,7 +2,7 @@
 title: "Tourenverkauf an ausländische Touristen: Der Leitfaden für mehrsprachige Kundenkommunikation (2026)"
 description: "Touren an ausländische Touristen verkaufen: die wahren Kosten der Sprachbarriere, Grenzen von Übersetzungs-Apps, Dual-Currency-Preise, kulturelle Notizen und ein praktisches Setup + FAQ."
 date: "2026-08-31"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Tourenverkauf an Touristen", "Mehrsprachige Kommunikation", "Touristenkunden", "Tourenverkauf", "2026"]
 image: "/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim.jpg"
 imageAlt: "Leitfaden für den Tourenverkauf an ausländische Touristen mit mehrsprachiger Kommunikation 2026"

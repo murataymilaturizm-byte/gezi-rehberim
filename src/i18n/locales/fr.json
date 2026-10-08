@@ -2722,7 +2722,11 @@
     },
     "fallbackNotice": "Cet article n'a pas encore été traduit en {{lang}}. La version turque est affichée.",
     "fallbackBadge": "Turc",
-    "availableIn": "Cet article est disponible en :"
+    "availableIn": "Cet article est disponible en :",
+    "indexSeoTitle": "Blog — Guides sur les chatbots WhatsApp et la technologie du voyage",
+    "indexSeoDescription": "Guides de chatbot WhatsApp pour agences de voyage, technologie touristique IA et conseils de transformation numérique. Le blog Turzz AI.",
+    "otherLanguages": "Également disponible en :",
+    "languageMenu": "Choisir la langue"
   },
   "pages": {
     "whatsappBot": {

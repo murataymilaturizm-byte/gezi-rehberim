@@ -2,7 +2,7 @@
 title: "The Meta Ads Guide for Travel Agencies: The Setup That Works for Tour Sales (2026)"
 description: "How to set up Meta ads for tour sales: campaign objective, lead form vs WhatsApp ads, audience, creative, budget — and answer capacity before you launch. 2026 guide + FAQ."
 date: "2026-08-24"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["Agency Instagram Ads", "Meta Ads", "Click-to-WhatsApp", "Tour Sales", "2026"]
 image: "/blog/acenteler-icin-meta-reklam-rehberi.jpg"
 imageAlt: "Instagram Facebook Meta ads guide for travel agencies 2026"

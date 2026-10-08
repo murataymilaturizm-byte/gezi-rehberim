@@ -2831,7 +2831,11 @@
     },
     "fallbackNotice": "Bu yazı henüz {{lang}} diline çevrilmedi. Türkçe versiyonu gösteriliyor.",
     "fallbackBadge": "Türkçe",
-    "availableIn": "Bu yazı şu dillerde mevcut:"
+    "availableIn": "Bu yazı şu dillerde mevcut:",
+    "indexSeoTitle": "Blog — WhatsApp Chatbot ve Turizm Teknolojisi Rehberleri",
+    "indexSeoDescription": "Seyahat acenteleri için WhatsApp chatbot rehberleri, AI turizm teknolojisi, dijital dönüşüm ipuçları. Turzz AI Blog.",
+    "otherLanguages": "Diğer dillerde:",
+    "languageMenu": "Dil seçin"
   },
   "pages": {
     "whatsappBot": {

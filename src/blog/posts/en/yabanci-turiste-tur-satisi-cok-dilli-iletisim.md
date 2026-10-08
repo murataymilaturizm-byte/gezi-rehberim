@@ -2,7 +2,7 @@
 title: "Selling Tours to Foreign Tourists: The Multilingual Customer Communication Guide (2026)"
 description: "How to sell tours to foreign tourists: the real cost of the language barrier, the limits of translation apps, dual-currency pricing, cultural notes and a practical multilingual setup + FAQ."
 date: "2026-08-31"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["Selling Tours to Foreign Tourists", "Multilingual Communication", "Tourist Customers", "Tour Sales", "2026"]
 image: "/blog/yabanci-turiste-tur-satisi-cok-dilli-iletisim.jpg"
 imageAlt: "Guide to selling tours to foreign tourists with multilingual communication 2026"

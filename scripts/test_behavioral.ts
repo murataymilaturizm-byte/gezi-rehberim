@@ -6988,6 +6988,49 @@ console.log("\nINDEKSLEME-1 blog dil-mevcudiyeti tek kaynak");
   assert("BLOG.sitemap ortak yardimciyi kullaniyor",
     (await Deno.readTextFile("scripts/generate-sitemap.mjs")).includes("availableLangsForFile(ROOT, file)"));
 
+  // ── SEO Dalga 2a (2026-10-08): sayfa bazlı dil + hreflang + taranabilir dil bağlantıları ──
+  // Asıl davranış kapısı: scripts/check-prerender-lang.mjs (postbuild — 148 prerender çıktısı).
+  // Buradaki statik muhafızlar kök mekanizmanın geri gelmemesini kilitler.
+  const strip = (s: string) => s.split("\n").filter((l) => !/^\s*(\/\/|\*|\{\/\*)/.test(l)).join("\n");
+  const routesTsx = await Deno.readTextFile("src/routes.tsx");
+  assert("DIL.kok layout UrlLangProvider ile sarili", /<UrlLangProvider>[\s\S]*<Outlet \/>[\s\S]*<\/UrlLangProvider>/.test(routesTsx));
+  const prov = strip(await Deno.readTextFile("src/lib/i18n-for-lang.ts"));
+  assert("DIL.sayfa basina kopya ornek (cloneInstance), global changeLanguage YOK",
+    /cloneInstance\(\{\s*lng: lang/.test(prov) && !/changeLanguage/.test(prov));
+  for (const f of ["src/pages/Blog.tsx", "src/pages/BlogPost.tsx", "src/components/UrlLangProvider.tsx"]) {
+    assert(`DIL.${f.split("/").pop()} render sirasinda changeLanguage cagirmiyor`, !/changeLanguage\(/.test(strip(await Deno.readTextFile(f))));
+  }
+  const header = strip(await Deno.readTextFile("src/components/SiteHeader.tsx"));
+  assert("DIL.header tarananabilir dil menusu (SiteLanguageMenu), Radix secici yok",
+    header.includes("<SiteLanguageMenu />") && !header.includes("<LanguageSelector />"));
+  assert("DIL.menu Blog linki sayfa diline gore", header.includes("href: menuBlogHref(lang)"));
+  const layoutTsx = strip(await Deno.readTextFile("src/components/Layout.tsx"));
+  assert("DIL.footer Blog linki sayfa diline gore", layoutTsx.includes("menuBlogHref(i18n.language)"));
+  assert("DIL.footer sabit TR etiket yok", !/>(Yardım Merkezi|Nasıl Başlarım\?|Karşılaştırma)</.test(layoutTsx) && !/label: "/.test(layoutTsx));
+  const menu = await Deno.readTextFile("src/components/SiteLanguageMenu.tsx");
+  assert("DIL.dil menusu <details> + Link (prerender HTML'de <a href>)", menu.includes("<details") && menu.includes("<Link") && !menu.includes("@/components/ui/select"));
+  const seo = strip(await Deno.readTextFile("src/components/SEOHead.tsx"));
+  assert("DIL.SEOHead hreflang tek kaynak (lang-routing), noindex'te yok",
+    seo.includes("noindex ? [] : hreflangLinks(pathname)") && !seo.includes("extraLinks"));
+  const lr = await Deno.readTextFile("src/lib/lang-routing.ts");
+  assert("DIL.x-default = TR (head)", /hreflang: "x-default", href: SITE_URL \+ alts\.tr/.test(lr));
+  const gen = await Deno.readTextFile("scripts/generate-sitemap.mjs");
+  assert("DIL.sitemap: yazi + blog index ayni alternateLinks yardimcisi",
+    (gen.match(/alternateLinks\(/g) || []).length >= 3 && !gen.includes("langs.includes('en') ? 'en'"));
+  assert("DIL.sitemap: blog index'lerinde alternate (5×6=30) + yazilarda korunur",
+    (sm.match(/xhtml:link/g) || []).length === 714 && /<loc>https:\/\/turzzai\.com\/de\/blog<\/loc>[\s\S]*?hreflang="x-default" href="https:\/\/turzzai\.com\/blog"/.test(sm));
+  assert("DIL.sitemap: ru/ar'a hreflang YOK", !/hreflang="(ru|ar)"/.test(sm));
+  assert("DIL.sitemap: x-default hep TR", !/hreflang="x-default" href="https:\/\/turzzai\.com\/(en|de|fr|es)\//.test(sm));
+  const pkg = await Deno.readTextFile("package.json");
+  assert("DIL.postbuild dil kapisi", pkg.includes("node scripts/check-prerender-lang.mjs"));
+  for (const l of ["en", "de"]) {
+    const cats = [...(await Array.fromAsync(Deno.readDir(`src/blog/posts/${l}`)))].length;
+    let tr = 0;
+    for await (const e of Deno.readDir(`src/blog/posts/${l}`)) if ((await Deno.readTextFile(`src/blog/posts/${l}/${e.name}`)).includes('category: "Acente Rehberi"')) tr++;
+    assert(`DIL.${l} yazilarinda TR kategori kalmadi (${tr}/${cats})`, tr === 0);
+  }
+  assert("DIL.okuma suresi sayiya cevriliyor", libBlog.includes("parseInt(String(data.readingTime"));
+
   // Demo sayfalari noindex (2026-09-18 karari: erisilebilir kalsin)
   for (const f of ["turzz-demo.html", "turzz-demo-en.html", "turzz-demo-de.html"]) {
     const h = await Deno.readTextFile(`public/${f}`);

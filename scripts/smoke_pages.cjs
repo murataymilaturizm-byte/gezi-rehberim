@@ -26,6 +26,10 @@ const ROUTES = [
   "/cok-dilli-musteri-hizmetleri", "/tur-otomasyonu",
   "/blog/whatsappta-musteri-neden-cevapsiz-birakir",
   "/en/blog", "/de/blog",
+  // SEO Dalga 2a: yabancı dil yazıları + fr/es index — hidrasyon sonrası dil URL dilinde kalmalı
+  "/fr/blog", "/es/blog",
+  "/en/blog/gunubirlik-tur-operatoru-rehberi", "/de/blog/gunubirlik-tur-operatoru-rehberi",
+  "/fr/blog/ai-chatbot-ile-tur-satisini-nasil-arttirirsiniz",
   "/araclar/rehber-sozlesmesi-olusturucu",
   "/araclar/tur-kar-hesaplayici",
   "/araclar/tur-satis-sozlesmesi-olusturucu",
@@ -93,6 +97,7 @@ const ok = (msg) => console.log("  ✓ " + msg);
         header: !!document.querySelector("header"),
         h1: (document.querySelector("h1") || {}).textContent || "",
         govde: body.trim().length,
+        htmlLang: document.documentElement.lang,
       };
     });
 
@@ -101,6 +106,9 @@ const ok = (msg) => console.log("  ✓ " + msg);
     if (view.hataMetni) sorunlar.push("sayfada hata metni görünüyor");
     if (!view.header) sorunlar.push("header YOK");
     if (view.govde < 80) sorunlar.push("gövde neredeyse boş (" + view.govde + " karakter)");
+    // SEO Dalga 2a: hidrasyondan SONRA da <html lang> URL dilinde (istemci dili TR'ye çevirmemeli)
+    const urlLang = (route.match(/^\/(en|de|fr|es|ru|ar)(?:\/|$)/) || [])[1] || "tr";
+    if (route !== "/bu-sayfa-yok-404-testi" && view.htmlLang !== urlLang) sorunlar.push("hidrasyon sonrası <html lang=" + view.htmlLang + "> — beklenen " + urlLang);
     if (TOOL_ROUTES.includes(route) && view.bosH2 > 0) sorunlar.push("BOŞ <h2> var (" + view.bosH2 + " adet) — CTA metni gelmiyor olabilir");
 
     if (sorunlar.length) bad(route + " [" + status + "] → " + sorunlar.join(" · "));

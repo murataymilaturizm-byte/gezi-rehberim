@@ -2,7 +2,7 @@
 title: "Der Meta-Werbeleitfaden für Reisebüros: Das Setup, das im Tourenverkauf funktioniert (2026)"
 description: "Meta-Werbung für den Tourenverkauf: Kampagnenziel, Lead-Formular vs. WhatsApp-Anzeige, Zielgruppe, Kreativ, Budget — und Antwortkapazität vor dem Start. Leitfaden 2026 + FAQ."
 date: "2026-08-24"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Agentur Instagram-Werbung", "Meta Ads", "Click-to-WhatsApp", "Tourenverkauf", "2026"]
 image: "/blog/acenteler-icin-meta-reklam-rehberi.jpg"
 imageAlt: "Instagram Facebook Meta Werbeleitfaden für Reisebüros 2026"

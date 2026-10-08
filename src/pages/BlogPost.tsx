@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useParams, Link, Navigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
@@ -10,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, ArrowLeft, Share2, Tag, AlertCircle, List, MessageCircle, Linkedin } from "lucide-react";
 import { getPostBySlug, getAllPosts, getAvailableLangsForSlug, type BlogPost } from "@/lib/blog";
 import { BlogCoverImage } from "@/components/BlogCoverImage";
+import { OtherLanguageLinks } from "@/components/OtherLanguageLinks";
+import { menuBlogHref } from "@/lib/lang-routing";
 // SEO-1 (2026-08-12): anatomi tek-kaynak — TOC/CTA/paylaşım/okuma-süresi.
 // Şablon TEK olduğu için 84+ posta otomatik uygulanır; prerender statik kalır
 // (TOC <details> vanilla, CTA'lar akış-içi statik kutular → CLS üretmez).
@@ -205,13 +206,9 @@ export default function BlogPost() {
 
   // Tüm hook'lar early return'dan ÖNCE çağrılmalı
   const urlLang = getLangFromPath(location.pathname);
+  // SEO Dalga 2a: i18n örneği sayfa başına URL dilinde (UrlLangProvider) → eski
+  // useEffect changeLanguage (prerender'da çalışmıyordu) kaldırıldı.
   const lang = urlLang ?? i18n.language ?? "tr";
-
-  useEffect(() => {
-    if (urlLang && urlLang !== i18n.language) {
-      i18n.changeLanguage(urlLang);
-    }
-  }, [urlLang, i18n]);
 
   if (!slug) return <Navigate to="/blog" replace />;
 
@@ -251,20 +248,7 @@ export default function BlogPost() {
   const [contentA, contentB] = splitForMidCta(post.content);
   const T = ctaTexts(lang);
 
-  // Hreflang: her dil kendi URL'ine işaret eder (artık tümü aynı URL değil)
-  const hreflangLinks = [
-    ...availableLangs.map((l) => ({
-      rel: "alternate",
-      hreflang: l,
-      href: buildAbsoluteBlogUrl(l, slug),
-    })),
-    // x-default: TR veya EN — hangisi varsa (Google için önemli)
-    {
-      rel: "alternate",
-      hreflang: "x-default",
-      href: buildAbsoluteBlogUrl(availableLangs.includes("en") ? "en" : "tr", slug),
-    },
-  ];
+  // Hreflang: SEOHead tek kaynaktan basar (lang-routing.hreflangLinks; x-default = TR).
 
   const shareUrl = buildAbsoluteBlogUrl(lang, slug);
 
@@ -278,11 +262,10 @@ export default function BlogPost() {
         canonical={buildBlogUrl(lang, slug)}
         schema={schema}
         type="article"
-        extraLinks={hreflangLinks}
       />
 
       <div className="container mx-auto px-4 max-w-6xl py-8">
-        <Link to="/blog" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-orange-500 transition-colors mb-6">
+        <Link to={menuBlogHref(lang)} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-orange-500 transition-colors mb-6">
           <ArrowLeft className="w-4 h-4" /> {t("blog.post.backToBlog")}
         </Link>
 
@@ -333,6 +316,7 @@ export default function BlogPost() {
                   </Badge>
                 )}
               </div>
+              <OtherLanguageLinks className="mt-3" />
             </header>
 
             <ShareRow url={shareUrl} title={post.title} lang={lang} compact />

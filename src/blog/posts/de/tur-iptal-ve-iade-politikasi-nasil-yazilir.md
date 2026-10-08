@@ -2,7 +2,7 @@
 title: "Wie schreibt man eine Storno- und Erstattungsrichtlinie für Touren? (Vorlage + Regulierungs-Notizen 2026)"
 description: "Storno- und Erstattungsbedingungen für Touren richtig formulieren: Beispiel einer Erstattungsleiter, Force-Majeure-Prinzipien, ausfüllbare Vorlage und wo die Bedingungen gezeigt werden + FAQ."
 date: "2026-08-28"
-category: "Acente Rehberi"
+category: "Agentur-Leitfaden"
 tags: ["Storno- und Erstattungsbedingungen", "Stornorichtlinie", "Anzahlung Erstattung", "Tourvertrag", "2026"]
 image: "/blog/tur-iptal-ve-iade-politikasi-nasil-yazilir.jpg"
 imageAlt: "Leitfaden und Vorlage für eine Storno- und Erstattungsrichtlinie 2026"

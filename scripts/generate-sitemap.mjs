@@ -60,6 +60,19 @@ function buildLangUrl(lang, slug) {
   return slug ? `${base}/${slug}` : base;
 }
 
+// ─── hreflang alternate satırları — TEK KAYNAK (sitemap) ──────────────────
+// SEO Dalga 2a: sayfa head'indeki kural ile AYNI (src/lib/lang-routing.ts hreflangLinks):
+// en az iki dil yoksa alternate yok; x-default = TR karşılığı (TR yoksa x-default yok).
+// Diller yalnız GERÇEKTEN var olan ve indexlenebilir olanlar (çağıran verir).
+function alternateLinks(langs, urlFor) {
+  if (langs.length < 2) return '';
+  const ordered = ALL_LANGS.filter((l) => langs.includes(l));
+  let out = '';
+  for (const l of ordered) out += `    <xhtml:link rel="alternate" hreflang="${l}" href="${urlFor(l)}"/>\n`;
+  if (langs.includes('tr')) out += `    <xhtml:link rel="alternate" hreflang="x-default" href="${urlFor('tr')}"/>\n`;
+  return out;
+}
+
 // ─── Frontmatter parser ────────────────────────────────────────────────────
 function parseFrontmatter(content) {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -146,13 +159,16 @@ function generateSitemap() {
   xml += `
   <!-- Blog index sayfaları (${indexLangs.length} dil) -->
 `;
+  // SEO Dalga 2a: blog ana sayfaları da birbirinin hreflang karşılığı (sayfa head'i ile
+  // AYNI kural — src/lib/lang-routing.ts hreflangLinks). x-default = TR.
   for (const lang of indexLangs) {
-    xml += urlEntry({
-      loc:        buildLangUrl(lang),
-      lastmod:    TODAY,
-      changefreq: 'weekly',
-      priority:   '0.8',
-    });
+    xml += `  <url>\n`;
+    xml += `    <loc>${buildLangUrl(lang)}</loc>\n`;
+    xml += `    <lastmod>${TODAY}</lastmod>\n`;
+    xml += `    <changefreq>weekly</changefreq>\n`;
+    xml += `    <priority>0.8</priority>\n`;
+    xml += alternateLinks(indexLangs, (l) => buildLangUrl(l));
+    xml += `  </url>\n`;
   }
 
   // ── Blog yazıları — her dil için ayrı URL + hreflang alternates ──
@@ -163,9 +179,6 @@ function generateSitemap() {
     const langs = post.availableLangs;
     if (langs.length === 0) continue;
 
-    // x-default: EN varsa EN, yoksa TR
-    const xDefaultLang = langs.includes('en') ? 'en' : 'tr';
-
     for (const lang of langs) {
       const loc = buildLangUrl(lang, post.slug);
 
@@ -175,12 +188,8 @@ function generateSitemap() {
       xml += `    <changefreq>monthly</changefreq>\n`;
       xml += `    <priority>0.7</priority>\n`;
 
-      // Mevcut diller için hreflang alternates
-      for (const altLang of langs) {
-        xml += `    <xhtml:link rel="alternate" hreflang="${altLang}" href="${buildLangUrl(altLang, post.slug)}"/>\n`;
-      }
-      // x-default
-      xml += `    <xhtml:link rel="alternate" hreflang="x-default" href="${buildLangUrl(xDefaultLang, post.slug)}"/>\n`;
+      // Mevcut diller için hreflang alternates (+ x-default = TR)
+      xml += alternateLinks(langs, (l) => buildLangUrl(l, post.slug));
 
       xml += `  </url>\n`;
     }

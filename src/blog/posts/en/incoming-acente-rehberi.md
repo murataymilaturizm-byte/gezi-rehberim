@@ -2,7 +2,7 @@
 title: "How Does an Incoming Agency Work? A Guide to Entering the Foreign-Tourist Market (2026)"
 description: "What is incoming agency work and how do you start? Market selection, partner relationships, time-zone and language operations, pricing and collection — a practical guide + FAQ."
 date: "2026-09-04"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["Incoming Agency", "Foreign Tourists", "B2B Tourism", "Partner Agencies", "2026"]
 image: "/blog/incoming-acente-rehberi.jpg"
 imageAlt: "Incoming agency guide: entering the foreign-tourist market 2026"

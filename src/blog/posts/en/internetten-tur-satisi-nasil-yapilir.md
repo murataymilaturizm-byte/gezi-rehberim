@@ -2,7 +2,7 @@
 title: "How to Sell Tours Online: A Roadmap for New Agencies in Türkiye (2026)"
 description: "The online tour-sales guide for agencies in Türkiye: channel choice, legal obligations, payment collection, the first-30-days plan and conversion levers. 2026 + FAQ."
 date: "2026-08-21"
-category: "Acente Rehberi"
+category: "Agency Guide"
 tags: ["Selling Tours Online", "Online Sales", "Virtual POS", "Distance Selling", "2026"]
 image: "/blog/internetten-tur-satisi-nasil-yapilir.jpg"
 imageAlt: "Online tour sales roadmap for travel agencies 2026"
