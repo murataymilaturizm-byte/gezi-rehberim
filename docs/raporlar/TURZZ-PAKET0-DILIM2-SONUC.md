@@ -1,6 +1,6 @@
 # PAKET-0 · Dilim 2 — B1 (tek tur-dönüştürücü) + B2 (dolu tarih isFull) — Sonuç Raporu
 
-**Tarih:** 2026-10-08 · **Kaynak:** `docs/raporlar/TURZZ-FABLE-DENETIM.md` §8 Grup B · **Uygulayan model:** Opus 5.5 (Fable incelemesine girecek) · **Kapsam:** yalnız B1 + B2; diğer gruplara dokunulmadı (kapsam dışı görülenler §7 "Gözlemler") · **Commit:** tek commit · **Push: YAPILMADI · Deploy: YAPILMADI.**
+**Tarih:** 2026-10-08 · **Kaynak:** `docs/raporlar/TURZZ-FABLE-DENETIM.md` §8 Grup B · **Uygulayan model:** Opus 5.5 (Fable incelemesine girecek) · **Kapsam:** yalnız B1 + B2; diğer gruplara dokunulmadı (kapsam dışı görülenler §7 "Gözlemler") · **Commit:** `8b3318d` + `c906dbb` · **Push: yapıldı · Deploy: yapıldı** (demo-chat v272, whatsapp-webhook v293 — §7d).
 
 ---
 
@@ -185,8 +185,8 @@ Tip denetimi: `deno check` (handler + 2 giriş noktası grafiği) HEAD'de 13 hat
 ---
 
 ## 6. Açık kalanlar
-- Push ve deploy **yapılmadı** (talimat). Canlı `demo-chat` v271 / `whatsapp-webhook` v292 bu dilimi içermiyor.
-- K1/K2/K3 ürün kararları onay bekliyor (§1).
+- Push ve deploy **yapıldı** (§7d; önceki canlı sürüm demo-chat v271 / whatsapp-webhook v292).
+- K1/K2/K3 onaylandı (§7b).
 - Harness `--no-check` koşmaya devam ediyor (önceden-var-olan 13 tip hatası; Dilim-1'den devir).
 
 ## 7. Gözlemler (kapsam dışı — DÜZELTİLMEDİ)
@@ -233,6 +233,39 @@ STATE_OUT: step=waiting_for_date dateId=undefined listed=["d1","d3"]
 ### DOLU-e2 [ar] "2" → أبدأ حجز *جولة باموكالي* في *25 ديسمبر 2026*. …   dateId=d3
 ```
 **Toplam (`npm test`):** suite **1536 ✓ / 0 ✗**, harness **ok | 60 passed | 0 failed** (Dilim-1 20 + Dilim-2 32 + son düzeltme 8), EXIT=0.
+
+## 7d. Deploy (2026-10-08, ürün sahibi onayı sonrası)
+
+**Ön koşul `npm test`:** suite 1536 ✓ / 0 ✗ · harness ok | 60 passed | 0 failed · EXIT=0.
+
+**Push (origin/main):** `579f1f6..c906dbb`
+- `8b3318d` — fix(bot): PAKET-0 Dilim-2 — tek tur-dönüştürücü toBotTours (B1) + dolu tarih isFull (B2)
+- `c906dbb` — fix(bot): Dilim-2 son düzeltme — tarih adımında dolu tarih sorusuna müsait liste
+
+**Deploy (`supabase functions deploy`, proje `yaxjygtjtjmzslajuctk`):**
+| Fonksiyon | Sonuç | Versiyon | UPDATED_AT (UTC) |
+|---|---|---|---|
+| `demo-chat` | `Deployed Functions on project yaxjygtjtjmzslajuctk: demo-chat` | **272** | 2026-10-08 06:51:30 |
+| `whatsapp-webhook` | `Deployed Functions on project yaxjygtjtjmzslajuctk: whatsapp-webhook` | **293** | 2026-10-08 06:51:37 |
+
+(ikisi de `ACTIVE`; önceki: demo-chat v271, whatsapp-webhook v292)
+
+**Canlı duman testi — demo-chat** (yeni session'lar, anon key; rezervasyon/DB test kaydı YOK):
+```
+[tr] "merhaba" → HTTP 200 (8822 ms) session=smoke-d2-tr-1791442313658
+  response: "Merhaba! 😊 Hoş geldiniz!
+
+Size turlarımız hakkında bilgi vermekten mutluluk duyarım. Hangi destinasyona ilgi duyuyorsunuz? İsterseniz tüm turlarımıza göz atabiliriz! ✨"
+  state: stage=BROWSING lang=tr dateId=undefined listed=undefined pendingPax=undefined
+[en] "hello" → HTTP 200 (6191 ms) session=smoke-d2-en-1791442326490
+  response: "Hi there! 😊 Welcome to Demo Turizm (İzmir)!
+
+I'm here to help you find the perfect tour. We have amazing options including Cappadocia tours, Ephesus, Pamukkale, Aegean coast trips and more!
+
+Which destination interests you, or would you like me to show you our popular tours? ✨"
+  state: stage=BROWSING lang=en dateId=undefined listed=undefined pendingPax=undefined
+```
+İki dilde 200 + normal karşılama; `toBotTours` canlı bundle'da çözüldü (tur listesi EN cevapta görünüyor — Cappadocia/Ephesus/Pamukkale). `whatsapp-webhook`'a canlı mesaj gönderilmedi (gerçek numara gerekir); aynı shared kodu bundle'lıyor, `ACTIVE`.
 
 ## 8. Ürün sahibine sade özet
 Acentenin panelde girdiği vize notu, vize zorunluluğu, minimum kişi sayısı ve otel bilgisi artık bot'a ulaşıyor; eskiden iki giriş noktası bu alanları yol üstünde düşürüyordu ve bot her vize sorusuna genel bir "acenteye danışın" cevabı veriyordu. Dolu tarihler artık listede "DOLU" etiketiyle numarasız görünüyor, "20'si müsait mi?" sorusuna "dolu" deniyor ve dolu bir tarih hiçbir yoldan seçilemiyor ya da rezerve edilemiyor; bunlar dört dilde gerçek bot koduyla önce kırmızı, sonra yeşil kanıtlandı. Değişiklik commit'lendi ama canlıya alınmadı; dolu tarihin nasıl gösterileceğine dair üç küçük ürün kararı (rapor §1) onayınızı bekliyor.
