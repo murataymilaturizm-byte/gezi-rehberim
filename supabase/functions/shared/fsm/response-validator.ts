@@ -27,7 +27,7 @@ const TR_PATTERNS: RegExp[] = [
   // "rezervasyon/talebiniz/bilgileriniz/kaydınız ... fiil" (geçmiş zaman tamamlanma iddiası)
   /\b(rezervasyon(unuz|u|lar)?|talebiniz(i)?|bilgileriniz(i)?|kayd[ıi]n[ıi]z(ı)?)\s+(ald[ıi]k|al[ıi]nd[ıi]|kaydedildi|olu[şs]turuldu|tamamland[ıi]|i[şs]lendi|haz[ıi]r|yap[ıi]ld[ıi]|onaylan\S*|i[şs]leme\s+al[ıi]nd[ıi])/i,
   // "ön kaydınızı aldık/tamamladık"
-  /\b(ön\s*)?kayd[ıi](n[ıi]z[ıi]?)?\s*(ald[ıi]k|aldım|tamamland[ıi]|olu[şs]turuldu|i[şs]lendi)/i,
+  /(?<![\p{L}\p{N}])(ön\s*)?kayd[ıi](n[ıi]z[ıi]?)?\s*(ald[ıi]k|aldım|tamamland[ıi]|olu[şs]turuldu|i[şs]lendi)/iu,
   // "başarıyla kaydedildi/oluşturuldu"
   /\bba[şs]ar[ıi]yla\s+(kaydedildi|olu[şs]turuldu|tamamland[ıi]|i[şs]lendi|al[ıi]nd[ıi]|yap[ıi]ld[ıi])/i,
   // "ekibimiz/takımımız size ulaşacak/arayacak/dönecek" — fiil zorunlu (sade "ekibimiz size" değil)
@@ -117,7 +117,7 @@ const PRICE_MANIP_PATTERNS: RegExp[] = [
   // "harf/rakam-değil" lookbehind (boşluk veya string-başı kabul).
   /(?<![\p{L}\p{N}])%\s*\d+\s*indirim(?![\p{L}\p{N}])/iu,
   /\bindirimli\s+(fiyat|ücret)\b/i,
-  /\b(size\s+özel|sadece\s+siz|özel\s+teklif)\s+.{0,20}%(indirim|daha\s+ucuz)/i,
+  /(?<![\p{L}\p{N}])(size\s+özel|sadece\s+siz|özel\s+teklif)\s+.{0,20}%(indirim|daha\s+ucuz)/iu,
   // 2026-06-21 Yan #8 GÜVENLİK fix: "ücretsiz" başlangıçtaki ü non-ASCII, eski
   // \b boundary çalışmıyordu → LLM "ücretsiz yapabilirim" çıktısı K4 guard'a
   // takılmıyordu. \p{L}\p{N} lookaround ile yakalanır.

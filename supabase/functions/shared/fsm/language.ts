@@ -4,17 +4,25 @@
 
 /**
  * Unicode karakter setlerine bakarak dili tahmin eder.
- * TR özel karakterler (ğüşıöç) → tr
- * Kiril → ru, Arapça → ar, vb.
- * Saf ASCII → null (belirsiz; NLU'ya bırak)
+ *
+ * Dilim-7 (denetim E3): yalnız bir dile ÖZGÜ harfler karar verir; diller arası
+ * PAYLAŞILAN harfler (é: fr+es) tek başına karar vermez. Eskiden FR seti ES'ten önce
+ * ve "é" içeriyordu → "¿Qué incluye el tour?" fr sanılıyordu.
+ * Sıra: TR-özgü → DE-özgü → ES-özgü → FR-özgü → Kiril → Arap → TR/DE paylaşılan (ü ö ç)
+ *   - ü/ö/ç TR ile DE/FR arasında paylaşılır; eski davranış (tr) korunur — akış
+ *     ortasında process-message'taki TR-paylaşılan-aksan kapısı (_trSharedOnly) var.
+ *   - Saf ASCII veya yalnız paylaşılan "é" → null (belirsiz; NLU'ya bırak).
  */
 export function detectLanguage(text: string): string | null {
-  if (/[ğüşıöçĞÜŞİÖÇ]/.test(text)) return "tr";
-  if (/[äöüßÄÖÜ]/.test(text)) return "de";
-  if (/[éèêëàâùûîïôœæçÉÈÊËÀÂÙÛÎÏÔŒÆ]/.test(text)) return "fr";
-  if (/[ñáéíóúüÑÁÉÍÓÚÜ¿¡]/.test(text)) return "es";
+  if (/[ğşıĞŞİ]/.test(text)) return "tr";
+  if (/[äßÄ]/.test(text)) return "de";
+  if (/[ñ¿¡áíóúÑÁÍÓÚ]/.test(text)) return "es";
+  if (/[œæêëîïûùèàâôŒÆÊËÎÏÛÙÈÀÂÔ]/.test(text)) return "fr";
   if (/[Ѐ-ӿ]/.test(text)) return "ru"; // Kiril
   if (/[؀-ۿ]/.test(text)) return "ar"; // Arapça
-  // Saf ASCII → belirsiz; çağıran taraf NLU sonucunu kullanır
+  if (/[üöçÜÖÇ]/.test(text)) return "tr"; // TR/DE/FR paylaşılan — eski öncelik
   return null;
 }
+
+/** Yazı sistemi dile ÖZGÜ olan tespitler (Kiril/Arap): akış ortasında tek mesajda geçilir. */
+export const SCRIPT_UNIQUE_LANGS = ["ru", "ar"] as const;

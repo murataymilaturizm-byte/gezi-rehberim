@@ -3,7 +3,8 @@
 > **YAŞAYAN DOKÜMAN**: Her davranış fix'inden önce ilgili bölüm okunmalı,
 > her fix'ten sonra bu dosya aynı commit'te güncellenmelidir.
 >
-> Son güncelleme: 2026-10-08 (PAKET-0 Dilim-6 — D3 tek toplam formülü `calculateTotal` [price_child 0 = ücretsiz] + G1 tek özet builder [5 kopya tablo silindi, her özette 💰] + C2 ₺/TRY literal yasağı [prompt listeleri formatPriceSync]. Detay §G21. Suite 1592 + harness 128 + webhook 20.).
+> Son güncelleme: 2026-10-08 (PAKET-0 Dilim-7 — D1 bütçe girdisinin para birimi [services/budget.ts, tek para biriminde karşılaştırma] + E2 \b/non-ASCII ölü regex'ler [9 regex lookaround, shared/** muhafızı] + E3 detectLanguage ES≠FR, Latin harf tespiti 2-ardışık, dil adı geçen soru ≠ dil değişimi. Detay §G22. Suite 1631 + harness 149 + webhook 20.).
+> Önceki: 2026-10-08 (PAKET-0 Dilim-6 — D3 tek toplam formülü `calculateTotal` [price_child 0 = ücretsiz] + G1 tek özet builder [5 kopya tablo silindi, her özette 💰] + C2 ₺/TRY literal yasağı [prompt listeleri formatPriceSync]. Detay §G21. Suite 1592 + harness 128 + webhook 20.).
 > Önceki: 2026-10-08 (PAKET-0 Dilim-5 — tur isteme/tarih sorusu → liste yalnız `buildDateList` [(e) talep fiili 7 dil, (b) FAQ intent'inde tur adıyla] + LLM geçmişi tek fonksiyon `loadConversationHistory` [WhatsApp önyüklemede de kesim+limit, demo en yeni N] + stale-reset kesim yazar + 14 prompt örneği. Detay §G20. Suite 1582 + harness 88 + webhook 20.).
 > Önceki: 2026-10-08 (PAKET-0 Dilim-3 — F1 `saveInboundMessage` tek kayıt noktası [limit/abonelik dalında mesaj kaydı + dropped_reason] + `:426` catch'siz builder hatası + F2 rate-limit fail-open. Detay §G19. Suite 1541 + harness 60 + webhook 7.).
 > Önceki: 2026-10-08 (PAKET-0 Dilim-2 — B1 `toBotTours` tek dönüştürücü [elle tur-mapping silindi, tüm DB kolonları taşınır] + B2 dolu tarih `isFull` [numarasız/etiketli, seçilemez]. Detay §G18. Suite 1536/1536 + harness 52/52.).
@@ -413,6 +414,15 @@ başına lookaround'lu (yapıyorum eşleşmez).
 | Sözleşme | Toplam YALNIZ `calculateTotal` (null → yetişkin, 0 → ücretsiz). Müşteriye giden her rezervasyon özeti `_buildUpdatedSummary`'den (💰 dahil); soru metni `_CONFIRM_LABELS[lang][ask]`. handlers/services/fsm-prompts'ta fiyat yanında sabit ₺/TRY yok → `formatPriceSync`. |
 | Muhafız | Suite "PAKET-0 Dilim-6" (D6.D3 ×2, D6.G1 ×7, D6.C2 — 38 dosya; "C2-MUAF" işaretli satır muaf). Harness `summary_total_test.ts` (T: price_child 0/null × özet=completion=RPC=kapora; G: A2/A3 × COLLECTING_INFO/CONFIRMING; E: EUR) × tr/en/ru/ar. |
 | Açık | `response-validator.ts` `validateFieldReask` CONFIRMING yedeği hâlâ `formatReservationSummary` (TR/EN, 💰 yok; fsm katmanı senkron). Bütçe yankısı (`C2-MUAF`) D1 kararını bekliyor. |
+
+### G22 — Bütçe para birimi + /non-ASCII yasağı + dil tespiti (PAKET-0 Dilim-7, 2026-10-08)
+| | |
+|---|---|
+| Dosya | `shared/services/budget.ts` (explicitBudgetCurrency / resolveBudgetCurrency / priceInCurrency / canConvert), `process-message.ts` B1; `utils/currency-display.ts` userCurrencyFor; `fsm/language.ts` detectLanguage + SCRIPT_UNIQUE_LANGS; `fsm/localization.ts` detectLanguageChangeIntent; `scripts/lib/regex-boundary.ts` (muhafız tarayıcısı). |
+| Kök (denetim D1/E2/E3) | Bütçe sayısının para birimi modellenmemişti (ham karşılaştırma, etiket hep TRY). JS `` ASCII'de sınır üretir → `да`/`نعم`/`sí`/`überspringen` alternatifleri ölüydü (9 regex). detectLanguage FR'yi ES'ten önce + `é` ile → "¿Qué…" fr; Latin harf tespiti akış ortasında tek mesajda dili değiştiriyordu; "Almanca rehberiniz var mı?" dili de'ye çeviriyordu. |
+| Sözleşme | Bütçe: açık belirteç → o para birimi; örtük → müşterinin gördüğü para birimi. Karşılaştırma bütçe biriminde, etiket formatPriceSync. Kur yok + farklı birim → listede kalır, "yaklaşık" işaretlenmez, sona dizilir. Regex'te ``'ye bitişik non-ASCII atom YASAK → `(?<![p{L}p{N}])…(?![p{L}p{N}])` + /u. Akış ortası anlık dil geçişi yalnız Kiril/Arap; Latin harf tespiti §P3 2-ardışık pending'e sinyal. Hizmet ismi + soru içeren mesaj dil değişimi isteği değildir. |
+| Muhafız | Suite "PAKET-0 Dilim-7" (D7.E2 tarayıcı öz-testi ×5 + shared/** 86 dosya taraması; D7.D1 ×13; D7.E3 ×19); D6.C2'den C2-MUAF muafiyeti kaldırıldı. Harness `budget_lang_test.ts` (21) + kur enjeksiyonu için `stubs/exchange-rates.ts`. |
+| Açık | "Ça marche" (ç tek başına) hâlâ tr (TR/FR paylaşılan, eski öncelik); `é`-yalnız mesaj null (NLU karar verir). |
 
 ---
 

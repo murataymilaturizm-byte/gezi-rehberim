@@ -21,7 +21,7 @@ import {
   getWeekdayName,
 } from "../fsm/localization.ts";
 import { STEP_QUESTIONS } from "../constants/step-questions.ts";
-import { detectLanguage } from "../fsm/language.ts";
+import { detectLanguage, SCRIPT_UNIQUE_LANGS } from "../fsm/language.ts";
 import { buildSystemPrompt, buildTransitionPrompt, getMultipleTourWarning, getStagePrompt } from "../fsm/prompt-builder.ts";
 import { validateAIResponse, validateInjectionResponse, validateFieldReask, detectEmptyPromise, detectFakeChangeAck } from "../fsm/response-validator.ts";
 import { isEchoSafe } from "../services/echo-sanitize.ts";
@@ -55,6 +55,7 @@ import { shouldTriggerNameAskPersist, shouldFireUnknownTour, shouldTriggerAutoDa
 import { hasQuotaForPax, getQuotaRemaining, hasAnyAvailableDate } from "../services/quota-check.ts";
 // PAKET-0 Dilim-1 (2026-10-07): tarih listesi TEK primitif (A1/A2/A3) + temsilî tarih (A4).
 import { buildDateList, isFullDate } from "../services/date-list.ts";
+import { resolveBudgetCurrency, priceInCurrency } from "../services/budget.ts";
 import { representativeDate } from "../utils/tour-dates.ts";
 import { extractAllInfo, getLocalizedTourTitle } from "../services/info-extractor.ts";
 import { buildNLUContextBase } from "../services/context-manager.ts";
@@ -603,22 +604,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
         context.language = languageChangeIntent;
         context.tone = getDefaultToneForLanguage(languageChangeIntent) as any;
       }
-    } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language) {
-      const _hasNonAscii = /[^\x00-\x7F]/.test(message);
-      const _isShortMsg = message.length < 200;
-      // CİLA-3 A-guard (2026-07-26, trace-kanıtlı `1:char:de>tr`): TR-PAYLAŞILAN-AKSAN.
-      // detectLanguage TR'yi İLK kontrol eder; ü/ö/ç DE(ü/ö)/FR(ç) ile paylaşılır →
-      // DE akışında "Ich möchte" (ö) TR sanılıp yerleşik dili eziyordu. Mid-flow'da
-      // yerleşik dil tr-DEĞİLKEN "tr" tespiti yalnız TR-UNIQUE harfle (ı/ş/ğ/İ/Ş/Ğ)
-      // yazabilir. (P3 kalem-4'ün new-context kuralının loadedContext simetriği.)
-      const _trSharedOnly = runtimeDetectedLang === "tr" && context.language !== "tr" && !/[ışğİŞĞ]/.test(message);
-      if ((_hasNonAscii || _isShortMsg) && !_trSharedOnly) {
-        if (_isLangEnabled(runtimeDetectedLang)) {
-          _traceLang(context, "char", runtimeDetectedLang, message);
-          context.language = runtimeDetectedLang;
-        }
-        // Aksi hâlde mevcut context.language'ı koru (acente bu dili açmamış)
+    } else if (runtimeDetectedLang && runtimeDetectedLang !== context.language &&
+      (SCRIPT_UNIQUE_LANGS as readonly string[]).includes(runtimeDetectedLang)) {
+      // Dilim-7 (E3): yalnız yazı sistemi dile ÖZGÜ tespit (Kiril → ru, Arap → ar) tek
+      // mesajda geçer. Latin harfli tespitler (tr/de/es/fr — harfler diller arası
+      // paylaşılabilir: "¿Qué…" eskiden fr'ye atıyordu) aşağıdaki §P3 2-ardışık
+      // pending mekanizmasına sinyal olarak gider (NLU ASCII sinyaliyle AYNI kural).
+      if (_isLangEnabled(runtimeDetectedLang)) {
+        _traceLang(context, "char", runtimeDetectedLang, message);
+        context.language = runtimeDetectedLang;
       }
+      // Aksi hâlde mevcut context.language'ı koru (acente bu dili açmamış)
     }
     // CİLA-3 D-SİL (2026-07-26, trace-kanıtlı `5:seed-mid:ar>tr:0` — Murat demo AR/DE
     // vakalarının KÖKÜ): mid-flow seed-override dalı KALDIRILDI. Site UI'ı TR olan
@@ -1015,9 +1011,17 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   // (yanlış-tetik: "Antalya Rafting olsun" gibi İngilizce tur adı). Şart: NLU-lang
   // farklı + enabled + salt-ASCII → 1. turn pending'e yaz, 2. ARDIŞIK aynı → sessiz
   // geç. Ara sinyal → pending temizlenir. Yalnız context.language/tone; state'e dokunmaz.
+  // Dilim-7 (E3): Latin harfli KARAKTER tespiti de aynı 2-ardışık kurala tabi. Bu turun
+  // dil sinyali: harfli-non-ASCII mesajda Latin karakter tespiti, salt-ASCII mesajda NLU.
+  // CİLA-3 A-guard (TR-PAYLAŞILAN-AKSAN, trace `1:char:de>tr`) korunur: yerleşik dil
+  // tr-DEĞİLKEN "tr" karakter sinyali yalnız TR-UNIQUE harfle (ı/ş/ğ/İ/Ş/Ğ) sayılır.
   {
-    const _nluLang = (nluResult as any).language;
     const _msgAscii = !/[^\x00-\x7F]/.test(message);
+    const _charLatin = !!loadedContext && !_msgAscii && runtimeDetectedLang &&
+      !(SCRIPT_UNIQUE_LANGS as readonly string[]).includes(runtimeDetectedLang) &&
+      !(runtimeDetectedLang === "tr" && context.language !== "tr" && !/[ışğİŞĞ]/.test(message))
+      ? runtimeDetectedLang : null;
+    const _nluLang = _charLatin ?? (nluResult as any).language;
     // CİLA-3 B-guard (2026-07-26, trace-kanıtlı `5:pending:tr>de:0`): HARFSİZ turn
     // (telefon no / rakam-pax) pending'i NE SET NE COMPLETE NE CLEAR eder — FREEZE.
     // Eski hâlde 2 ardışık harfsiz-ASCII turn (pax "2" + telefon) NLU'nun harfsiz
@@ -1026,7 +1030,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     const _plsLetters = /\p{L}/u.test(message);
     if (!_plsLetters) {
       // harfsiz turn: pending dondurulur (dokunma)
-    } else if (_nluLang && _nluLang !== context.language && _isLangEnabled(_nluLang) && _msgAscii) {
+    } else if (_nluLang && _nluLang !== context.language && _isLangEnabled(_nluLang) && (_msgAscii || _charLatin)) {
       if (context.pendingLangSwitch === _nluLang) {
         // 2. ardışık aynı-farklı-dil → SESSİZ GEÇİŞ (görünür onay cümlesi YOK).
         _traceLang(context, "pending", _nluLang, message);
@@ -1477,32 +1481,41 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
   }
 
   if (_priceMatched) {
-    const _priced = tours
-      .map((t: any) => ({ tour: t, price: Number(representativeDate(t)?.price_adult ?? 0) }))
-      .filter((x: any) => typeof x.price === "number" && x.price > 0);
-    const _filtered = _priced.filter((x: any) => {
-      if (_priceLower !== null && x.price < _priceLower) return false;
-      if (_priceUpper !== null && x.price > _priceUpper) return false;
-      return true;
-    }).sort((a: any, b: any) => a.price - b.price);
-
     const _exRatesB1 = await getExchangeRatesOnce().catch(() => ({}));
     const _showDualB1 = agency.show_multi_currency !== false;
     const _langB1 = context.language || "tr";
+    // Dilim-7 (D1): bütçe para birimi çözülür (açık belirteç ya da müşterinin gördüğü
+    // para birimi — services/budget.ts) ve her tur o para birimine çevrilerek karşılaştırılır.
+    const { currency: _budgetCur } = resolveBudgetCurrency(message, _langB1, {
+      rates: _exRatesB1, showDual: _showDualB1, primaryCurrency: primaryCurrency || "TRY", languageCurrencies,
+    });
+    const _priced = tours
+      .map((t: any) => {
+        const price = Number(representativeDate(t)?.price_adult ?? 0);
+        // cmp: bütçe para birimindeki fiyat; null = kur yok + farklı para birimi (karşılaştırılamaz)
+        return { tour: t, price, cmp: priceInCurrency(price, t.currency || "TRY", _budgetCur, _exRatesB1) };
+      })
+      .filter((x: any) => typeof x.price === "number" && x.price > 0);
+    // Karşılaştırılamayan tur DIŞLANMAZ ve "yaklaşık" İŞARETLENMEZ (KARAR, rapor §1); sona dizilir.
+    const _byCmp = (a: any, b: any) => (a.cmp ?? Infinity) - (b.cmp ?? Infinity);
+    const _filtered = _priced.filter((x: any) => {
+      if (x.cmp === null) return true;
+      if (_priceLower !== null && x.cmp < _priceLower) return false;
+      if (_priceUpper !== null && x.cmp > _priceUpper) return false;
+      return true;
+    }).sort(_byCmp);
 
-    // C2-MUAF (Dilim-6, KARAR GEREKLİ): müşterinin YAZDIĞI bütçe sayısının yankısı — tur
-    // fiyatı değil. Girdinin para birimi denetim D1'in konusu; o karar verilene kadar
-    // TRY varsayımı aynen (formatPriceSync'e bağlamak varsayımı gizlerdi). Suite C2
-    // muhafızı yalnız "C2-MUAF" işaretli satırları muaf tutar.
+    // Etiket bütçe para biriminde (tek para, kur gerekmez).
+    const _fb = (v: number) => formatPriceSync(v, _budgetCur, _langB1, null, false);
     const _summary: Record<string, string> =
       _priceLower !== null && _priceUpper !== null
-        ? { tr: `${_priceLower}-${_priceUpper}₺`, en: `${_priceLower}-${_priceUpper} TRY`, de: `${_priceLower}-${_priceUpper} TRY`, fr: `${_priceLower}-${_priceUpper} TRY`, es: `${_priceLower}-${_priceUpper} TRY`, ru: `${_priceLower}-${_priceUpper} TRY`, ar: `${_priceLower}-${_priceUpper} TRY` } // C2-MUAF
+        ? { tr: `${_fb(_priceLower)}-${_fb(_priceUpper)}`, en: `${_fb(_priceLower)}-${_fb(_priceUpper)}`, de: `${_fb(_priceLower)}-${_fb(_priceUpper)}`, fr: `${_fb(_priceLower)}-${_fb(_priceUpper)}`, es: `${_fb(_priceLower)}-${_fb(_priceUpper)}`, ru: `${_fb(_priceLower)}-${_fb(_priceUpper)}`, ar: `${_fb(_priceLower)}-${_fb(_priceUpper)}` }
         : _priceUpper !== null
-        ? { tr: `${_priceUpper}₺ altı`, en: `under ${_priceUpper} TRY`, de: `unter ${_priceUpper} TRY`, fr: `moins de ${_priceUpper} TRY`, es: `menos de ${_priceUpper} TRY`, ru: `до ${_priceUpper} TRY`, ar: `أقل من ${_priceUpper} TRY` } // C2-MUAF
-        : { tr: `${_priceLower}₺ üstü`, en: `over ${_priceLower} TRY`, de: `über ${_priceLower} TRY`, fr: `plus de ${_priceLower} TRY`, es: `más de ${_priceLower} TRY`, ru: `более ${_priceLower} TRY`, ar: `أكثر من ${_priceLower} TRY` }; // C2-MUAF
+        ? { tr: `${_fb(_priceUpper)} altı`, en: `under ${_fb(_priceUpper)}`, de: `unter ${_fb(_priceUpper)}`, fr: `moins de ${_fb(_priceUpper)}`, es: `menos de ${_fb(_priceUpper)}`, ru: `до ${_fb(_priceUpper)}`, ar: `أقل من ${_fb(_priceUpper)}` }
+        : { tr: `${_fb(_priceLower!)} üstü`, en: `over ${_fb(_priceLower!)}`, de: `über ${_fb(_priceLower!)}`, fr: `plus de ${_fb(_priceLower!)}`, es: `más de ${_fb(_priceLower!)}`, ru: `более ${_fb(_priceLower!)}`, ar: `أكثر من ${_fb(_priceLower!)}` };
 
     if (_filtered.length === 0) {
-      const _cheapest = _priced.sort((a: any, b: any) => a.price - b.price)[0];
+      const _cheapest = [..._priced].sort(_byCmp)[0];
       let _b1NoneReply: string;
       if (_cheapest) {
         const _priceText = formatPriceSync(_cheapest.price, _cheapest.tour.currency || "TRY", _langB1, _exRatesB1, _showDualB1, languageCurrencies);
@@ -2005,7 +2018,7 @@ export async function processChatMessage(input: ProcessMessageInput): Promise<Pr
     //      YALNIZ length===1 korunur: 7c belirsiz-listesi her zaman ≥2 aday yazar,
     //      o akışın davranışı değişmez. "hayır"/alakasız → eşleşmez → tek-atış temizlik.
     if (!_clarChosen && _clarCands.length === 1 &&
-        /^\s*(evet|tamam|olur|peki|tabii?|olsun|devam|yes|ok(?:ay)?|sure|yeah|yep|ja|gerne|oui|s[íi]|claro|vale|да|давай(?:те)?|конечно|نعم|طيب|تمام|أجل)\b/iu.test(message)) {
+        /^\s*(evet|tamam|olur|peki|tabii?|olsun|devam|yes|ok(?:ay)?|sure|yeah|yep|ja|gerne|oui|s[íi]|claro|vale|да|давай(?:те)?|конечно|نعم|طيب|تمام|أجل)(?![\p{L}\p{N}])/iu.test(message)) {
       _clarChosen = _clarCands[0];
     }
     // 2) Kısmi-ad seçimi: mesajın anlamlı kelimelerinin HEPSİNİ içeren TEK aday

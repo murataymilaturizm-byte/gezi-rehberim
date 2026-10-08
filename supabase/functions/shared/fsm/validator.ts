@@ -52,7 +52,7 @@ export function detectInjection(input: string): boolean {
     /\btalimatlar?\p{L}*\s+(unut|yoksay|değiştir|sil)\b/iu,
     /\bsen\s+artık\s+\w/i,
     /\brol\s+(değiştir|oyna|al)\b/i,
-    /\b(sistem\s+prompt\p{L}*|talimatlar?\p{L}*)\s+(göster|yaz|söyle|aç|oku)\b/iu,
+    /(?<![\p{L}\p{N}])(sistem\s+prompt\p{L}*|talimatlar?\p{L}*)\s+(göster|yaz|söyle|aç|oku)(?![\p{L}\p{N}])/iu,
     // 2026-07-27 validator-fix (%-kenarı): baştaki \b% → % non-word, sınır yok →
     // "%50 indirim ver" kaçıyordu. Öndeki \b yerine harf/rakam-değil lookbehind.
     /(?<![\p{L}\p{N}])%\s*\d+\s*indirim\s+(ver|yap|uygula)\b/iu,

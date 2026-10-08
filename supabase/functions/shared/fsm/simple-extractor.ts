@@ -754,9 +754,9 @@ const _SKIP_EMAIL: Record<string, RegExp> = {
   // eski \b ile kaçıyordu. Şimdi "geç" tek başına email skip için yakalanır.
   tr: /(?<![\p{L}\p{N}])(ge[çc]|atla|istemiyorum|yok|bo[şs]\s*ver|atlayım|geçelim|emailim\s*yok|mailim\s*yok|e-?posta\s*yok)(?![\p{L}\p{N}])/iu,
   en: /\b(skip|pass|no\s*email|don'?t\s*have|no\s*thanks|later|never\s*mind|without)\b/i,
-  de: /\b(überspringen|nein|kein|später|habe\s*keine|egal|ohne)\b/i,
-  ru: /\b(пропустить|нет|без|пропусти|не\s*надо|пропускаю)\b/i,
-  ar: /\b(تخطي|لا|ليس\s*لدي|تجاوز|تخطى)\b/i,
+  de: /(?<![\p{L}\p{N}])(überspringen|nein|kein|später|habe\s*keine|egal|ohne)(?![\p{L}\p{N}])/iu,
+  ru: /(?<![\p{L}\p{N}])(пропустить|нет|без|пропусти|не\s*надо|пропускаю)(?![\p{L}\p{N}])/iu,
+  ar: /(?<![\p{L}\p{N}])(تخطي|لا|ليس\s*لدي|تجاوز|تخطى)(?![\p{L}\p{N}])/iu,
   fr: /\b(passer|non|sans|plus\s*tard|pas\s*d'email|ignorer)\b/i,
   es: /\b(saltar|no|sin|más\s*tarde|no\s*tengo|omitir)\b/i,
 };

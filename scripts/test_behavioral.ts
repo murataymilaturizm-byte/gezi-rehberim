@@ -7247,8 +7247,8 @@ console.log("\nPAKET-0 D3 webhook kayit + fail-open muhafizi");
     assert(`D6.G1 _summaryWithAsk "${ask}" kullaniliyor`, _pm.includes(`languageCurrencies, "${ask}")`) || new RegExp(`languageCurrencies, "${ask}",?\\s*\\)`).test(_pm));
   }
   // C2: shared/handlers + shared/services + shared/fsm/prompts — fiyat yanında sabit ₺/TRY
-  // literal'i YASAK (formatPriceSync zorunlu). Yorum satırları ve "C2-MUAF" işaretli satırlar
-  // (müşteri bütçe yankısı, D1 kararı bekliyor) hariç; formatPriceSync'in kendisi utils'te.
+  // literal'i YASAK (formatPriceSync zorunlu). Yalnız yorum satırları hariç; formatPriceSync'in
+  // kendisi utils'te. Dilim-7 (D1): bütçe yankısının "C2-MUAF" muafiyeti KALDIRILDI.
   const _c2Bad: string[] = [];
   let _c2Files = 0;
   for (const dir of ["supabase/functions/shared/handlers", "supabase/functions/shared/services", "supabase/functions/shared/fsm/prompts", "supabase/functions/shared/fsm/prompts/stages", "supabase/functions/shared/fsm/prompts/lang", "supabase/functions/shared/fsm/prompts/tones", "supabase/functions/shared/fsm/prompts/roles"]) {
@@ -7259,12 +7259,70 @@ console.log("\nPAKET-0 D3 webhook kayit + fail-open muhafizi");
       _c2Files++;
       const lines = (await Deno.readTextFile(`${dir}/${e.name}`)).split("\n");
       lines.forEach((l, i) => {
-        if (/^\s*(\/\/|\*|\/\*)/.test(l) || l.includes("C2-MUAF")) return;
+        if (/^\s*(\/\/|\*|\/\*)/.test(l)) return;
         if (/\}\s*₺|\}\s*TRY\b|\+\s*["'`]\s*(₺|TRY\b)/.test(l)) _c2Bad.push(`${dir.split("/").pop()}/${e.name}:${i + 1}`);
       });
     }
   }
   assert(`D6.C2 ${_c2Files} dosyada fiyat yaninda sabit ₺/TRY literal'i YOK (bulunan: ${_c2Bad.join(", ") || "yok"})`, _c2Bad.length === 0 && _c2Files > 10);
+}
+
+// ─── PAKET-0 Dilim-7: D1 bütçe para birimi + E2 \b/non-ASCII + E3 dil tespiti ───
+{
+  const { deadBoundaries, REGEX_LITERAL } = await import("./lib/regex-boundary.ts");
+  // E2 tarayıcının kendisi: ölü sınırı yakalar, ASCII-bitişik ve lookaround'u geçirir.
+  assert("D7.E2 tarayici: /(да|нет)\\b/ ihlal", deadBoundaries(String.raw`(да|нет)\b`).length === 1);
+  assert("D7.E2 tarayici: /\\b(überspringen|nein)/ ihlal", deadBoundaries(String.raw`\b(überspringen|nein)`).length === 1);
+  assert("D7.E2 tarayici: /s[íi]\\b/ ihlal (sınıfta non-ASCII)", deadBoundaries(String.raw`(yes|s[íi])\b`).length === 1);
+  assert("D7.E2 tarayici: /\\b(kayd[ıi]|rezervasyon)\\b/ temiz (bitişik harf ASCII)", deadBoundaries(String.raw`\b(kayd[ıi]n|rezervasyon)\s`).length === 0);
+  assert("D7.E2 tarayici: lookaround temiz", deadBoundaries(String.raw`(?<![\p{L}\p{N}])(да|нет)(?![\p{L}\p{N}])`).length === 0);
+  // shared/** içinde \b'ye bitişik non-ASCII alternatif içeren regex literal'i YOK.
+  const _e2Bad: string[] = [];
+  let _e2Files = 0;
+  const _walk = async (dir: string) => {
+    for await (const e of Deno.readDir(dir)) {
+      const p = `${dir}/${e.name}`;
+      if (e.isDirectory) { await _walk(p); continue; }
+      if (!e.name.endsWith(".ts")) continue;
+      _e2Files++;
+      (await Deno.readTextFile(p)).split("\n").forEach((ln, i) => {
+        if (/^\s*(\/\/|\*)/.test(ln)) return;
+        for (const m of ln.matchAll(REGEX_LITERAL)) if (deadBoundaries(m[0]).length) _e2Bad.push(`${p.replace("supabase/functions/shared/", "")}:${i + 1}`);
+      });
+    }
+  };
+  await _walk("supabase/functions/shared");
+  assert(`D7.E2 shared/** (${_e2Files} dosya) \\b + non-ASCII bitisik regex YOK (bulunan: ${_e2Bad.join(", ") || "yok"})`, _e2Bad.length === 0 && _e2Files > 50);
+
+  // D1: bütçe tek kaynak (services/budget.ts) + C2-MUAF muafiyeti kalktı.
+  const _pm7 = await Deno.readTextFile("supabase/functions/shared/handlers/process-message.ts");
+  assert("D7.D1 B1 bütçe para birimi resolveBudgetCurrency + priceInCurrency ile", /resolveBudgetCurrency\(/.test(_pm7) && /priceInCurrency\(/.test(_pm7));
+  assert("D7.D1 C2-MUAF isareti kalmadi", !/C2-MUAF/.test(_pm7));
+  const { explicitBudgetCurrency, canConvert } = await import("../supabase/functions/shared/services/budget.ts");
+  const _cur: Array<[string, string | null]> = [
+    ["5000 TL altı", "TRY"], ["5000tl altı", "TRY"], ["Touren unter 500 €", "EUR"], ["under $300", "USD"],
+    ["moins de 400 euros", "EUR"], ["menos de 200 dólares", "USD"], ["до 5000 руб", "RUB"], ["أقل من 300 دولار", "USD"],
+    ["under £200", "GBP"], ["I will try under 300", null], ["unter 500", null],
+  ];
+  for (const [m, c] of _cur) assert(`D7.D1 para birimi "${m}" → ${c}`, explicitBudgetCurrency(m) === c);
+  assert("D7.D1 kur yoksa farkli para birimi donusturulemez", !canConvert("TRY", "EUR", {}) && canConvert("EUR", "EUR", {}));
+
+  // E3: karakter dil tespiti + dil adı geçen soru ≠ dil değişimi isteği.
+  const { detectLanguage } = await import("../supabase/functions/shared/fsm/language.ts");
+  const { detectLanguageChangeIntent } = await import("../supabase/functions/shared/fsm/localization.ts");
+  const _dl: Array<[string, string | null]> = [
+    ["¿Qué incluye el tour?", "es"], ["¡Hola!", "es"], ["Je voudrais réserver à Paris", "fr"], ["café", null],
+    ["Danke schön, wie läuft das?", "de"], ["ışık", "tr"], ["Schön", "tr"], ["Привет", "ru"], ["مرحبا", "ar"], ["hello", null],
+  ];
+  for (const [m, l] of _dl) assert(`D7.E3 detectLanguage "${m}" → ${l}`, detectLanguage(m) === l);
+  const _dci: Array<[string, string | null]> = [
+    ["İngilizce rehber var mı?", null], ["Almanca rehberiniz var mı?", null], ["Is the tour in English?", null],
+    ["Есть ли гид на английском?", null], ["İngilizce devam edelim", "en"], ["Can we speak English?", "en"],
+    ["auf Deutsch bitte", "de"], ["на русском пожалуйста", "ru"],
+  ];
+  for (const [m, l] of _dci) assert(`D7.E3 dil-degisim-niyeti "${m}" → ${l}`, detectLanguageChangeIntent(m) === l);
+  // Akış ortası anlık karakter geçişi yalnız yazı sistemi dile özgü (ru/ar) tespitte.
+  assert("D7.E3 anlik char-gecisi SCRIPT_UNIQUE_LANGS ile sinirli", /\(SCRIPT_UNIQUE_LANGS as readonly string\[\]\)\.includes\(runtimeDetectedLang\)\) \{/.test(_pm7));
 }
 
 Deno.exit(fail === 0 ? 0 : 1);

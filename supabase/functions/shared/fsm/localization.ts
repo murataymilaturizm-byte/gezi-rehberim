@@ -35,8 +35,21 @@ export function pickLocalized(tour: any, baseField: string, lang: string): strin
  * @param message - User's message
  * @returns Language code if change is detected, null otherwise
  */
+// Dilim-7 (denetim E3): dil adı bir HİZMETİN niteliği olarak SORULUYORSA ("İngilizce rehber
+// var mı?", "Almanca rehberiniz var mı?", "Is the tour in English?") bu dil değişimi isteği
+// DEĞİLDİR. Kanıt (harness, HEAD): TR akışında "Almanca rehberiniz var mı?" → dil de'ye
+// geçiyordu. Sınıf = hizmet ismi (7 dil) + soru işareti/kalıbı. İstek cümleleri ("İngilizce
+// devam edelim", "can we speak English?") hizmet ismi taşımaz → etkilenmez.
+const _LANG_SERVICE_NOUN_RE =
+  /(?<![\p{L}\p{N}])(?:rehber\p{L}*|tur|turu|turun|turunuz|turlar\p{L}*|gezi\p{L}*|program\p{L}*|bro[şs][üu]r\p{L}*|guide\p{L}*|tours?|brochure|reiseleiter\p{L}*|f[üu]hrung\p{L}*|f[üu]hrer\p{L}*|accompagnateur\p{L}*|circuit\p{L}*|gu[íi]a\p{L}*|visita\p{L}*|гид\p{L}*|экскурс\p{L}*|тур|тура|туры|туре|مرشد\p{L}*|دليل\p{L}*|جول\p{L}*)(?![\p{L}\p{N}])/iu;
+const _LANG_QUESTION_RE =
+  /[?؟]|(?<![\p{L}\p{N}])(?:var\s*m[ıi]|mevcut\s*mu|m[ıiuü]|is\s+there|are\s+there|do\s+you\s+have|is\s+the|does\s+the|gibt\s+es|haben\s+sie|y\s+a[-\s]t[-\s]il|avez[-\s]vous|hay|tienen|есть\s+ли|هل|يوجد)(?![\p{L}\p{N}])/iu;
+
 export function detectLanguageChangeIntent(message: string): string | null {
-  const lowerMessage = message.toLowerCase().trim();
+  // Dilim-7: "İ".toLowerCase() → "i̇" (i + U+0307) — "İngilizce devam edelim" hiç
+  // eşleşmiyordu. Büyük İ önce düz i'ye indirilir.
+  const lowerMessage = message.replace(/İ/g, "i").toLowerCase().trim();
+  if (_LANG_SERVICE_NOUN_RE.test(lowerMessage) && _LANG_QUESTION_RE.test(lowerMessage)) return null;
 
   // English patterns
   if (

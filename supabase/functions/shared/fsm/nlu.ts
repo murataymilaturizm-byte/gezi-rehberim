@@ -90,7 +90,7 @@ function buildFallbackNLU(userMessage: string, availableTours?: any[]): NLUResul
   }
 
   // Kısa onay — NLU fail durumunda detectConfirmation() FSM'de zaten çalışır, bu ekstra güvenlik
-  if (/^(evet|tamam|onayl\S*|yes|confirm|okay|ok|sure|ja|oui|s[ií]|да|نعم|موافق)\b/i.test(lower)) {
+  if (/^(evet|tamam|onayl\S*|yes|confirm|okay|ok|sure|ja|oui|s[ií]|да|نعم|موافق)(?![\p{L}\p{N}])/iu.test(lower)) {
     return { intent: "confirm_reservation", language, entities: {}, updates: {} };
   }
 

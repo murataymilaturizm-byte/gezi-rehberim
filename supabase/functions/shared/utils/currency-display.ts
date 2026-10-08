@@ -49,6 +49,14 @@ const DECIMALS: Record<string, number> = {
   CNY: 0,
 };
 
+/**
+ * Müşterinin dilindeki gösterim para birimi — TEK KAYNAK (formatPriceSync + bütçe
+ * girdisi, Dilim-7 D1). Acente override (language_currencies) → LANG_TO_CURRENCY → USD.
+ */
+export function userCurrencyFor(userLanguage: string, languageCurrencies?: Record<string, string> | null): string {
+  return languageCurrencies?.[userLanguage] ?? LANG_TO_CURRENCY[userLanguage] ?? "USD";
+}
+
 function round(amount: number, currency: string): number {
   const decimals = DECIMALS[currency] ?? 0;
   const factor = Math.pow(10, decimals);
@@ -80,7 +88,7 @@ export function formatPriceSync(
   languageCurrencies?: Record<string, string> | null,
 ): string {
   // Acente override → hardcoded tablo sırası
-  const userCurrency = languageCurrencies?.[userLanguage] ?? LANG_TO_CURRENCY[userLanguage] ?? "USD";
+  const userCurrency = userCurrencyFor(userLanguage, languageCurrencies);
   const agencySym = symbol(agencyCurrency);
 
   // Orijinal tutarı formatla

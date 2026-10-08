@@ -69,7 +69,7 @@ function hasNewReservationIntent(userMessage: string, detectedIntent: string): b
   // "başka bir tur istiyorum" demek istiyor — bunu yakalayıp COMPLETED→BROWSING reset'e yönlendir.
   // Mevcut pattern'leri BOZMADAN ek alternation katmanı:
   const exclusionPatterns =
-    /dışında\s+(nere|hangi|başka)|başka\s+nere|başka\s+(bir\s+)?(yer|biryer|destinasyon|şehir)|değil\s+başka|hariç\s+(nere|hangi|başka)|other\s+than|anywhere\s+but|somewhere\s+else|except\s+for|außer\s+\w+\s+(was|wo)|sonst\s+wo|кроме\s+\w+\s+(куда|где)|где[\s-]ещё|à\s+part|sauf|ailleurs|aparte\s+de|excepto|otro\s+(lugar|sitio)|ما\s+عدا|غير\s+\w+\s+أين|أين\s+غير/i;
+    /dışında\s+(nere|hangi|başka)|başka\s+nere|başka\s+(bir\s+)?(yer|biryer|destinasyon|şehir)|değil\s+başka|hariç\s+(nere|hangi|başka)|other\s+than|anywhere\s+but|somewhere\s+else|except\s+for|außer\s+\p{L}+\s+(was|wo)|sonst\s+wo|кроме\s+\p{L}+\s+(куда|где)|где[\s-]ещё|à\s+part|sauf|ailleurs|aparte\s+de|excepto|otro\s+(lugar|sitio)|ما\s+عدا|غير\s+\p{L}+\s+أين|أين\s+غير/iu;
   if (exclusionPatterns.test(userMessage)) return true;
   if (detectedIntent === "reservation_intent") return true;
   return false;
@@ -650,7 +650,7 @@ const transitions: StateTransition[] = [
       // "rezervasyon" uzun form) hasReservationSignal helper'ı ile değiştirildi.
       // Helper "rezerve" kökünü + çekim eki + 7 dil + ek kelimeler (kayıt/yer ayır/
       // katıl) kapsar — DRY (tour-change.ts ile aynı helper).
-      const positivePattern = /^\s*(evet|tamam|olur|peki|tabii|yes|ok(?:ay)?|sure|ja|oui|s[íi]|да|نعم)\b/i;
+      const positivePattern = /^\s*(evet|tamam|olur|peki|tabii|yes|ok(?:ay)?|sure|ja|oui|s[íi]|да|نعم)(?![\p{L}\p{N}])/iu;
       if (hasReservationSignal(input.userMessage)) return true;
       if (positivePattern.test(input.userMessage)) return true;
       // 2026-06-29 PROBLEM 2 fix: NLU tour_search/general'ı "informational" sayıp
