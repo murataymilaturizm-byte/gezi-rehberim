@@ -17,6 +17,8 @@ if (!Deno.env.get("HARNESS_VERBOSE")) {
   console.log = () => {}; console.info = () => {}; console.warn = () => {}; console.error = () => {};
 }
 Deno.env.delete("META_APP_SECRET"); Deno.env.delete("WHATSAPP_APP_SECRET");
+// getMetaCredentials env fallback'u kapalı → "bağlantı bilgisi eksik acente" senaryosu gerçekçi.
+Deno.env.delete("WHATSAPP_ACCESS_TOKEN"); Deno.env.delete("WHATSAPP_PHONE_NUMBER_ID");
 await import("../../whatsapp-webhook/index.ts");
 if (!capturedHandler) throw new Error("webhook handler yakalanamadı (serve stub)");
 
@@ -40,6 +42,8 @@ export interface Scenario {
   rateLimit?: { data: any; error: any };
   unavailableInsertFails?: boolean; // [unavailable] system satırı insert'i hata versin
   botPaused?: boolean;
+  agencyNotFound?: boolean;         // resolveAgencyByPhoneNumberId acente bulamaz
+  toursDown?: boolean;              // tours SELECT hata → getCachedTours TOUR_DATA_UNAVAILABLE (yalnız önbelleksiz acente id'sinde)
 }
 
 /** Yeni senaryo: tüm kayıtları sıfırla, DB davranışını kur. Dönen db aynı senaryodaki ardışık mesajlarda KORUNUR. */
@@ -58,6 +62,7 @@ export function setupScenario(s: Scenario = {}) {
         return { data: row ? { id: "sys-1" } : null, error: null };
       }
       if (table === "whatsapp_user_profiles") return { data: s.botPaused ? { bot_paused: true, bot_paused_until: null } : null, error: null };
+      if (table === "tours" && s.toursDown) return { data: null, error: { message: "simulated tours outage" } };
       if (table === "tours" || table === "registrations") return { data: [], error: null };
       return undefined;
     },
@@ -67,7 +72,7 @@ export function setupScenario(s: Scenario = {}) {
         : undefined,
   });
   sent.length = 0; processCalls.length = 0; criticalLog.length = 0;
-  meta.agency = mkAgency(s.agency);
+  meta.agency = s.agencyNotFound ? null : mkAgency(s.agency);
 }
 
 let _mid = 0;
@@ -80,6 +85,23 @@ export async function postWebhook(text: string, from = CUSTOMER): Promise<{ stat
       metadata: { display_phone_number: "908500000000", phone_number_id: "pnid-1" },
       contacts: [{ profile: { name: "Müşteri" }, wa_id: from }],
       messages: [{ from, id: `wamid.in.${++_mid}`, timestamp: String(Math.floor(Date.now() / 1000)), type: "text", text: { body: text } }],
+    } }] }],
+  };
+  const res = await capturedHandler!(new Request("http://localhost/whatsapp-webhook", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+  }));
+  return { status: res.status, body: await res.json().catch(() => null) };
+}
+
+/** Ham Meta `messages[0]` nesnesiyle gönderim (medya/konum vb. — gerçek payload şekli). */
+export async function postRawMessage(msg: Record<string, unknown>, from = CUSTOMER): Promise<{ status: number; body: any }> {
+  const payload = {
+    object: "whatsapp_business_account",
+    entry: [{ id: "waba-1", changes: [{ field: "messages", value: {
+      messaging_product: "whatsapp",
+      metadata: { display_phone_number: "908500000000", phone_number_id: "pnid-1" },
+      contacts: [{ profile: { name: "Müşteri" }, wa_id: from }],
+      messages: [{ from, id: `wamid.in.${++_mid}`, timestamp: String(Math.floor(Date.now() / 1000)), ...msg }],
     } }] }],
   };
   const res = await capturedHandler!(new Request("http://localhost/whatsapp-webhook", {

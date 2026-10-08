@@ -7144,12 +7144,22 @@ console.log("\nPAKET-0 D3 webhook kayit + fail-open muhafizi");
     /const _reason = _isExpired \? subscriptionDropReason\(_subStatus\) : DROP_REASON\.MONTHLY_LIMIT;/.test(_wh) &&
     /droppedReason: _reason,/.test(_wh) && /metadata: \{ dropped_reason: _reason,/.test(_wh));
   const _whCode2 = _wh.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
-  assert("F1.STATIK webhook kodunda sebep adi string-literal YOK (message_limit_reached / subscription_inactive / monthly_limit)",
-    !/"(?:message_limit_reached|subscription_inactive|monthly_limit)"/.test(_whCode2));
   const { DROP_REASON } = await import("../supabase/functions/shared/constants/drop-reasons.ts");
+  const _reasonNames = [...Object.values(DROP_REASON), "message_limit_reached", "subscription_inactive", "monthly_limit"];
+  const _lit = _reasonNames.filter((n) => _whCode2.includes(`"${n}"`));
+  assert(`F1.STATIK webhook kodunda sebep adi string-literal YOK — hepsi DROP_REASON'dan (bulunan: ${_lit.join(",") || "yok"})`, _lit.length === 0);
   const _logsSrc = await Deno.readTextFile("src/components/WhatsAppLogs.tsx");
   assert("F1.SOZLESME panel okuyucusu (WhatsAppLogs) abonelik oneki = DROP_REASON.SUBSCRIPTION_PREFIX",
     _logsSrc.includes(`dropped_reason?.startsWith("${DROP_REASON.SUBSCRIPTION_PREFIX}")`));
+  // Dilim-4 (§10.4 kararı): limit adı panelin "quota" rozet okuyucusuyla aynı — biri değişirse kırmızı.
+  assert(`F1.SOZLESME panel okuyucusu (WhatsAppLogs) quota adi = DROP_REASON.MONTHLY_LIMIT ("${DROP_REASON.MONTHLY_LIMIT}")`,
+    _logsSrc.includes(`dropped_reason === "${DROP_REASON.MONTHLY_LIMIT}"`));
+  // Dilim-4: 5 "mesajı düşür" yolu da tek kayıt noktasından geçer (F1: limit + bot-pause + erken kayıt = 3; D4: 5 yol → 8 çağrı; tanım hariç).
+  const _saveCalls = (_whCode2.match(/await saveInboundMessage\(/g) || []).length;
+  assert(`D4.STATIK webhook'ta saveInboundMessage cagri sayisi >= 8 (bulunan ${_saveCalls})`, _saveCalls >= 8);
+  for (const k of ["UNSUPPORTED_MEDIA", "AGENCY_NOT_CONFIGURED", "MESSAGE_TOO_LONG", "RATE_LIMITED", "TOURS_UNAVAILABLE"]) {
+    assert(`D4.STATIK DROP_REASON.${k} webhook'ta kullaniliyor`, _whCode2.includes(`DROP_REASON.${k}`));
+  }
   const _rleBlock = (_wh.match(/if \(_rle\) \{([\s\S]*?)\} else if \(_rl && !_rl\.allowed\)/) || [])[1] || "";
   assert("F2.STATIK rate-limit RPC hatasi FAIL-OPEN (erken return YOK, logCritical VAR)",
     _rleBlock.length > 0 && !/return new Response/.test(_rleBlock) && /logCritical\(/.test(_rleBlock));

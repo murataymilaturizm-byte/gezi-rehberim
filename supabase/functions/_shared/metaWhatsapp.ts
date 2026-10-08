@@ -301,6 +301,7 @@ export function extractMetaWebhookData(body: any): {
   isStatus: boolean;
   phoneNumberId: string;
   msgType?: string; // 2026-07-10 B4: desteklenmeyen-tip nazik-yanıtı için ham tip
+  mediaId?: string; // PAKET-0 Dilim-4: medya mesajının Meta media id'si (kayıt metadata'sı; indirme YOK)
 } | null {
   try {
     if (body?.object !== 'whatsapp_business_account') {
@@ -345,7 +346,8 @@ export function extractMetaWebhookData(body: any): {
     // location/sticker/contacts/reaction vb. → message='' kalır; index.ts msgType'a
     // göre karar verir (medya/konum → nazik yanıt; reaction/edited → sessiz).
 
-    return { from, message, messageId, isStatus: false, phoneNumberId, msgType: msg.type || '' };
+    const mediaId = msg.type && typeof msg[msg.type]?.id === 'string' ? msg[msg.type].id : undefined;
+    return { from, message, messageId, isStatus: false, phoneNumberId, msgType: msg.type || '', mediaId };
   } catch (error) {
     console.error('❌ Error extracting Meta webhook data:', error);
     return null;

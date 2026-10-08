@@ -9,7 +9,7 @@ const TECH_ERR = "teknik bir sorun";              // dış catch'in genel hata m
 const notices = () => sent.filter((m) => m.text.includes(NOTICE)).length;
 
 for (const [label, scen, reason] of [
-  ["aylık mesaj limiti dolu", { planLimit: 10, agency: { monthly_message_count: 10 } }, "monthly_limit"],
+  ["aylık mesaj limiti dolu", { planLimit: 10, agency: { monthly_message_count: 10 } }, "quota_exceeded"],   // Dilim-3 §10.4 kararı: panelin okuduğu ad
   ["abonelik pasif (expired)", { agency: { subscription_status: "expired" } }, "subscription_expired"],   // panelin okuduğu eski ad (karar 2)
 ] as const) {
   Deno.test(`F1 ${label}: her mesaj role=user + dropped_reason=${reason} kaydedilir; bildirim 24 saatte 1`, async () => {

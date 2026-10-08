@@ -11,7 +11,7 @@ import { sanitizeInput, isInputTooLong } from "../shared/fsm/validator.ts";
 import { detectLanguageChangeIntent } from "../shared/fsm/localization.ts";
 import { getCachedTours } from "../shared/utils/tour-cache.ts";
 import { toBotTours } from "../shared/services/bot-tour.ts";
-import { DROP_REASON, subscriptionDropReason } from "../shared/constants/drop-reasons.ts";
+import { DROP_REASON, subscriptionDropReason, MEDIA_PLACEHOLDER } from "../shared/constants/drop-reasons.ts";
 import { markAsRead, showTypingIndicator } from "../shared/utils/whatsapp-status.ts";
 import { checkFAQ } from "./services/faq.ts";
 import { detectCannedResponseTrigger, buildCannedResponse, isIdleContext } from "../shared/services/canned-responses.ts";
@@ -239,6 +239,16 @@ serve(async (req) => {
       const _politeTypes = new Set(["image", "audio", "video", "document", "location", "sticker", "contacts", "voice"]);
       if (userPhone && webhookData.msgType && _politeTypes.has(webhookData.msgType)) {
         const _agUn = await resolveAgencyByPhoneNumberId(supabase, webhookData.phoneNumberId);
+        // Dilim-4 (yol 1): müşteri bir şey gönderdi → konuşma kaydına yer tutucu + medya
+        // metadata'sı (indirme/transkripsiyon YOK). Nazik cevap davranışı aşağıda AYNEN.
+        if (_agUn?.agency) {
+          const _mt = webhookData.msgType as string;
+          await saveInboundMessage(supabase, _agUn.agency.id, userPhone, MEDIA_PLACEHOLDER[_mt] || `[${_mt}]`, {
+            droppedReason: DROP_REASON.UNSUPPORTED_MEDIA,
+            meta: { media_type: _mt, ...(webhookData.mediaId ? { media_id: webhookData.mediaId } : {}) },
+            lossIfFail: true,
+          });
+        }
         const _mcUn = _agUn?.agency ? getMetaCredentials(_agUn.agency) : null;
         if (_mcUn?.accessToken && _mcUn?.phoneNumberId) {
           // Dil: profil tercihi varsa o, yoksa acente ilk-dili, yoksa tr
@@ -271,6 +281,14 @@ serve(async (req) => {
     const { agency, error: agencyError } = await resolveAgencyByPhoneNumberId(supabase, webhookData.phoneNumberId);
     if (agencyError || !agency) {
       console.error(`🚫 Agency not found: ${agencyError}`);
+      // Dilim-4 (yol 2b): acente tespit edilemedi → yazılacak agency_id yok; mesaj
+      // kaydedilemez, en azından görünür olsun.
+      await logCritical({
+        event: "AGENCY_NOT_FOUND",
+        error: String(agencyError || "agency not found"),
+        context: { phoneNumberId: webhookData.phoneNumberId, msgType: webhookData.msgType || null },
+        severity: "warning",
+      }).catch(() => {});
       return new Response(JSON.stringify({ error: "Agency not found" }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -279,6 +297,11 @@ serve(async (req) => {
     const metaCredentials = getMetaCredentials(agency);
     _catchMeta = metaCredentials;
     if (!metaCredentials.accessToken || !metaCredentials.phoneNumberId) {
+      // Dilim-4 (yol 2): acente tespit edildi ama WhatsApp kimlik bilgisi yok — müşteriye
+      // cevap gönderilemez (aynı), mesaj panelde görünsün.
+      await saveInboundMessage(supabase, agency.id, userPhone, rawMessage, {
+        droppedReason: DROP_REASON.AGENCY_NOT_CONFIGURED, lossIfFail: true,
+      });
       return new Response(JSON.stringify({ error: "WhatsApp not configured" }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -310,6 +333,11 @@ serve(async (req) => {
 
     // === Input too long (ÖNCE kontrol et — DB işlemlerinden önce) ===
     if (isInputTooLong(rawMessage)) {
+      // Dilim-4 (yol 3): mesaj İŞLENMİYOR (müşteriden kısaltması isteniyor) → metnin
+      // TAMAMI kırpılmadan kaydedilir; dropped_reason bu yüzden var. Cevap aynı.
+      await saveInboundMessage(supabase, agency.id, userPhone, rawMessage, {
+        droppedReason: DROP_REASON.MESSAGE_TOO_LONG, meta: { length: rawMessage.length }, lossIfFail: true,
+      });
       const _tlLang = detectLanguageChangeIntent(rawMessage.slice(0, 200)) || "tr";
       const _tlMsgs: Record<string, string> = {
         tr: "Mesajınız çok uzun, lütfen daha kısa bir mesaj gönderin (maksimum 2000 karakter).",
@@ -385,6 +413,10 @@ serve(async (req) => {
           severity: "error",
         }).catch(() => {});
       } else if (_rl && !_rl.allowed) {
+        // Dilim-4 (yol 4): mesaj işlenmiyor ama kayda geçer. "Çok hızlı" cevabı aynı.
+        await saveInboundMessage(supabase, agency.id, userPhone, rawMessage, {
+          droppedReason: DROP_REASON.RATE_LIMITED, lossIfFail: true,
+        });
         const _rlMsgs: Record<string, string> = {
           tr: "Çok hızlı mesaj gönderiyorsunuz. 🙏 Lütfen bir dakika bekleyin.",
           en: "You're sending messages too quickly. 🙏 Please wait a moment.",
@@ -519,6 +551,17 @@ serve(async (req) => {
       toursRaw = await getCachedTours(supabase, agency.id);
     } catch (_cacheErr: any) {
       if (_cacheErr?.message === "TOUR_DATA_UNAVAILABLE") {
+        // Dilim-4 (yol 5): tur verisi yok → mesaj işlenemiyor; kaydet + görünür kıl. Cevap aynı.
+        await saveInboundMessage(supabase, agency.id, userPhone, rawMessage, {
+          droppedReason: DROP_REASON.TOURS_UNAVAILABLE, lossIfFail: true,
+        });
+        await logCritical({
+          event: "TOURS_UNAVAILABLE",
+          error: "getCachedTours: TOUR_DATA_UNAVAILABLE (DB hatası + önbellek yok/bayat)",
+          context: { path: "whatsapp-webhook" },
+          agencyId: agency.id,
+          severity: "error",
+        }).catch(() => {});
         const _unavMsgs: Record<string, string> = {
           tr: "Üzgünüm, tur bilgilerini şu an yükleyemedim. Lütfen birkaç dakika sonra tekrar yazın.",
           en: "Sorry, I couldn't load tour information right now. Please try again in a few minutes.",
