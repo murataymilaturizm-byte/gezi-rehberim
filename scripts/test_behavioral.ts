@@ -7160,6 +7160,15 @@ console.log("\nPAKET-0 D3 webhook kayit + fail-open muhafizi");
   for (const k of ["UNSUPPORTED_MEDIA", "AGENCY_NOT_CONFIGURED", "MESSAGE_TOO_LONG", "RATE_LIMITED", "TOURS_UNAVAILABLE"]) {
     assert(`D4.STATIK DROP_REASON.${k} webhook'ta kullaniliyor`, _whCode2.includes(`DROP_REASON.${k}`));
   }
+  // Dilim-4 çift-kayıt düzeltmesi: TEK dedup RPC'si, mesajı kaydeden İLK çağrıdan ÖNCE;
+  // acente tespiti TEK (desteklenmeyen-tip dalının ikinci çağrısı kaldırıldı).
+  const _rpcCalls = (_whCode2.match(/supabase\.rpc\("process_whatsapp_message_atomic"/g) || []).length;
+  const _rpcIdx = _whCode2.indexOf(`supabase.rpc("process_whatsapp_message_atomic"`);
+  const _firstSaveIdx = _whCode2.indexOf("await saveInboundMessage(");
+  assert(`D4.DEDUP tek dedup RPC cagrisi (bulunan ${_rpcCalls})`, _rpcCalls === 1);
+  assert("D4.DEDUP dedup RPC, ilk saveInboundMessage cagrisindan ONCE", _rpcIdx > 0 && _firstSaveIdx > 0 && _rpcIdx < _firstSaveIdx);
+  assert("D4.DEDUP acente tespiti tek (resolveAgencyByPhoneNumberId x1)",
+    (_whCode2.match(/await resolveAgencyByPhoneNumberId\(/g) || []).length === 1);
   const _rleBlock = (_wh.match(/if \(_rle\) \{([\s\S]*?)\} else if \(_rl && !_rl\.allowed\)/) || [])[1] || "";
   assert("F2.STATIK rate-limit RPC hatasi FAIL-OPEN (erken return YOK, logCritical VAR)",
     _rleBlock.length > 0 && !/return new Response/.test(_rleBlock) && /logCritical\(/.test(_rleBlock));

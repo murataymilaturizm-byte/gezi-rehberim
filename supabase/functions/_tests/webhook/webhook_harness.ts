@@ -46,11 +46,20 @@ export interface Scenario {
   toursDown?: boolean;              // tours SELECT hata → getCachedTours TOUR_DATA_UNAVAILABLE (yalnız önbelleksiz acente id'sinde)
 }
 
+const _processed = new Set<string>();
 /** Yeni senaryo: tüm kayıtları sıfırla, DB davranışını kur. Dönen db aynı senaryodaki ardışık mesajlarda KORUNUR. */
 export function setupScenario(s: Scenario = {}) {
+  _processed.clear();
   resetDb({
     rpc: {
-      process_whatsapp_message_atomic: () => ({ data: { success: true, context: null, history: [] }, error: null }),
+      // Gerçek RPC'nin dedup sözleşmesi: processed_whatsapp_messages UNIQUE(message_id, agency_id)
+      // → aynı ikili ikinci kez gelirse DUPLICATE_MESSAGE (senaryo boyunca kalıcı).
+      process_whatsapp_message_atomic: (a: any) => {
+        const k = `${a.p_message_id}|${a.p_agency_id}`;
+        if (_processed.has(k)) return { data: { success: false, error: "DUPLICATE_MESSAGE" }, error: null };
+        _processed.add(k);
+        return { data: { success: true, context: null, history: [] }, error: null };
+      },
       check_rate_limit: () => s.rateLimit ?? { data: { allowed: true }, error: null },
       increment_agency_message_count: () => ({ data: null, error: null }),
     },
@@ -77,14 +86,14 @@ export function setupScenario(s: Scenario = {}) {
 
 let _mid = 0;
 /** Meta `messages` webhook'u — tek metin mesajı. */
-export async function postWebhook(text: string, from = CUSTOMER): Promise<{ status: number; body: any }> {
+export async function postWebhook(text: string, from = CUSTOMER, wamid?: string): Promise<{ status: number; body: any }> {
   const payload = {
     object: "whatsapp_business_account",
     entry: [{ id: "waba-1", changes: [{ field: "messages", value: {
       messaging_product: "whatsapp",
       metadata: { display_phone_number: "908500000000", phone_number_id: "pnid-1" },
       contacts: [{ profile: { name: "Müşteri" }, wa_id: from }],
-      messages: [{ from, id: `wamid.in.${++_mid}`, timestamp: String(Math.floor(Date.now() / 1000)), type: "text", text: { body: text } }],
+      messages: [{ from, id: wamid ?? `wamid.in.${++_mid}`, timestamp: String(Math.floor(Date.now() / 1000)), type: "text", text: { body: text } }],
     } }] }],
   };
   const res = await capturedHandler!(new Request("http://localhost/whatsapp-webhook", {
@@ -94,14 +103,14 @@ export async function postWebhook(text: string, from = CUSTOMER): Promise<{ stat
 }
 
 /** Ham Meta `messages[0]` nesnesiyle gönderim (medya/konum vb. — gerçek payload şekli). */
-export async function postRawMessage(msg: Record<string, unknown>, from = CUSTOMER): Promise<{ status: number; body: any }> {
+export async function postRawMessage(msg: Record<string, unknown>, from = CUSTOMER, wamid?: string): Promise<{ status: number; body: any }> {
   const payload = {
     object: "whatsapp_business_account",
     entry: [{ id: "waba-1", changes: [{ field: "messages", value: {
       messaging_product: "whatsapp",
       metadata: { display_phone_number: "908500000000", phone_number_id: "pnid-1" },
       contacts: [{ profile: { name: "Müşteri" }, wa_id: from }],
-      messages: [{ from, id: `wamid.in.${++_mid}`, timestamp: String(Math.floor(Date.now() / 1000)), ...msg }],
+      messages: [{ from, id: wamid ?? `wamid.in.${++_mid}`, timestamp: String(Math.floor(Date.now() / 1000)), ...msg }],
     } }] }],
   };
   const res = await capturedHandler!(new Request("http://localhost/whatsapp-webhook", {

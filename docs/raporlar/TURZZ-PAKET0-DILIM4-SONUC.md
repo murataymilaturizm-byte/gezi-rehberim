@@ -18,7 +18,7 @@ Tüm yollar Dilim-3'ün **tek** kayıt noktası `saveInboundMessage` + tek sabit
 
 ---
 
-## 3. Beş yol — önce / sonra (satır no: bu commit sonrası `whatsapp-webhook/index.ts`)
+## 3. Beş yol — önce / sonra (satır no: `c1e819c` sonrası `whatsapp-webhook/index.ts`; çift-kayıt düzeltmesinden sonraki numaralar §11.2)
 
 | # | Yol | Önce (HEAD) | Sonra | `dropped_reason` |
 |---|---|---|---|---|
@@ -147,6 +147,67 @@ Hangi destinasyona bir tur düşünüyorsunuz? İsterseniz size turlarımızı g
 whatsapp-webhook'a canlı mesaj gönderilmedi (gerçek numara gerekir); `drop-reasons.ts` ve `metaWhatsapp.ts` yeni bundle'da — deploy hatasız, ACTIVE.
 
 ---
+
+## 10. §5 kararları (ürün sahibi, 2026-10-08)
+- **K1** (`rate_limited` her mesaj kaydı) **KABUL** · **K2** (Türkçe yer tutucu) **KABUL** · **K3** (çift kayıt) **DÜZELT** → §11. K4 bilgi.
+
+## 11. Çift kayıt düzeltmesi
+
+### 11.1 Seçim: dedup'ı TAŞIMA (migration yok, ikinci dedup kopyası yok)
+- Mevcut dedup `process_whatsapp_message_atomic(p_message_id, p_agency_id, p_phone)` (son tanım `supabase/migrations/20260518000021_history_limit_50.sql:6-61`): `processed_whatsapp_messages`'a `(message_id, agency_id)` yazar, `UNIQUE(message_id, agency_id)` ihlalinde `DUPLICATE_MESSAGE` döner (`20260517000001_race_condition_fix.sql:6-16`). **Acente gerektiriyor** → "yalnız message id ile, acentesiz" dedup mümkün değil.
+- Ama acente tespiti yalnız payload'daki `phone_number_id`'ye bağlı ve **mesaj kaydeden her yol zaten acenteye bağlı** (acente bulunamazsa hiçbir satır yazılmıyor — yazılacak `agency_id` yok). Bu yüzden kök çözüm: **acente tespiti + mevcut dedup RPC'si**, payload ayrıştırmanın hemen arkasına, ilk `saveInboundMessage`'dan önceye taşındı.
+- **Neden idempotent insert (unique kısıt + ON CONFLICT) değil:** (a) yalnız satır tekrarını keser — müşteriye giden cevap/bildirim yine iki kez gider (kanıt şartı "müşteriye TEK cevap" karşılanmaz); (b) büyük `whatsapp_conversations` tablosuna yeni kolon + unique index migration'ı gerekir; (c) ikinci bir dedup mekanizması olurdu (talimat: kopya EKLEME).
+- **Migration: YOK.**
+
+### 11.2 Yeni sıra (`whatsapp-webhook/index.ts`)
+| Adım | Önce (HEAD) | Sonra |
+|---|---|---|
+| Gönderen yok / tepki-düzenleme gibi metinsiz-sessiz tip | (desteklenmeyen dalın içinde) sessiz 200 | `:233-242` aynı — erken sessiz 200, acente sorgusu **yok** (eski davranış) |
+| Desteklenmeyen medya | dedup'tan **ÖNCE**, kendi `resolveAgencyByPhoneNumberId` çağrısı + kayıt + cevap | dedup'tan **SONRA** (`:294-327`), ortak `agency`/`metaCredentials` |
+| Acente tespiti | iki kez (medya dalı + ana akış) | **tek** (`:248`) |
+| Dedup RPC | kimlik-eksik ve 2000+ dalından **SONRA** (`:368`) | **ilk kayıttan önce** (`:276`) |
+| Kimlik eksik | dedup'tan önce kayıt | dedup'tan sonra (`:329-338`) |
+| 2000+ karakter | dedup'tan önce kayıt + cevap | dedup'tan sonra (`:365-386`) |
+Davranış farkları (bilinçli): tekrar teslim edilen mesaja artık "okundu" işareti gönderilmiyor (ilk kopya zaten işaretledi); dedup RPC'si desteklenmeyen-medya/kimlik-eksik/2000+ yollarında da çalışıyor (bağlam yüklemesi kullanılmıyor, maliyeti tek sorgu).
+
+### 11.3 Kanıt — webhook harness (dedup sözleşmesi gerçek RPC ile aynı: `UNIQUE(message_id, agency_id)`)
+ÖNCE (yeni testler HEAD koduna karşı):
+```
+DEDUP medya (ses) — aynı wamid 2 kez → 1 satır, 1 nazik cevap ... FAILED
+DEDUP kimlik bilgisi eksik acente — aynı wamid 2 kez → 1 satır ... FAILED
+DEDUP 2000+ karakter — aynı wamid 2 kez → 1 satır, 1 'çok uzun' cevabı ... FAILED
+DEDUP normal akış — aynı wamid 2 kez → 1 satır, 1 işleme ... ok          ← normal akış zaten dedup'tan geçiyordu
+DEDUP regresyon — farklı wamid'li iki mesaj → 2 satır ... ok
+error: AssertionError: tek satır   (×3)
+FAILED | 17 passed | 3 failed
+```
+Ham döküm (aynı script, webhook kaynağı `git stash` ile HEAD'e alınarak):
+```
+== ÖNCE (HEAD) ==
+[MEDYA]        aynı wamid ×2 → user satırı=2 | müşteriye giden=2 | processChatMessage=0
+[KIMLIK-EKSIK] aynı wamid ×2 → user satırı=2 | müşteriye giden=0 | processChatMessage=0
+[2000+]        aynı wamid ×2 → user satırı=2 | müşteriye giden=2 | processChatMessage=0
+[NORMAL]       aynı wamid ×2 → user satırı=1 | müşteriye giden=0 | processChatMessage=1
+== SONRA ==
+[MEDYA]        aynı wamid ×2 → user satırı=1 | müşteriye giden=1 | processChatMessage=0
+[KIMLIK-EKSIK] aynı wamid ×2 → user satırı=1 | müşteriye giden=0 | processChatMessage=0
+[2000+]        aynı wamid ×2 → user satırı=1 | müşteriye giden=1 | processChatMessage=0
+[NORMAL]       aynı wamid ×2 → user satırı=1 | müşteriye giden=0 | processChatMessage=1
+```
+(NORMAL'de "müşteriye giden=0": harness'te `processChatMessage` stub'lı, cevabı o üretir — tek işleme = tek cevap.)
+
+SONRA — `npm test`:
+```
+━━━ Katman-1 suite ━━━            1553 ✓ / 0 ✗   (+3 D4.DEDUP muhafızı)
+━━━ Katman-2 harness ━━━          ok | 60 passed | 0 failed
+━━━ Katman-2 webhook harness ━━━  ok | 20 passed | 0 failed   (15 + 5 dedup)
+━━━ SONUÇ ━━━  suite=✓  harness=✓  webhook=✓   EXIT=0
+```
+Suite D4.DEDUP muhafızları: tek dedup RPC çağrısı; dedup RPC ilk `saveInboundMessage`'dan **önce**; `resolveAgencyByPhoneNumberId` tek. HEAD webhook'una karşı koşulunca: `✗ dedup RPC, ilk saveInboundMessage cagrisindan ONCE` · `✗ acente tespiti tek` — muhafız eski hatayı yakalıyor.
+Tip denetimi: `deno check` (webhook + demo-chat) **12 → 12**.
+
+### 11.4 Net satır
+`whatsapp-webhook/index.ts`: +73 / −66 = **+7** (blok yeniden sıralandı; desteklenmeyen dalın ikinci acente sorgusu ve kendi kimlik çözümü kaldırıldı, açıklama yorumları eklendi).
 
 ## 9. Ürün sahibine sade özet
 Müşterinin sesli mesajı, fotoğrafı, çok uzun mesajı, çok hızlı yazdığı için cevaplanmayan mesajları ve sistem arızası anlarında attığı mesajlar artık konuşma kaydına düşüyor; acente hiçbir müşteri temasını kaçırmıyor. Müşteriye giden cevaplar hiç değişmedi; değişen tek şey arka planda kayıt ve neden etiketinin tutulması. Aylık limit dolduğunda yazılan etiket artık panelin tanıdığı "kota" etiketi, böylece kayıtlar ekranında doğru rozetle görünüyor; değişiklik 8 Ekim 2026'da canlıya alındı.

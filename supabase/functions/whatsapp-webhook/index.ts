@@ -230,54 +230,21 @@ serve(async (req) => {
     _catchPhone = userPhone;
     const rawMessage = webhookData.message;
 
-    if (!userPhone || !rawMessage) {
-      // 2026-07-10 B4: desteklenmeyen-tip NAZİK YANIT (7-dil). Eskiden müşteri
-      // sesli/konum/sticker atınca bot TAMAMEN SESSİZ kalıyordu (caption'sız
-      // medyada ise `[audio]` literal'i NLU'ya gidip saçma cevap üretiyordu).
-      // Medya/konum/sticker/kişi-kartı → "yazılı mesaj" ricası; reaction/
-      // edited/deleted/unknown → SESSİZ (doğru davranış — tepkiye cevap verilmez).
-      const _politeTypes = new Set(["image", "audio", "video", "document", "location", "sticker", "contacts", "voice"]);
-      if (userPhone && webhookData.msgType && _politeTypes.has(webhookData.msgType)) {
-        const _agUn = await resolveAgencyByPhoneNumberId(supabase, webhookData.phoneNumberId);
-        // Dilim-4 (yol 1): müşteri bir şey gönderdi → konuşma kaydına yer tutucu + medya
-        // metadata'sı (indirme/transkripsiyon YOK). Nazik cevap davranışı aşağıda AYNEN.
-        if (_agUn?.agency) {
-          const _mt = webhookData.msgType as string;
-          await saveInboundMessage(supabase, _agUn.agency.id, userPhone, MEDIA_PLACEHOLDER[_mt] || `[${_mt}]`, {
-            droppedReason: DROP_REASON.UNSUPPORTED_MEDIA,
-            meta: { media_type: _mt, ...(webhookData.mediaId ? { media_id: webhookData.mediaId } : {}) },
-            lossIfFail: true,
-          });
-        }
-        const _mcUn = _agUn?.agency ? getMetaCredentials(_agUn.agency) : null;
-        if (_mcUn?.accessToken && _mcUn?.phoneNumberId) {
-          // Dil: profil tercihi varsa o, yoksa acente ilk-dili, yoksa tr
-          let _unLang = "tr";
-          try {
-            const { data: _pUn } = await supabase
-              .from("whatsapp_user_profiles").select("language_preference")
-              .eq("phone", userPhone).eq("agency_id", _agUn.agency.id).maybeSingle();
-            _unLang = _pUn?.language_preference || (_agUn.agency.enabled_languages?.[0]) || "tr";
-          } catch { /* dil çözülemezse tr */ }
-          const _unMsgs: Record<string, string> = {
-            tr: "Şu an yalnızca yazılı mesajları işleyebiliyorum 🙏 Lütfen isteğinizi kısaca yazar mısınız?",
-            en: "I can only process written messages right now 🙏 Could you please type your request?",
-            de: "Ich kann derzeit nur Textnachrichten verarbeiten 🙏 Könnten Sie Ihre Anfrage bitte kurz schreiben?",
-            fr: "Je ne peux traiter que les messages écrits pour le moment 🙏 Pourriez-vous écrire votre demande ?",
-            es: "Por ahora solo puedo procesar mensajes escritos 🙏 ¿Podría escribir su solicitud?",
-            ru: "Сейчас я могу обрабатывать только текстовые сообщения 🙏 Напишите, пожалуйста, ваш запрос.",
-            ar: "يمكنني حالياً معالجة الرسائل النصية فقط 🙏 هل يمكنك كتابة طلبك؟",
-          };
-          await sendWhatsAppMessage(_mcUn.phoneNumberId, _mcUn.accessToken, userPhone, _unMsgs[_unLang] || _unMsgs.tr);
-          console.log(`[webhook] B4 desteklenmeyen-tip nazik-yanıt: type=${webhookData.msgType}, lang=${_unLang}`);
-        }
-      }
+    // 2026-07-10 B4: desteklenmeyen-tip NAZİK YANIT (7-dil). Medya/konum/sticker/kişi-kartı
+    // → "yazılı mesaj" ricası; reaction/edited/deleted/unknown → SESSİZ (doğru davranış —
+    // tepkiye cevap verilmez). Caption'lı medya metin olarak işlenir (rawMessage dolu).
+    const _politeTypes = new Set(["image", "audio", "video", "document", "location", "sticker", "contacts", "voice"]);
+    const _isUnsupportedMedia = !rawMessage && !!webhookData.msgType && _politeTypes.has(webhookData.msgType);
+    if (!userPhone || (!rawMessage && !_isUnsupportedMedia)) {
       return new Response(JSON.stringify({ success: true }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     // === Agency + Meta credentials ===
+    // Dilim-4 çift-kayıt düzeltmesi: acente tespiti, mesajı kaydeden TÜM yollardan önce
+    // (dedup RPC'si acente ister; kayıt yazan her yol zaten acenteye bağlı). Desteklenmeyen
+    // tip dalının kendi ikinci resolveAgencyByPhoneNumberId çağrısı kaldırıldı.
     const { agency, error: agencyError } = await resolveAgencyByPhoneNumberId(supabase, webhookData.phoneNumberId);
     if (agencyError || !agency) {
       console.error(`🚫 Agency not found: ${agencyError}`);
@@ -296,6 +263,69 @@ serve(async (req) => {
 
     const metaCredentials = getMetaCredentials(agency);
     _catchMeta = metaCredentials;
+
+    // === DB-tabanlı dedup + context/history preload ===
+    // Dilim-4 çift-kayıt düzeltmesi: TEK dedup (process_whatsapp_message_atomic,
+    // UNIQUE(message_id, agency_id)) artık mesajı kaydeden TÜM yollardan ÖNCE. Eskiden
+    // desteklenmeyen-tip / kimlik-eksik / 2000+ karakter dalları dedup'tan önce dönüyordu
+    // → Meta aynı wamid'i tekrar teslim edince satır ve cevap İKİ KEZ.
+    let _preloadedContext: string | null = null;
+    let _preloadedHistory: Array<{ role: string; content: string }> | null = null;
+
+    if (webhookData.messageId) {
+      const { data: _ar, error: _ae } = await supabase.rpc("process_whatsapp_message_atomic", {
+        p_message_id: webhookData.messageId,
+        p_agency_id: agency.id,
+        p_phone: userPhone,
+      });
+      if (_ae) {
+        console.error("[process_atomic_failed]", _ae.message);
+      } else if (_ar?.error === "DUPLICATE_MESSAGE") {
+        console.log(`[dedup] Duplicate skipped: ${webhookData.messageId}`);
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else if (_ar?.success) {
+        _preloadedContext = typeof _ar.context === "string" ? _ar.context : null;
+        _preloadedHistory = Array.isArray(_ar.history) ? _ar.history : null;
+      }
+    }
+
+    if (_isUnsupportedMedia) {
+      // Dilim-4 (yol 1): müşteri bir şey gönderdi → konuşma kaydına yer tutucu + medya
+      // metadata'sı (indirme/transkripsiyon YOK). Nazik cevap davranışı aşağıda AYNEN.
+      const _mt = webhookData.msgType as string;
+      await saveInboundMessage(supabase, agency.id, userPhone, MEDIA_PLACEHOLDER[_mt] || `[${_mt}]`, {
+        droppedReason: DROP_REASON.UNSUPPORTED_MEDIA,
+        meta: { media_type: _mt, ...(webhookData.mediaId ? { media_id: webhookData.mediaId } : {}) },
+        lossIfFail: true,
+      });
+      if (metaCredentials.accessToken && metaCredentials.phoneNumberId) {
+        // Dil: profil tercihi varsa o, yoksa acente ilk-dili, yoksa tr
+        let _unLang = "tr";
+        try {
+          const { data: _pUn } = await supabase
+            .from("whatsapp_user_profiles").select("language_preference")
+            .eq("phone", userPhone).eq("agency_id", agency.id).maybeSingle();
+          _unLang = _pUn?.language_preference || (agency.enabled_languages?.[0]) || "tr";
+        } catch { /* dil çözülemezse tr */ }
+        const _unMsgs: Record<string, string> = {
+          tr: "Şu an yalnızca yazılı mesajları işleyebiliyorum 🙏 Lütfen isteğinizi kısaca yazar mısınız?",
+          en: "I can only process written messages right now 🙏 Could you please type your request?",
+          de: "Ich kann derzeit nur Textnachrichten verarbeiten 🙏 Könnten Sie Ihre Anfrage bitte kurz schreiben?",
+          fr: "Je ne peux traiter que les messages écrits pour le moment 🙏 Pourriez-vous écrire votre demande ?",
+          es: "Por ahora solo puedo procesar mensajes escritos 🙏 ¿Podría escribir su solicitud?",
+          ru: "Сейчас я могу обрабатывать только текстовые сообщения 🙏 Напишите, пожалуйста, ваш запрос.",
+          ar: "يمكنني حالياً معالجة الرسائل النصية فقط 🙏 هل يمكنك كتابة طلبك؟",
+        };
+        await sendWhatsAppMessage(metaCredentials.phoneNumberId, metaCredentials.accessToken, userPhone, _unMsgs[_unLang] || _unMsgs.tr);
+        console.log(`[webhook] B4 desteklenmeyen-tip nazik-yanıt: type=${webhookData.msgType}, lang=${_unLang}`);
+      }
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (!metaCredentials.accessToken || !metaCredentials.phoneNumberId) {
       // Dilim-4 (yol 2): acente tespit edildi ama WhatsApp kimlik bilgisi yok — müşteriye
       // cevap gönderilemez (aynı), mesaj panelde görünsün.
@@ -331,7 +361,7 @@ serve(async (req) => {
       }).catch(() => {});
     }
 
-    // === Input too long (ÖNCE kontrol et — DB işlemlerinden önce) ===
+    // === Input too long ===
     if (isInputTooLong(rawMessage)) {
       // Dilim-4 (yol 3): mesaj İŞLENMİYOR (müşteriden kısaltması isteniyor) → metnin
       // TAMAMI kırpılmadan kaydedilir; dropped_reason bu yüzden var. Cevap aynı.
@@ -359,29 +389,6 @@ serve(async (req) => {
     // K6: PII masking — telefon son 4 hane görünür, ham mesaj loglara çıkmıyor
     console.log("📱 WhatsApp FSM:", maskPhone(userPhone), "| msg:", maskMessage(rawMessage));
     console.log(`🏢 Agency: ${agency.name}`);
-
-    // === DB-tabanlı dedup + context/history preload ===
-    let _preloadedContext: string | null = null;
-    let _preloadedHistory: Array<{ role: string; content: string }> | null = null;
-
-    if (webhookData.messageId) {
-      const { data: _ar, error: _ae } = await supabase.rpc("process_whatsapp_message_atomic", {
-        p_message_id: webhookData.messageId,
-        p_agency_id: agency.id,
-        p_phone: userPhone,
-      });
-      if (_ae) {
-        console.error("[process_atomic_failed]", _ae.message);
-      } else if (_ar?.error === "DUPLICATE_MESSAGE") {
-        console.log(`[dedup] Duplicate skipped: ${webhookData.messageId}`);
-        return new Response(JSON.stringify({ success: true }), {
-          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      } else if (_ar?.success) {
-        _preloadedContext = typeof _ar.context === "string" ? _ar.context : null;
-        _preloadedHistory = Array.isArray(_ar.history) ? _ar.history : null;
-      }
-    }
 
     // Hızlı dil tespiti (preloaded context'ten veya mesaj analizinden)
     let _prelimLang = "tr";
