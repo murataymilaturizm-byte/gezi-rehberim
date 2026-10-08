@@ -30,7 +30,7 @@ Migration: Dilim 2–8'in **hiçbirinde yok**.
 
 ## 2. Opus'un "KARAR GEREKLİ" kararları ve gerekçeleri
 
-Durum sütunu: **ONAY** = ürün sahibi açıkça onayladı · **DÜZELT** = ürün sahibi farklı karar verdi, uygulandı · **açık onay yok** = rapor edildi, sonraki dilime geçildi, itiraz gelmedi.
+Durum sütunu: **ONAY** = ürün sahibi açıkça onayladı · **DÜZELT** = ürün sahibi farklı karar verdi, uygulandı · **açık onay yok** = (2026-10-08 itibarıyla kalmadı; Dilim 5 ve 6 kararları ürün sahibince onaylandı).
 
 ### Dilim 2
 | # | Karar | Uygulanan | Gerekçe | Durum |
@@ -58,16 +58,16 @@ Durum sütunu: **ONAY** = ürün sahibi açıkça onayladı · **DÜZELT** = ür
 ### Dilim 5
 | # | Karar | Uygulanan | Gerekçe | Durum |
 |---|---|---|---|---|
-| K1 | Tarih sorusu (b) dalı FAQ intent'lerinde hangi şartla? | Yalnız tur **bu mesajda adıyla** geçtiyse | "İptal ne zamana kadar?" tarih listesine dönmesin | açık onay yok |
-| K2 | Tur hakkında **bilgi** isteği | LLM'de kaldı | Tur anlatımı LLM'in işi; prompt'ta tarih yasağı var | açık onay yok |
-| K3 | COMPLETED/GREETING'de "X turu ne zaman?" (FSM stage değiştirmiyor) | Dokunulmadı | FSM geçiş kuralı değişikliği gerekir → **Fable'a kaldı** (§3.3) | açık onay yok |
+| K1 | Tarih sorusu (b) dalı FAQ intent'lerinde hangi şartla? | Yalnız tur **bu mesajda adıyla** geçtiyse | "İptal ne zamana kadar?" tarih listesine dönmesin | ONAY |
+| K2 | Tur hakkında **bilgi** isteği | LLM'de kaldı | Tur anlatımı LLM'in işi; prompt'ta tarih yasağı var | ONAY |
+| K3 | COMPLETED/GREETING'de "X turu ne zaman?" (FSM stage değiştirmiyor) | Dokunulmadı | FSM geçiş kuralı değişikliği gerekir → **Fable'a kaldı** (§3.3) | ONAY — Fable'a devredildi (§3.3) |
 
 ### Dilim 6
 | # | Karar | Uygulanan | Gerekçe | Durum |
 |---|---|---|---|---|
-| K1 | 17-BV soru metni de/fr/es/ru/ar'da :13'ten farklıydı | :13 metni (`confirmYes`) | Aynı anlam, tek kaynak | açık onay yok |
-| K2 | `response-validator.ts` `validateFieldReask` CONFIRMING yedeği (`formatReservationSummary`, TR/EN, 💰 yok) | Dokunulmadı | fsm katmanı senkron, 10+ suite testi biçime bağlı → **Fable'a kaldı** (§3.2) | açık onay yok |
-| K3 | Builder tarih yoksa "henüz seçilmedi" basar | Builder davranışı | Bağlanan dallarda tarih zaten dolu | açık onay yok |
+| K1 | 17-BV soru metni de/fr/es/ru/ar'da :13'ten farklıydı | :13 metni (`confirmYes`) | Aynı anlam, tek kaynak | ONAY |
+| K2 | `response-validator.ts` `validateFieldReask` CONFIRMING yedeği (`formatReservationSummary`, TR/EN, 💰 yok) | Dokunulmadı | fsm katmanı senkron, 10+ suite testi biçime bağlı → **Fable'a kaldı** (§3.2) | ONAY — Fable'a devredildi (§3.2, C1 ile aynı dilimde) |
+| K3 | Builder tarih yoksa "henüz seçilmedi" basar | Builder davranışı | Bağlanan dallarda tarih zaten dolu | ONAY |
 | C2-MUAF | Bütçe yankısı ₺ literal'i | Muaf (D1'e kadar) | Girdinin para birimi çözülmemişti | Dilim-7'de kaldırıldı |
 
 ### Dilim 7 (dördü de ONAY)
@@ -147,7 +147,7 @@ Her madde: **ne** · **nerede** · **neden kaldı** · **önerilen kök**.
 - "Ça marche" (yalnız ç) → tr; `é`-yalnız mesaj → NLU karar verir.
 - EN bütçe cümlesi "Tours within your under 300$ budget" (şablon dil bilgisi).
 - `tours`/`tour_dates` tablolarında `updated_at` yok (canlı teşhis).
-- Demo turların tarihleri: Oct 2026–Mar 2027 tarih ekleme önerisi ürün sahibinin onayını bekliyor (yazılmadı).
+- ~~Demo turların tarihleri~~ **YAPILDI (2026-10-08, ürün sahibi onayı):** bkz. §6.
 
 ---
 
@@ -173,3 +173,55 @@ Webhook'a canlı mesaj gönderilmedi (kural). Demo-chat'te yalnız TR "merhaba" 
 - **Önce kırmızı yöntemi:** kod dosyaları `git stash push -- <dosyalar>` ile HEAD'e alınır, testler ve stub'lar yerinde kalır, aynı test koşulur, `git stash pop`.
 - **Dosya yazma tuzakları:** process-message.ts karışık CRLF/LF. Şablon string içinde `\b` backspace'e dönüşebiliyor (Dilim-7'de iki kez oldu); D8.CTL muhafızı artık yakalar. Yamalarda `scratchpad/rep.cjs` deseni (LF/CRLF toleranslı, tek eşleşme şartı) kullanıldı.
 - **Statik muhafız aileleri (suite):** PAKET-0 D1–D4, D5.*, D6.*, D7.*, D8.*; kaynak tarayıcı `scripts/lib/regex-boundary.ts`.
+
+
+---
+
+## 6. Demo tur tarihleri eklendi (2026-10-08, ürün sahibi onayı)
+
+**Kapsam:** yalnız demo acente **Demo Turizm** (`agency_id = 00000000-0000-0000-0000-000000000000`, `demo-chat/config/constants.ts` `DEMO_AGENCY_ID`). Gerçek acente verisine dokunulmadı: son 15 dakikada demo dışı acentede eklenen tarih = **0** (doğrulandı).
+
+**Önce:** 6 tur, 8 tarih, hepsi Aralık 2026. Ekim–Kasım 2026 ve 2027 boştu.
+
+**Yöntem:** tek `INSERT … SELECT … RETURNING`. Her tura 5 tarih eklendi: **24.10.2026, 14.11.2026, 16.01.2027, 13.02.2027, 13.03.2027**. Aralık 2026'da mevcut tarihler var, ay atlandı.
+- Fiyat (`price_adult`, `price_child`) ve `quota` turun en erken mevcut tarihinden kopyalandı.
+- `return_date` boş (mevcut satırlarla aynı).
+- Aynı tur + gün varsa eklememe koruması (`NOT EXISTS`) vardı.
+- Kod değişikliği / migration yok. Tur önbelleği 5 dk (`tour-cache.ts` FRESH_TTL); yeni tarihler en geç ~5 dk içinde demo'da görünür.
+
+**Sonra:** 6 tur, **38 tarih** (8 mevcut + **30 yeni**).
+
+| Tur | Tarih | Yetişkin | Çocuk | Kontenjan | tour_dates.id |
+|---|---|---|---|---|---|
+| Antalya Rafting | 2026-10-24 | 850₺ | 650₺ | 999 | `eeff2ee4-a082-4c23-a66f-e0a0df6cdd94` |
+| Antalya Rafting | 2026-11-14 | 850₺ | 650₺ | 999 | `4b494017-6296-4c7f-89ad-2ad7fc032815` |
+| Antalya Rafting | 2027-01-16 | 850₺ | 650₺ | 999 | `61506d2f-6e8e-4ab3-a397-8684b56ba429` |
+| Antalya Rafting | 2027-02-13 | 850₺ | 650₺ | 999 | `e64c6734-80ee-4e6c-8d00-7892fd74e44c` |
+| Antalya Rafting | 2027-03-13 | 850₺ | 650₺ | 999 | `b838c9b2-f88f-4139-a02e-819b5093c6df` |
+| Efes Antik Kent Turu | 2026-10-24 | 900₺ | 700₺ | 999 | `29a73d91-82e2-4f6e-b99d-33c42722c227` |
+| Efes Antik Kent Turu | 2026-11-14 | 900₺ | 700₺ | 999 | `e194ba07-609c-4c35-95ee-f3ac5fdb5c77` |
+| Efes Antik Kent Turu | 2027-01-16 | 900₺ | 700₺ | 999 | `29a0e036-0c26-42b1-950c-765460df951a` |
+| Efes Antik Kent Turu | 2027-02-13 | 900₺ | 700₺ | 999 | `f647cf09-76eb-4501-a96f-9924dc1d0e30` |
+| Efes Antik Kent Turu | 2027-03-13 | 900₺ | 700₺ | 999 | `6a3cf619-333b-4d73-b2b2-0881f3c6106c` |
+| Ege Turu | 2026-10-24 | 4.500₺ | 3.600₺ | 999 | `aa96a64c-c0dd-481c-b7fa-45e0ea2c35c5` |
+| Ege Turu | 2026-11-14 | 4.500₺ | 3.600₺ | 999 | `98381ab4-586b-4e75-bfa5-b971ac54d15c` |
+| Ege Turu | 2027-01-16 | 4.500₺ | 3.600₺ | 999 | `720dc2ba-da14-42b4-b36f-e25ac1ed1b6d` |
+| Ege Turu | 2027-02-13 | 4.500₺ | 3.600₺ | 999 | `25020654-cd1d-49ff-90dc-105773d76db8` |
+| Ege Turu | 2027-03-13 | 4.500₺ | 3.600₺ | 999 | `7890e7e1-a85d-4ba7-b0f2-f95aabd084c8` |
+| Kapadokya Balon Turu | 2026-10-24 | 1.500₺ | 1.200₺ | 999 | `25f269f5-00e7-4f20-9174-5495859b9434` |
+| Kapadokya Balon Turu | 2026-11-14 | 1.500₺ | 1.200₺ | 999 | `40c833b6-477f-4a0a-b0b3-914117fafa50` |
+| Kapadokya Balon Turu | 2027-01-16 | 1.500₺ | 1.200₺ | 999 | `02dc2db8-1e22-4e64-abf1-4ef247f975a9` |
+| Kapadokya Balon Turu | 2027-02-13 | 1.500₺ | 1.200₺ | 999 | `671907e8-4cde-4d53-b43f-dba35089eb1b` |
+| Kapadokya Balon Turu | 2027-03-13 | 1.500₺ | 1.200₺ | 999 | `91fcfd13-3ee9-47a5-b63c-34a7d5969ff8` |
+| Kapadokya Kültür Turu | 2026-10-24 | 2.500₺ | 2.000₺ | 999 | `df31809e-ea05-4d93-a97e-0d78b6e95708` |
+| Kapadokya Kültür Turu | 2026-11-14 | 2.500₺ | 2.000₺ | 999 | `1b8a2eb3-6f74-4ae5-bad6-fe1ba163484f` |
+| Kapadokya Kültür Turu | 2027-01-16 | 2.500₺ | 2.000₺ | 999 | `0e93c906-2183-41c8-bf5f-514a0ac2a003` |
+| Kapadokya Kültür Turu | 2027-02-13 | 2.500₺ | 2.000₺ | 999 | `6c5dbfd0-4222-4e37-8ed4-a52a308f48ea` |
+| Kapadokya Kültür Turu | 2027-03-13 | 2.500₺ | 2.000₺ | 999 | `d5020576-5231-415a-895d-90b2c4b0faaf` |
+| Pamukkale Turu | 2026-10-24 | 3.500₺ | 2.800₺ | 999 | `e96d9d5b-1153-4563-8a1d-fa0ef8fc7dbb` |
+| Pamukkale Turu | 2026-11-14 | 3.500₺ | 2.800₺ | 999 | `e7c538ef-2e87-442b-8e36-3f5fad7d54dd` |
+| Pamukkale Turu | 2027-01-16 | 3.500₺ | 2.800₺ | 999 | `30185693-1eab-4d9e-aaca-5c12931856a0` |
+| Pamukkale Turu | 2027-02-13 | 3.500₺ | 2.800₺ | 999 | `5d51be85-80ed-413a-931f-7c3f0c74ee32` |
+| Pamukkale Turu | 2027-03-13 | 3.500₺ | 2.800₺ | 999 | `6e1d3fc9-53d7-469f-9392-03b02983b956` |
+
+**Geri alma (gerekirse):** `delete from tour_dates where id in (<yukarıdaki 30 id>)`. Bu tarihlere kayıt (registrations) yazılmadıysa güvenlidir.
